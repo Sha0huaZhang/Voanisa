@@ -74,6 +74,13 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         player?.volume = Float(clamped)
     }
 
+    /// Applies metadata edits to the currently playing song.
+    func refresh(track: Track) {
+        guard currentTrackID == track.id else { return }
+        currentTrack = track
+        updateNowPlaying(force: true)
+    }
+
     func stop() {
         timer?.invalidate()
         timer = nil

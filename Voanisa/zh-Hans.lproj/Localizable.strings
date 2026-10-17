@@ -58,6 +58,14 @@
 "import.title.required" = "请输入歌曲名。";
 "import.noFiles"       = "没有找到支持的音频文件。";
 
+/* 元数据编辑 */
+"metadata.title"          = "编辑歌曲信息";
+"metadata.save"           = "保存";
+"metadata.cover"          = "封面";
+"metadata.chooseCover"    = "选择封面…";
+"metadata.removeCover"    = "移除封面";
+"metadata.title.required" = "歌曲名不能为空。";
+
 /* 封面裁剪 */
 "crop.title"  = "裁剪封面";
 "crop.hint"   = "拖动调整位置，使用滑杆缩放。封面必须是正方形。";
@@ -119,6 +127,7 @@
 "common.later"       = "稍后";
 "common.restart"     = "立即重启";
 "common.play"        = "播放";
+"common.editMetadata" = "编辑歌曲信息…";
 "common.showInFinder" = "在 Finder 中显示";
 "common.remove"      = "从曲库移除…";
 "common.remove.confirm.title"   = "要移除这首歌曲吗？";

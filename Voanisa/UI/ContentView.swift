@@ -42,6 +42,16 @@ struct ContentView: View {
                 onError: { model.presentError($0, context: "import") }
             )
         }
+        .sheet(item: $model.metadataTarget) { track in
+            MetadataEditorSheet(
+                track: track,
+                onSave: { edit, cover in
+                    model.saveMetadata(track, edit: edit, cover: cover)
+                },
+                onCancel: { model.metadataTarget = nil },
+                onError: { model.presentError($0, context: "metadata") }
+            )
+        }
         .alert("error.title", isPresented: $model.isShowingError) {
             Button("common.gotIt") {}
         } message: {

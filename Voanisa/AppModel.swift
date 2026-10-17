@@ -9,6 +9,7 @@ final class AppModel: ObservableObject {
     @Published var isShowingError = false
 
     @Published var deleteTarget: Track?
+    @Published var metadataTarget: Track?
 
     let player = PlaybackEngine()
     let imports = ImportController()
@@ -113,6 +114,21 @@ final class AppModel: ObservableObject {
         }
         library.remove(track)
         deleteTarget = nil
+    }
+
+    func requestMetadataEdit(_ track: Track) {
+        metadataTarget = track
+    }
+
+    func saveMetadata(
+        _ track: Track,
+        edit: TrackMetadataEdit,
+        cover: TrackCoverEdit
+    ) {
+        if let updated = library.updateMetadata(track, edit: edit, cover: cover) {
+            player.refresh(track: updated)
+        }
+        metadataTarget = nil
     }
 
     // MARK: - Import

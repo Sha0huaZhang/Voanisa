@@ -60,6 +60,98 @@ final class LibraryController: ObservableObject {
         }
     }
 
+    @discardableResult
+    func updateMetadata(
+        _ track: Track,
+        edit: TrackMetadataEdit,
+        cover: TrackCoverEdit
+    ) -> Track? {
+        guard edit.isValid,
+              let index = tracks.firstIndex(where: { $0.id == track.id }) else {
+            return nil
+        }
+
+        do {
+            var updated = edit.applying(to: tracks[index])
+            // A fresh rendered name bypasses any in-memory image cache in the rows.
+            let coverName = "\(track.id.uuidString)-\(UUID().uuidString.prefix(8)).jpg"
+            let originalName = "\(track.id.uuidString).jpg"
+
+            switch cover {
+            case .keep:
+                break
+
+            case .replace(let jpeg, let original):
+                try jpeg.write(
+                    to: LibraryLocation.coverURL(for: coverName),
+                    options: .atomic
+                )
+                if let oldName = updated.coverFileName, oldName != coverName {
+                    try? FileManager.default.trashItem(
+                        at: LibraryLocation.coverURL(for: oldName),
+                        resultingItemURL: nil
+                    )
+                }
+                updated.coverFileName = coverName
+
+                if let original {
+                    do {
+                        try original.write(
+                            to: LibraryLocation.originalCoversURL
+                                .appendingPathComponent(originalName),
+                            options: .atomic
+                        )
+                        removeOriginalCovers(for: track.id, keeping: originalName)
+                    } catch {
+                        Diagnostics.error(
+                            error.localizedDescription,
+                            context: "library.metadata.originalCover"
+                        )
+                    }
+                } else {
+                    removeOriginalCovers(for: track.id)
+                }
+
+            case .remove:
+                if let oldName = updated.coverFileName {
+                    try? FileManager.default.trashItem(
+                        at: LibraryLocation.coverURL(for: oldName),
+                        resultingItemURL: nil
+                    )
+                }
+                removeOriginalCovers(for: track.id)
+                updated.coverFileName = nil
+            }
+
+            tracks[index] = updated
+            artworkCache.removeObject(forKey: track.id.uuidString as NSString)
+            save()
+            Diagnostics.log("更新《\(updated.title)》的元数据")
+            return updated
+        } catch {
+            Diagnostics.error(error.localizedDescription, context: "library.metadata")
+            onError?(error.localizedDescription)
+            return nil
+        }
+    }
+
+    private func removeOriginalCovers(for id: UUID, keeping keptName: String? = nil) {
+        guard let files = try? FileManager.default.contentsOfDirectory(
+            at: LibraryLocation.originalCoversURL,
+            includingPropertiesForKeys: nil
+        ) else {
+            return
+        }
+
+        for file in files {
+            guard file.deletingPathExtension().lastPathComponent == id.uuidString else {
+                continue
+            }
+            guard file.lastPathComponent != keptName else { continue }
+            try? FileManager.default.trashItem(at: file, resultingItemURL: nil)
+        }
+    }
+
     func remove(_ track: Track) {
         tracks.removeAll { $0.id == track.id }
         save()

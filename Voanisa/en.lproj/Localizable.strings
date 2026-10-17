@@ -59,6 +59,14 @@
 "import.title.required" = "Enter a title.";
 "import.noFiles"       = "No supported audio files found.";
 
+/* Metadata editor */
+"metadata.title"          = "Edit Metadata";
+"metadata.save"           = "Save";
+"metadata.cover"          = "Cover";
+"metadata.chooseCover"    = "Choose Cover…";
+"metadata.removeCover"    = "Remove Cover";
+"metadata.title.required" = "Title cannot be empty.";
+
 /* Cover crop */
 "crop.title"  = "Crop Cover";
 "crop.hint"   = "Drag to move, use the slider to zoom. The cover must be square.";
@@ -120,6 +128,7 @@
 "common.later"    = "Later";
 "common.restart"  = "Restart Now";
 "common.play"     = "Play";
+"common.editMetadata" = "Edit Metadata…";
 "common.showInFinder" = "Show in Finder";
 "common.remove"   = "Remove from Library…";
 "common.remove.confirm.title"   = "Remove this song?";

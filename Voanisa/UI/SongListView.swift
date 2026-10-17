@@ -52,6 +52,7 @@ struct SongListView: View {
                             isDragging: draggingID == song.id,
                             isReorderEnabled: !isSearching,
                             onPlay: { model.play(song) },
+                            onEdit: { model.requestMetadataEdit(song) },
                             onShowInFinder: { library.showInFinder(song) },
                             onRemove: { model.requestDelete(song) },
                             onDragChanged: { pointerY, startY, artwork in
@@ -211,6 +212,7 @@ struct SongRowView: View {
     let isDragging: Bool
     let isReorderEnabled: Bool
     let onPlay: () -> Void
+    let onEdit: () -> Void
     let onShowInFinder: () -> Void
     let onRemove: () -> Void
     let onDragChanged: (CGFloat, CGFloat, NSImage?) -> Void
@@ -242,7 +244,7 @@ struct SongRowView: View {
                 RoundedRectangle(cornerRadius: 4)
                     .stroke(isPlaying ? Color.red : Color.clear, lineWidth: 2)
             )
-            .task(id: song.id) {
+            .task(id: song.coverFileName) {
                 await loadArtwork()
             }
 
@@ -289,6 +291,7 @@ struct SongRowView: View {
         }
         .contextMenu {
             Button("common.play", action: onPlay)
+            Button("common.editMetadata", action: onEdit)
             Button("common.showInFinder", action: onShowInFinder)
             Divider()
             Button("common.remove", role: .destructive, action: onRemove)

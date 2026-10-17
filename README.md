@@ -23,7 +23,9 @@ dependency and no files written outside the library.
 
 - Import audio files or whole folders from the sidebar, by drag and drop, or ⌘O
 - Detect the container from the **file header**, not the extension
-- Give every song a title, artist, album and a square cover with pan/zoom crop
+- Give every song a title, artist, album, album artist, track/disc number and a
+  square cover with pan/zoom crop
+- Edit metadata and replace or remove the cover at any time from the row menu
 - Copy audio into `~/Music/Voanisa`, leaving the originals untouched
 - Local playback with play/pause, previous/next, seek, volume, repeat and media keys
 - Search, drag-to-reorder, hover play button and double-click to play
