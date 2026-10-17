@@ -18,6 +18,34 @@ const char *voanisa_core_version(void);
 /// voanisa_string_free().
 char *voanisa_probe_json(const char *path);
 
+/// Streaming decoder for containers AVFoundation cannot play (Ogg Vorbis,
+/// Opus, ...). All PCM is interleaved 32-bit float.
+typedef struct VoanisaDecoder VoanisaDecoder;
+
+/// Returns NULL when the file cannot be decoded; ask
+/// voanisa_decoder_open_error_json() why.
+VoanisaDecoder *voanisa_decoder_open(const char *path);
+char *voanisa_decoder_open_error_json(const char *path);
+
+/// JSON: {"container":"ogg","codec":"vorbis","sample_rate":44100,
+///        "channels":2,"duration_seconds":213.4}
+char *voanisa_decoder_info_json(VoanisaDecoder *decoder);
+
+/// Fills `out` with up to `frames * channels` floats. Returns the frames read,
+/// 0 at end of stream, or -1 on error (see voanisa_decoder_error_json).
+int64_t voanisa_decoder_read(VoanisaDecoder *decoder, float *out, uint32_t frames);
+int32_t voanisa_decoder_seek(VoanisaDecoder *decoder, double seconds);
+double voanisa_decoder_position(VoanisaDecoder *decoder);
+char *voanisa_decoder_error_json(VoanisaDecoder *decoder);
+void voanisa_decoder_close(VoanisaDecoder *decoder);
+
+/// Basic tags for containers AVFoundation cannot read. JSON:
+///
+///     {"ok":true,"data":{"title":...,"artist":...,"album":...,
+///      "album_artist":...,"track_number":...,"disc_number":...,
+///      "duration_seconds":...}}
+char *voanisa_tags_json(const char *path);
+
 /// SQLite library calls. Every function returns a heap-allocated JSON string:
 ///
 ///     {"ok":true,"data":...}

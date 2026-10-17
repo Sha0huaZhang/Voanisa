@@ -107,9 +107,20 @@ enum ImportService {
 
         for url in files {
             let probe = await AudioProbe.probe(url: url)
-            let embedded = probe.isSupported
+            var embedded = probe.isSupported
                 ? await AudioMetadataReader.read(url: url)
                 : EmbeddedMetadata()
+
+            // Ogg, Opus and the other portable formats have no AVFoundation
+            // metadata, so the Rust core supplies the basics.
+            if !probe.container.isNative, let tags = RustCore.tags(url: url) {
+                embedded.title = embedded.title ?? tags.title
+                embedded.artist = embedded.artist ?? tags.artist
+                embedded.album = embedded.album ?? tags.album
+                embedded.albumArtist = embedded.albumArtist ?? tags.albumArtist
+                embedded.trackNumber = embedded.trackNumber ?? tags.trackNumber
+                embedded.discNumber = embedded.discNumber ?? tags.discNumber
+            }
 
             let fallbackTitle = url.deletingPathExtension().lastPathComponent
             var candidate = ImportCandidate(

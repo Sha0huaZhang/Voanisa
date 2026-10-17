@@ -5,7 +5,9 @@ use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
-use voanisa_core::{probe_path, NewTrack, ProbeResult, Store, StoreError, TrackUpdate};
+use voanisa_core::{
+    read_tags, probe_path, AudioDecoder, NewTrack, ProbeResult, Store, StoreError, TrackUpdate,
+};
 
 #[derive(Deserialize)]
 struct NewPlaylistPayload {
@@ -54,6 +56,156 @@ pub extern "C" fn voanisa_probe_json(path: *const c_char) -> *mut c_char {
         Err(_) => error_json("panic in Rust core"),
     };
     to_c_string(json)
+}
+
+// MARK: - Streaming decode
+
+/// Opaque handle to a decoder owned by the Rust core.
+pub struct VoanisaDecoder {
+    decoder: AudioDecoder,
+    last_error: Option<String>,
+}
+
+/// Opens a decoder for a container AVFoundation cannot play.
+///
+/// Returns NULL on failure; ask `voanisa_decoder_open_error_json` why.
+#[no_mangle]
+pub extern "C" fn voanisa_decoder_open(path: *const c_char) -> *mut VoanisaDecoder {
+    if path.is_null() {
+        return std::ptr::null_mut();
+    }
+    let path = unsafe { CStr::from_ptr(path) }
+        .to_string_lossy()
+        .into_owned();
+
+    match catch_unwind(AssertUnwindSafe(|| AudioDecoder::open(Path::new(&path)))) {
+        Ok(Ok(decoder)) => Box::into_raw(Box::new(VoanisaDecoder {
+            decoder,
+            last_error: None,
+        })),
+        _ => std::ptr::null_mut(),
+    }
+}
+
+/// Describes why `voanisa_decoder_open` failed. Returns an error envelope.
+#[no_mangle]
+pub extern "C" fn voanisa_decoder_open_error_json(path: *const c_char) -> *mut c_char {
+    if path.is_null() {
+        return to_c_string(message_error_json("null path", "invalid_argument"));
+    }
+    let path = unsafe { CStr::from_ptr(path) }
+        .to_string_lossy()
+        .into_owned();
+
+    let result = catch_unwind(AssertUnwindSafe(|| AudioDecoder::open(Path::new(&path))));
+    let message = match result {
+        Ok(Ok(_)) => "decoder opened".to_string(),
+        Ok(Err(error)) => error,
+        Err(_) => "panic in Rust core".to_string(),
+    };
+    to_c_string(message_error_json(&message, "decode"))
+}
+
+/// JSON `{container, codec, sample_rate, channels, duration_seconds}`.
+#[no_mangle]
+pub extern "C" fn voanisa_decoder_info_json(handle: *mut VoanisaDecoder) -> *mut c_char {
+    let Some(decoder) = (unsafe { handle.as_ref() }) else {
+        return to_c_string(message_error_json("null decoder", "invalid_argument"));
+    };
+    to_c_string(success_json(decoder.decoder.info()))
+}
+
+/// Reads up to `frames` frames into `out`, which must hold
+/// `frames * channels` floats. Returns the frames read, `0` at end of stream,
+/// or `-1` on error.
+#[no_mangle]
+pub extern "C" fn voanisa_decoder_read(
+    handle: *mut VoanisaDecoder,
+    out: *mut f32,
+    frames: u32,
+) -> i64 {
+    let Some(decoder) = (unsafe { handle.as_mut() }) else {
+        return -1;
+    };
+    let channels = decoder.decoder.info().channels;
+    if out.is_null() || frames == 0 || channels == 0 {
+        decoder.last_error = Some("invalid buffer".to_string());
+        return -1;
+    }
+
+    let slice = unsafe { std::slice::from_raw_parts_mut(out, frames as usize * channels) };
+    match catch_unwind(AssertUnwindSafe(|| decoder.decoder.read(slice))) {
+        Ok(Ok(samples)) => (samples / channels) as i64,
+        Ok(Err(error)) => {
+            decoder.last_error = Some(error);
+            -1
+        }
+        Err(_) => {
+            decoder.last_error = Some("panic in Rust core".to_string());
+            -1
+        }
+    }
+}
+
+/// Seeks to `seconds`. Returns `0` on success or `-1` on error.
+#[no_mangle]
+pub extern "C" fn voanisa_decoder_seek(handle: *mut VoanisaDecoder, seconds: f64) -> i32 {
+    let Some(decoder) = (unsafe { handle.as_mut() }) else {
+        return -1;
+    };
+    match catch_unwind(AssertUnwindSafe(|| decoder.decoder.seek(seconds))) {
+        Ok(Ok(())) => 0,
+        Ok(Err(error)) => {
+            decoder.last_error = Some(error);
+            -1
+        }
+        Err(_) => {
+            decoder.last_error = Some("panic in Rust core".to_string());
+            -1
+        }
+    }
+}
+
+/// Seconds of audio handed out so far.
+#[no_mangle]
+pub extern "C" fn voanisa_decoder_position(handle: *mut VoanisaDecoder) -> f64 {
+    match unsafe { handle.as_ref() } {
+        Some(decoder) => decoder.decoder.position_seconds(),
+        None => 0.0,
+    }
+}
+
+/// Last decoder error as an error envelope. Clears the stored error.
+#[no_mangle]
+pub extern "C" fn voanisa_decoder_error_json(handle: *mut VoanisaDecoder) -> *mut c_char {
+    let Some(decoder) = (unsafe { handle.as_mut() }) else {
+        return to_c_string(message_error_json("null decoder", "invalid_argument"));
+    };
+    let message = decoder
+        .last_error
+        .take()
+        .unwrap_or_else(|| "no error".to_string());
+    to_c_string(message_error_json(&message, "decode"))
+}
+
+/// Releases a decoder. Safe to call with NULL.
+#[no_mangle]
+pub extern "C" fn voanisa_decoder_close(handle: *mut VoanisaDecoder) {
+    if handle.is_null() {
+        return;
+    }
+    drop(unsafe { Box::from_raw(handle) });
+}
+
+/// Basic tags for containers AVFoundation cannot read.
+#[no_mangle]
+pub extern "C" fn voanisa_tags_json(path: *const c_char) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || success_json(&read_tags(Path::new(&path))))
 }
 
 // MARK: - SQLite library

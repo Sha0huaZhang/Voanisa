@@ -24,6 +24,9 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     var onFinished: (() -> Void)?
 
     private var player: AVAudioPlayer?
+    /// Used for containers AVFoundation cannot decode; the Rust core supplies
+    /// the PCM. Only one of `player` and `streamer` is alive at a time.
+    private var streamer: StreamingAudioPlayer?
     private var timer: Timer?
     private var currentTrack: Track?
     private var lastNowPlayingUpdate = Date.distantPast
@@ -32,7 +35,17 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     func play(track: Track) throws {
         let url = LibraryLocation.mediaURL(for: track.fileName)
-        let next = try AVAudioPlayer(contentsOf: url)
+
+        let next: AVAudioPlayer
+        do {
+            next = try AVAudioPlayer(contentsOf: url)
+        } catch {
+            guard startStreaming(track: track, url: url) else { throw error }
+            return
+        }
+
+        streamer?.stop()
+        streamer = nil
         next.delegate = self
         next.volume = Float(volume)
         next.prepareToPlay()
@@ -50,23 +63,71 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         Diagnostics.log("播放《\(track.title)》 \(url.lastPathComponent)")
     }
 
+    /// Fallback for Ogg, Opus and other containers AVFoundation rejects.
+    private func startStreaming(track: Track, url: URL) -> Bool {
+        let streaming = StreamingAudioPlayer()
+        guard streaming.open(url: url) else {
+            Diagnostics.error("Rust 解码不可用", context: "playback.stream")
+            return false
+        }
+
+        streaming.setVolume(volume)
+        streaming.onFinished = { [weak self] in
+            guard let self else { return }
+            self.isPlaying = false
+            self.position = self.duration
+            self.updateNowPlaying(force: true)
+            self.onFinished?()
+        }
+        streaming.play()
+
+        player?.stop()
+        player = nil
+        streamer?.stop()
+        streamer = streaming
+
+        currentTrack = track
+        currentTrackID = track.id
+        isPlaying = true
+        position = 0
+        duration = streaming.duration
+        startTimer()
+        updateNowPlaying(force: true)
+        Diagnostics.log("播放《\(track.title)》 \(url.lastPathComponent)（Rust 解码）")
+        return true
+    }
+
     func togglePlayPause() {
-        guard let player else { return }
-        if player.isPlaying {
-            player.pause()
-            isPlaying = false
-        } else {
-            player.play()
-            isPlaying = true
+        if let player {
+            if player.isPlaying {
+                player.pause()
+                isPlaying = false
+            } else {
+                player.play()
+                isPlaying = true
+            }
+        } else if let streamer {
+            if streamer.isPlaying {
+                streamer.pause()
+                isPlaying = false
+            } else {
+                streamer.play()
+                isPlaying = true
+            }
         }
         updateNowPlaying(force: true)
     }
 
     func seek(to seconds: Double) {
-        guard let player else { return }
-        let value = min(max(0, seconds), max(0, player.duration))
-        player.currentTime = value
-        position = value
+        if let player {
+            let value = min(max(0, seconds), max(0, player.duration))
+            player.currentTime = value
+            position = value
+        } else if let streamer {
+            let value = min(max(0, seconds), max(0, duration))
+            streamer.seek(to: value)
+            position = value
+        }
         updateNowPlaying(force: true)
     }
 
@@ -74,6 +135,7 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         let clamped = min(max(0, value), 1)
         volume = clamped
         player?.volume = Float(clamped)
+        streamer?.setVolume(clamped)
     }
 
     /// Applies metadata edits to the currently playing song.
@@ -88,6 +150,8 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         timer = nil
         player?.stop()
         player = nil
+        streamer?.stop()
+        streamer = nil
         currentTrack = nil
         currentTrackID = nil
         isPlaying = false
@@ -111,9 +175,17 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     private func tick() {
-        guard let player else { return }
-        position = player.currentTime
-        duration = player.duration
+        if let player {
+            position = player.currentTime
+            duration = player.duration
+        } else if let streamer {
+            position = streamer.position
+            if streamer.duration > 0 {
+                duration = streamer.duration
+            }
+        } else {
+            return
+        }
         if Date().timeIntervalSince(lastNowPlayingUpdate) > 1.0 {
             updateNowPlaying(force: true)
         }

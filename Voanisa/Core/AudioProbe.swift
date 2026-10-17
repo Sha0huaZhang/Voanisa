@@ -101,7 +101,35 @@ enum AudioProbe {
         }
 
         switch headerContainer {
-        case .ogg, .opus, .mkv, .webm, .wma, .ape, .wavpack, .dsf, .dff:
+        case .ogg, .opus:
+            // The Rust core decodes Ogg Vorbis and Opus in-process.
+            if let stream = RustCore.decoderInfo(url: url) {
+                return AudioProbeResult(
+                    container: headerContainer,
+                    codec: rust?.codec ?? stream.codec,
+                    duration: stream.durationSeconds,
+                    hasVideo: false,
+                    sampleRate: stream.sampleRate,
+                    channelCount: stream.channels,
+                    isSupported: true,
+                    failureReason: nil
+                )
+            }
+            return AudioProbeResult(
+                container: headerContainer,
+                codec: rust?.codec,
+                duration: 0,
+                hasVideo: false,
+                sampleRate: 0,
+                channelCount: 0,
+                isSupported: false,
+                failureReason: String(
+                    format: String(localized: "probe.unsupported"),
+                    headerContainer.displayName
+                )
+            )
+        case .mkv, .webm, .wma, .ape, .wavpack, .dsf, .dff:
+            // Recognised by signature but not decoded yet.
             return AudioProbeResult(
                 container: headerContainer,
                 codec: rust?.codec,

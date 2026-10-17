@@ -42,7 +42,11 @@ final class FixtureTests: XCTestCase {
 
         XCTAssertEqual(
             Set(urls.map(\.lastPathComponent)),
-            Set(["tone-a.wav", "tone-b.wav", "tagged.m4a"])
+            Set([
+                "tone-a.wav", "tone-b.wav", "tagged.m4a",
+                "tone.ogg", "tone.opus", "tone.wv",
+                "tagged.ogg", "tagged.opus"
+            ])
         )
     }
 

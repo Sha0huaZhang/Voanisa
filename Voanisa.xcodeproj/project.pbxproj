@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */; };
 		06FA81E68087FE42112863FE /* CoverCropSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */; };
+		0FD92D9D6C681866D08F08E8 /* StreamingAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3160C72120BAD2942CCCE274 /* StreamingAudioPlayer.swift */; };
 		12D39F9440F68B8067E99126 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8867802AF5F8F4AF6ED77AEB /* AboutView.swift */; };
 		1431984CB3D1172ED1E0516D /* TrackMetadataEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8475B6C244B64B0FAA9C4ECD /* TrackMetadataEditTests.swift */; };
 		17DE47AF21CC64FC6313D481 /* DefaultArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98D723A53399756AA9BA6D66 /* DefaultArtwork.swift */; };
@@ -18,6 +19,7 @@
 		26B7EBB50D6BFDBEB704A6B0 /* MediaKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BDAEF8412E70FBF89679BA1 /* MediaKeys.swift */; };
 		27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */; };
 		2F346090BC606BA297B5AD3C /* VoanisaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */; };
+		31711F51B574A490E0F29AEF /* ExtendedFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1AFD86D1750598A6E1B4870 /* ExtendedFormatTests.swift */; };
 		362F92813E9277E36C76DE79 /* PlayerControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE37896B19738772798DF38F /* PlayerControlBar.swift */; };
 		39E04EEBC5E6282B1D2431FB /* AlbumGroupingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9B70C8BD4538C28AC9AFABE /* AlbumGroupingTests.swift */; };
 		3E9272BD23A962650666F496 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */; };
@@ -79,6 +81,7 @@
 		1A650696675351345DFFE56E /* PlaybackScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackScope.swift; sourceTree = "<group>"; };
 		271D1EE9E781401F1F2E7242 /* VoanisaCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoanisaCore.h; sourceTree = "<group>"; };
 		2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3160C72120BAD2942CCCE274 /* StreamingAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingAudioPlayer.swift; sourceTree = "<group>"; };
 		39A9C72705F2B739CDC513CB /* LibraryLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryLocation.swift; sourceTree = "<group>"; };
 		3AD517CDEE85E8AAA65252CE /* MetadataEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataEditorSheet.swift; sourceTree = "<group>"; };
 		3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -119,6 +122,7 @@
 		DBBC642489D09BF2D1EBC578 /* ImportController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportController.swift; sourceTree = "<group>"; };
 		DE37896B19738772798DF38F /* PlayerControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlBar.swift; sourceTree = "<group>"; };
 		DFDF6E0C9C37083BC9C1BD87 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E1AFD86D1750598A6E1B4870 /* ExtendedFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedFormatTests.swift; sourceTree = "<group>"; };
 		E8DE578B9435A436D883845B /* SongAdvance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongAdvance.swift; sourceTree = "<group>"; };
 		E94D53DE54028716072D24A5 /* RustBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBridge.swift; sourceTree = "<group>"; };
 		E9C7B03E0CA8E22F019C8649 /* AudioProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProbe.swift; sourceTree = "<group>"; };
@@ -202,6 +206,7 @@
 				9BDAEF8412E70FBF89679BA1 /* MediaKeys.swift */,
 				9A342DD02A493CFEF54AEF42 /* PlaybackEngine.swift */,
 				E8DE578B9435A436D883845B /* SongAdvance.swift */,
+				3160C72120BAD2942CCCE274 /* StreamingAudioPlayer.swift */,
 			);
 			path = Playback;
 			sourceTree = "<group>";
@@ -222,6 +227,7 @@
 				3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */,
 				6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */,
 				5AAD62D67EE8C5C73F2A709D /* AudioMetadataTests.swift */,
+				E1AFD86D1750598A6E1B4870 /* ExtendedFormatTests.swift */,
 				FC88943A2A6285354A683454 /* FixtureTests.swift */,
 				00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */,
 				59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */,
@@ -379,6 +385,7 @@
 				BA223FA89D5660552FB0F3DB /* ArtworkTests.swift in Sources */,
 				27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */,
 				96B8E02808149239AD202C2E /* AudioMetadataTests.swift in Sources */,
+				31711F51B574A490E0F29AEF /* ExtendedFormatTests.swift in Sources */,
 				449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */,
 				5B01DE0010E67674FC3B3E8F /* ImportServiceTests.swift in Sources */,
 				F9C9F69EC190D4A65F1AB832 /* LibraryStoreTests.swift in Sources */,
@@ -427,6 +434,7 @@
 				662EFF64F60D522690FF77D7 /* SidebarView.swift in Sources */,
 				447EF9D1308FA8E5C4C7A58A /* SongAdvance.swift in Sources */,
 				6987FEE750F3742723441E17 /* SongListView.swift in Sources */,
+				0FD92D9D6C681866D08F08E8 /* StreamingAudioPlayer.swift in Sources */,
 				87001E6E438105378FF7D1AA /* Track.swift in Sources */,
 				BD7ABC152AA49BAB92B68A57 /* TrackMetadataEdit.swift in Sources */,
 				2F346090BC606BA297B5AD3C /* VoanisaApp.swift in Sources */,

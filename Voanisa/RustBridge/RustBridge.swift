@@ -25,6 +25,180 @@ enum RustCore {
         let json = String(cString: pointer)
         return try? JSONDecoder().decode(RustProbePayload.self, from: Data(json.utf8))
     }
+
+    /// Tags for containers AVFoundation cannot read, such as Ogg and Opus.
+    static func tags(url: URL) -> RustTags? {
+        let result: Result<RustTags, RustBridgeError> = url.path.withCString { pointer in
+            decodeEnvelope(voanisa_tags_json(pointer))
+        }
+        return try? result.get()
+    }
+
+    /// Opens a decoder just long enough to report its stream properties.
+    static func decoderInfo(url: URL) -> RustDecoderInfo? {
+        guard let decoder = RustAudioDecoder(url: url) else { return nil }
+        defer { decoder.close() }
+        return decoder.info
+    }
+
+    /// Why `voanisa_decoder_open` would fail for this file.
+    static func decoderOpenError(url: URL) -> String? {
+        let result: Result<RustEmpty, RustBridgeError> = url.path.withCString { pointer in
+            decodeEnvelope(voanisa_decoder_open_error_json(pointer))
+        }
+        if case .failure(let error) = result {
+            return error.message
+        }
+        return nil
+    }
+}
+
+struct RustDecoderInfo: Decodable {
+    let container: String
+    let codec: String
+    let sampleRate: Double
+    let channels: Int
+    let durationSeconds: Double
+
+    enum CodingKeys: String, CodingKey {
+        case container, codec, channels
+        case sampleRate = "sample_rate"
+        case durationSeconds = "duration_seconds"
+    }
+}
+
+struct RustTags: Decodable {
+    let title: String?
+    let artist: String?
+    let album: String?
+    let albumArtist: String?
+    let trackNumber: Int?
+    let discNumber: Int?
+    let durationSeconds: Double
+
+    enum CodingKeys: String, CodingKey {
+        case title, artist, album
+        case albumArtist = "album_artist"
+        case trackNumber = "track_number"
+        case discNumber = "disc_number"
+        case durationSeconds = "duration_seconds"
+    }
+}
+
+/// Streaming decoder for containers AVFoundation cannot play.
+///
+/// The Rust core decodes and resamples nothing: it hands back interleaved
+/// `Float` PCM at the file's own rate, and `AVAudioEngine` converts as needed.
+/// Access must be serialized by the caller.
+final class RustAudioDecoder {
+    let info: RustDecoderInfo
+
+    private var handle: OpaquePointer?
+
+    init?(url: URL) {
+        guard let handle = url.path.withCString({ voanisa_decoder_open($0) }) else {
+            return nil
+        }
+        guard let raw = url.path.withCString({ path -> UnsafeMutablePointer<CChar>? in
+            voanisa_decoder_info_json(handle)
+        }) else {
+            voanisa_decoder_close(handle)
+            return nil
+        }
+        defer { voanisa_string_free(raw) }
+
+        let json = String(cString: raw)
+        guard let envelope = try? JSONDecoder().decode(RustEnvelope<RustDecoderInfo>.self, from: Data(json.utf8)),
+              envelope.ok,
+              let info = envelope.data else {
+            voanisa_decoder_close(handle)
+            return nil
+        }
+
+        self.handle = handle
+        self.info = info
+    }
+
+    deinit {
+        close()
+    }
+
+    func close() {
+        guard let handle else { return }
+        voanisa_decoder_close(handle)
+        self.handle = nil
+    }
+
+    /// Interleaved samples. Empty at end of stream, `nil` on error.
+    func read(frames: Int) -> [Float]? {
+        guard let handle, frames > 0, info.channels > 0 else { return nil }
+
+        var buffer = [Float](repeating: 0, count: frames * info.channels)
+        let count = buffer.withUnsafeMutableBufferPointer { pointer in
+            voanisa_decoder_read(handle, pointer.baseAddress, UInt32(frames))
+        }
+        guard count >= 0 else {
+            Diagnostics.log("Rust 解码失败：\(lastError)")
+            return nil
+        }
+        return Array(buffer[0..<Int(count) * info.channels])
+    }
+
+    func seek(to seconds: Double) -> Bool {
+        guard let handle else { return false }
+        guard voanisa_decoder_seek(handle, seconds) == 0 else {
+            Diagnostics.log("Rust 定位失败：\(lastError)")
+            return false
+        }
+        return true
+    }
+
+    var position: Double {
+        guard let handle else { return 0 }
+        return voanisa_decoder_position(handle)
+    }
+
+    private var lastError: String {
+        guard let handle, let raw = voanisa_decoder_error_json(handle) else {
+            return "unknown"
+        }
+        defer { voanisa_string_free(raw) }
+        let json = String(cString: raw)
+        guard let envelope = try? JSONDecoder().decode(RustEnvelope<RustEmpty>.self, from: Data(json.utf8)) else {
+            return json
+        }
+        return envelope.error ?? "unknown"
+    }
+}
+
+private func decodeEnvelope<T: Decodable>(
+    _ pointer: UnsafeMutablePointer<CChar>?
+) -> Result<T, RustBridgeError> {
+    guard let pointer else {
+        return .failure(RustBridgeError(message: "Rust returned no result", kind: "empty"))
+    }
+    defer { voanisa_string_free(pointer) }
+
+    let text = String(cString: pointer)
+    guard let data = text.data(using: .utf8) else {
+        return .failure(RustBridgeError(message: "Rust returned invalid UTF-8", kind: "decode"))
+    }
+
+    do {
+        let envelope = try JSONDecoder().decode(RustEnvelope<T>.self, from: data)
+        if envelope.ok, let value = envelope.data {
+            return .success(value)
+        }
+        return .failure(RustBridgeError(
+            message: envelope.error ?? "Rust returned no data",
+            kind: envelope.kind
+        ))
+    } catch {
+        return .failure(RustBridgeError(
+            message: "Invalid response from Rust: \(error.localizedDescription)",
+            kind: "decode"
+        ))
+    }
 }
 
 struct RustTrack: Decodable, Identifiable {

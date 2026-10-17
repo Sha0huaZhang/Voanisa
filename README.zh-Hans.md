@@ -39,10 +39,12 @@
 
 MP3、AAC/ADTS、M4A、ALAC、FLAC、WAV、AIFF、CAF。
 
+Ogg Vorbis 与 Opus 由 Rust 核心（Symphonia + `opus-pure`）在进程内解码，再交给
+`AVAudioEngine` 播放。不依赖任何外部解码器程序、编解码包或 ffmpeg 安装。
+
 MP4/MOV 会作为纯音频 M4A 导入，视频轨道会被丢弃。
 
-Ogg Vorbis、Opus、WMA、APE、WavPack、DSF/DFF、Matroska/WebM 可以被识别，
-但会提示暂不支持；它们是后续 Rust 解码层的目标。
+WMA、APE、WavPack、DSF/DFF、Matroska/WebM 可以被文件头识别，但暂不支持解码。
 
 ## 曲库
 
@@ -98,16 +100,18 @@ python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
 
 ## 路线图
 
-1. Rust 可移植核心：文件头探测、SQLite 曲库、标签读写、用 Symphonia
-   解码 Ogg/Opus/WavPack。
+1. Rust 可移植核心：文件头探测、SQLite 曲库、标签读取，以及用
+   Symphonia/`opus-pure` 解码 Ogg 与 Opus。
 2. 歌单与专辑。
 3. 可选的 Apple Music 集成：把 Music 资料库合并进 Voanisa，并提供显式的
    导入/移除操作。
-4. 可选的 FFmpeg 模块，用于 WMA/APE/DSD。
+4. WMA、APE、WavPack、DSD 在出现合适的纯 Rust 解码器之前保持不支持；
+   Voanisa 不会打包或调用 ffmpeg。
 
 ## Rust 核心（进行中）
 
-- `Rust/voanisa-core` —— 文件头探测、SQLite 存储与曲库 CRUD
+- `Rust/voanisa-core` —— 文件头探测、SQLite 存储、曲库 CRUD，以及 Ogg/Opus
+  的流式 PCM 解码
 - `Rust/voanisa-ffi` —— 返回 JSON 的 C ABI，以静态库链接
 - Xcode 每次构建前自动运行 `Scripts/build-rust.sh`
 - 测试：`cargo test --manifest-path Rust/Cargo.toml --workspace`

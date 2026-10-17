@@ -34,6 +34,15 @@ impl ProbeResult {
     }
 }
 
+/// Container name from the file signature, or `unknown` when the file
+/// cannot be read.
+pub fn quick_container(path: &Path) -> String {
+    match probe_path(path) {
+        Ok(result) => result.container,
+        Err(_) => "unknown".to_string(),
+    }
+}
+
 /// Reads the first megabyte and identifies the container from its signature.
 ///
 /// The extension is never consulted. Codec-level detection is best-effort:
