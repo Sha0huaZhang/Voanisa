@@ -55,6 +55,9 @@ struct SongListView: View {
                             onEdit: { model.requestMetadataEdit(song) },
                             onShowInFinder: { library.showInFinder(song) },
                             onRemove: { model.requestDelete(song) },
+                            playlists: library.playlists,
+                            onAddToPlaylist: { model.add(song, to: $0) },
+                            onRemoveFromPlaylist: nil,
                             onDragChanged: { pointerY, startY, artwork in
                                 if draggingID != song.id {
                                     draggingID = song.id
@@ -210,7 +213,10 @@ struct SongRowView: View {
     let onPlay: () -> Void
     let onEdit: () -> Void
     let onShowInFinder: () -> Void
-    let onRemove: () -> Void
+    let onRemove: (() -> Void)?
+    let playlists: [Playlist]
+    let onAddToPlaylist: (Playlist) -> Void
+    let onRemoveFromPlaylist: (() -> Void)?
     let onDragChanged: (CGFloat, CGFloat, NSImage?) -> Void
     let onDragEnded: (CGFloat, CGFloat) -> Void
 
@@ -284,9 +290,28 @@ struct SongRowView: View {
         .contextMenu {
             Button("common.play", action: onPlay)
             Button("common.editMetadata", action: onEdit)
+
+            if !playlists.isEmpty {
+                Menu("common.addToPlaylist") {
+                    ForEach(playlists) { playlist in
+                        Button(playlist.name) {
+                            onAddToPlaylist(playlist)
+                        }
+                    }
+                }
+            }
+
             Button("common.showInFinder", action: onShowInFinder)
-            Divider()
-            Button("common.remove", role: .destructive, action: onRemove)
+
+            if let onRemoveFromPlaylist {
+                Divider()
+                Button("playlist.removeTrack", role: .destructive, action: onRemoveFromPlaylist)
+            }
+
+            if let onRemove {
+                Divider()
+                Button("common.remove", role: .destructive, action: onRemove)
+            }
         }
         .modifier(
             ReorderDragModifier(

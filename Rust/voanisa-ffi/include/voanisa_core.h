@@ -33,6 +33,11 @@ char *voanisa_update_track_json(const char *path, const char *payload);
 char *voanisa_delete_track_json(const char *path, const char *id);
 char *voanisa_reorder_tracks_json(const char *path, const char *payload);
 char *voanisa_sync_tracks_json(const char *path, const char *payload);
+char *voanisa_playlists_json(const char *path);
+char *voanisa_create_playlist_json(const char *path, const char *payload);
+char *voanisa_rename_playlist_json(const char *path, const char *payload);
+char *voanisa_delete_playlist_json(const char *path, const char *id);
+char *voanisa_set_playlist_tracks_json(const char *path, const char *payload);
 void voanisa_string_free(char *value);
 
 #ifdef __cplusplus

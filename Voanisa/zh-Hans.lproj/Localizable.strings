@@ -12,6 +12,11 @@
 "sidebar.about"     = "关于";
 "sidebar.settings"  = "设置";
 "sidebar.import"    = "导入音频";
+"sidebar.newPlaylist" = "新建歌单";
+"sidebar.playlistName" = "名称";
+"sidebar.deletePlaylist" = "删除歌单…";
+"sidebar.deletePlaylist.confirm.title" = "要删除这个歌单吗？";
+"sidebar.deletePlaylist.confirm.message" = "「%@」会被删除，歌曲仍保留在曲库中。";
 
 /* 搜索 */
 "search.placeholder" = "搜索歌曲";
@@ -35,6 +40,18 @@
 "playlists.comingSoon.hint"  = "原型阶段专注于导入、命名与播放本地音频。";
 "albums.comingSoon.title"    = "专辑功能即将推出";
 "albums.comingSoon.hint"     = "专辑将根据导入歌曲的元数据自动整理。";
+"albums.unknown"             = "未知专辑";
+"albums.empty.title"         = "还没有专辑";
+"albums.empty.hint"          = "当歌曲包含专辑信息后，专辑会自动出现在这里。";
+
+/* 歌单 */
+"playlist.playAll"     = "播放";
+"playlist.songCount"   = "%d 首";
+"playlist.empty.title" = "这个歌单还是空的";
+"playlist.empty.hint"  = "在歌曲的右键菜单中把它加入这个歌单。";
+"playlist.rename"      = "重命名歌单…";
+"playlist.removeTrack" = "从歌单移除";
+"playlist.missing"     = "找不到歌单";
 
 /* 导入 */
 "import.panel.title"   = "导入音频";
@@ -127,6 +144,10 @@
 "common.later"       = "稍后";
 "common.restart"     = "立即重启";
 "common.play"        = "播放";
+"common.create"      = "创建";
+"common.rename"      = "重命名";
+"common.back"        = "返回";
+"common.addToPlaylist" = "加入歌单";
 "common.editMetadata" = "编辑歌曲信息…";
 "common.showInFinder" = "在 Finder 中显示";
 "common.remove"      = "从曲库移除…";

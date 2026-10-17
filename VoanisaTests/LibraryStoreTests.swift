@@ -157,9 +157,14 @@ final class LibraryStoreTests: XCTestCase {
         a.source = "music"
         a.musicPersistentID = "persistent-id"
         let tracks = [a, makeTrack(title: "B")]
+        let playlist = Playlist(name: "Favorites", trackIDs: [a.id])
         let destination = directory.appendingPathComponent("export.json")
 
-        try LibraryStore.exportJSON(tracks, to: destination)
+        try LibraryStore.exportJSON(
+            tracks,
+            playlists: [playlist],
+            to: destination
+        )
 
         let snapshot = try JSONDecoder().decode(
             LibrarySnapshot.self,
@@ -167,6 +172,37 @@ final class LibraryStoreTests: XCTestCase {
         )
         XCTAssertEqual(snapshot.version, 1)
         XCTAssertEqual(snapshot.tracks, tracks)
+        XCTAssertEqual(snapshot.playlists, [playlist])
+    }
+
+    func testPlaylistsMigrateAndPersistAlongsideTracks() throws {
+        let track = makeTrack(title: "A")
+        let playlist = Playlist(name: "Favorites", trackIDs: [track.id])
+        try writeJSON([track], playlists: [playlist])
+
+        LibraryStore.migrateIfNeeded([track], databaseURL: databaseURL)
+        LibraryStore.migratePlaylistsIfNeeded(
+            [playlist],
+            tracks: [track],
+            databaseURL: databaseURL
+        )
+
+        XCTAssertEqual(
+            try RustStore.playlists(path: databaseURL).get().first?.trackIDs,
+            [track.id.uuidString]
+        )
+        XCTAssertEqual(
+            LibraryStore.loadPlaylists(databaseURL: databaseURL, jsonURL: jsonURL),
+            [playlist]
+        )
+
+        // A track-only save keeps the SQLite playlists in the JSON backup.
+        try LibraryStore.save([track], databaseURL: databaseURL, jsonURL: jsonURL)
+        let snapshot = try JSONDecoder().decode(
+            LibrarySnapshot.self,
+            from: Data(contentsOf: jsonURL)
+        )
+        XCTAssertEqual(snapshot.playlists, [playlist])
     }
 
     func testFullMetadataRoundTripsThroughSQLite() throws {
@@ -204,8 +240,11 @@ final class LibraryStoreTests: XCTestCase {
         XCTAssertEqual(try RustStore.tracks(path: databaseURL).get().count, 2)
     }
 
-    private func writeJSON(_ tracks: [Track]) throws {
-        let snapshot = LibrarySnapshot(tracks: tracks)
+    private func writeJSON(
+        _ tracks: [Track],
+        playlists: [Playlist] = []
+    ) throws {
+        let snapshot = LibrarySnapshot(tracks: tracks, playlists: playlists)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         try encoder.encode(snapshot).write(to: jsonURL, options: .atomic)

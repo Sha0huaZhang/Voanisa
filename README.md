@@ -28,6 +28,8 @@ dependency and no files written outside the library.
 - Give every song a title, artist, album, album artist, track/disc number and a
   square cover with pan/zoom crop
 - Edit metadata and replace or remove the cover at any time from the row menu
+- Create playlists, add or remove songs, rename and delete them
+- Browse albums grouped automatically from album and album-artist tags
 - Songs without a cover use a gray music-note placeholder everywhere
 - Copy audio into `~/Music/Voanisa`, leaving the originals untouched
 - Local playback with play/pause, previous/next, seek, volume, repeat and media keys

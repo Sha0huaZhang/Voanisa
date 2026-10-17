@@ -13,6 +13,11 @@
 "sidebar.about"     = "About";
 "sidebar.settings"  = "Settings";
 "sidebar.import"    = "Import Audio";
+"sidebar.newPlaylist" = "New Playlist";
+"sidebar.playlistName" = "Name";
+"sidebar.deletePlaylist" = "Delete Playlist…";
+"sidebar.deletePlaylist.confirm.title" = "Delete this playlist?";
+"sidebar.deletePlaylist.confirm.message" = "“%@” will be deleted. The songs stay in the library.";
 
 /* Search */
 "search.placeholder" = "Search songs";
@@ -36,6 +41,18 @@
 "playlists.comingSoon.hint"  = "The prototype focuses on importing, naming and playing local audio.";
 "albums.comingSoon.title"    = "Albums are coming soon";
 "albums.comingSoon.hint"     = "Albums will be built from the metadata of imported songs.";
+"albums.unknown"             = "Unknown Album";
+"albums.empty.title"         = "No albums yet";
+"albums.empty.hint"          = "Albums appear automatically when songs have album metadata.";
+
+/* Playlists */
+"playlist.playAll"     = "Play";
+"playlist.songCount"   = "%d songs";
+"playlist.empty.title" = "This playlist is empty";
+"playlist.empty.hint"  = "Use a song's context menu to add it to this playlist.";
+"playlist.rename"      = "Rename Playlist…";
+"playlist.removeTrack" = "Remove from Playlist";
+"playlist.missing"     = "Playlist not found";
 
 /* Import */
 "import.panel.title"   = "Import Audio";
@@ -128,6 +145,10 @@
 "common.later"    = "Later";
 "common.restart"  = "Restart Now";
 "common.play"     = "Play";
+"common.create"   = "Create";
+"common.rename"   = "Rename";
+"common.back"     = "Back";
+"common.addToPlaylist" = "Add to Playlist";
 "common.editMetadata" = "Edit Metadata…";
 "common.showInFinder" = "Show in Finder";
 "common.remove"   = "Remove from Library…";

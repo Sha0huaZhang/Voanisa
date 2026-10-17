@@ -8,6 +8,31 @@ import Foundation
 struct LibrarySnapshot: Codable {
     var version: Int = 1
     var tracks: [Track]
+    var playlists: [Playlist] = []
+
+    init(version: Int = 1, tracks: [Track], playlists: [Playlist] = []) {
+        self.version = version
+        self.tracks = tracks
+        self.playlists = playlists
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case version, tracks, playlists
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        version = try container.decodeIfPresent(Int.self, forKey: .version) ?? 1
+        tracks = try container.decode([Track].self, forKey: .tracks)
+        playlists = try container.decodeIfPresent([Playlist].self, forKey: .playlists) ?? []
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(version, forKey: .version)
+        try container.encode(tracks, forKey: .tracks)
+        try container.encode(playlists, forKey: .playlists)
+    }
 }
 
 enum LibraryStore {
@@ -35,13 +60,43 @@ enum LibraryStore {
                 Diagnostics.error(error.localizedDescription, context: "library.sqlite.read")
             }
         }
-        return loadJSON(url: jsonURL)
+        return loadSnapshot(url: jsonURL)?.tracks ?? []
     }
 
-    static func save(_ tracks: [Track]) throws {
+    /// Loads playlists, preferring SQLite and falling back to the JSON snapshot
+    /// for libraries created before playlists existed.
+    static func loadPlaylists() -> [Playlist] {
+        loadPlaylists(
+            databaseURL: LibraryLocation.databaseURL,
+            jsonURL: LibraryLocation.libraryFileURL
+        )
+    }
+
+    static func loadPlaylists(databaseURL: URL, jsonURL: URL) -> [Playlist] {
+        if let playlists = playlistsFromDatabase(path: databaseURL), !playlists.isEmpty {
+            Diagnostics.log("Loaded \(playlists.count) playlists from SQLite")
+            return playlists
+        }
+        return loadSnapshot(url: jsonURL)?.playlists ?? []
+    }
+
+    private static func playlistsFromDatabase(path: URL) -> [Playlist]? {
+        guard FileManager.default.fileExists(atPath: path.path) else { return nil }
+
+        switch RustStore.playlists(path: path) {
+        case .success(let records):
+            return records.compactMap { playlist(from: $0) }
+        case .failure(let error):
+            Diagnostics.error(error.localizedDescription, context: "library.playlists.read")
+            return nil
+        }
+    }
+
+    static func save(_ tracks: [Track], playlists: [Playlist]? = nil) throws {
         try LibraryLocation.ensureDirectories()
         try save(
             tracks,
+            playlists: playlists,
             databaseURL: LibraryLocation.databaseURL,
             jsonURL: LibraryLocation.libraryFileURL
         )
@@ -52,7 +107,12 @@ enum LibraryStore {
     /// If the database cannot be written it is moved aside and the snapshot is
     /// still saved, so a broken database neither blocks persistence nor gets
     /// preferred over the snapshot on the next launch.
-    static func save(_ tracks: [Track], databaseURL: URL, jsonURL: URL) throws {
+    static func save(
+        _ tracks: [Track],
+        playlists: [Playlist]? = nil,
+        databaseURL: URL,
+        jsonURL: URL
+    ) throws {
         var databaseError: Error?
         do {
             try saveDatabase(tracks, path: databaseURL)
@@ -61,7 +121,18 @@ enum LibraryStore {
             discardDatabase(at: databaseURL)
         }
 
-        try saveJSON(tracks, url: jsonURL)
+        let playlistsToWrite = playlists
+            ?? playlistsFromDatabase(path: databaseURL)
+            ?? loadSnapshot(url: jsonURL)?.playlists
+            ?? []
+        let trackIDs = Set(tracks.map(\.id))
+        let reconciled = playlistsToWrite.map { playlist in
+            var copy = playlist
+            copy.trackIDs = copy.trackIDs.filter(trackIDs.contains)
+            return copy
+        }
+
+        try saveJSON(tracks: tracks, playlists: reconciled, url: jsonURL)
 
         if let databaseError {
             throw databaseError
@@ -69,8 +140,12 @@ enum LibraryStore {
     }
 
     /// Writes a portable snapshot to an arbitrary location.
-    static func exportJSON(_ tracks: [Track], to url: URL) throws {
-        try saveJSON(tracks, url: url)
+    static func exportJSON(
+        _ tracks: [Track],
+        playlists: [Playlist] = [],
+        to url: URL
+    ) throws {
+        try saveJSON(tracks: tracks, playlists: playlists, url: url)
     }
 
     /// Imports an existing `library.json` into an empty database.
@@ -92,8 +167,62 @@ enum LibraryStore {
         }
     }
 
-    private static func saveJSON(_ tracks: [Track], url: URL) throws {
-        let snapshot = LibrarySnapshot(tracks: tracks)
+    /// Migrates playlist snapshots after their tracks are present in SQLite.
+    static func migratePlaylistsIfNeeded(_ playlists: [Playlist], tracks: [Track]) {
+        migratePlaylistsIfNeeded(
+            playlists,
+            tracks: tracks,
+            databaseURL: LibraryLocation.databaseURL
+        )
+    }
+
+    static func migratePlaylistsIfNeeded(
+        _ playlists: [Playlist],
+        tracks: [Track],
+        databaseURL: URL
+    ) {
+        guard !playlists.isEmpty else { return }
+        do {
+            let existing = try RustStore.playlists(path: databaseURL).get()
+            guard existing.isEmpty else { return }
+
+            let validIDs = Set(tracks.map(\.id))
+            for playlist in playlists {
+                let name = playlist.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !name.isEmpty else { continue }
+
+                _ = try RustStore.createPlaylist(
+                    path: databaseURL,
+                    id: playlist.id.uuidString,
+                    name: name
+                ).get()
+
+                let trackIDs = playlist.trackIDs
+                    .filter(validIDs.contains)
+                    .map(\.uuidString)
+                if !trackIDs.isEmpty {
+                    try RustStore.setPlaylistTracks(
+                        path: databaseURL,
+                        id: playlist.id.uuidString,
+                        trackIDs: trackIDs
+                    ).get()
+                }
+            }
+            Diagnostics.log("Migrated \(playlists.count) playlists to SQLite")
+        } catch {
+            Diagnostics.error(
+                error.localizedDescription,
+                context: "library.playlists.migrate"
+            )
+        }
+    }
+
+    private static func saveJSON(
+        tracks: [Track],
+        playlists: [Playlist],
+        url: URL
+    ) throws {
+        let snapshot = LibrarySnapshot(tracks: tracks, playlists: playlists)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         let data = try encoder.encode(snapshot)
@@ -125,12 +254,24 @@ enum LibraryStore {
         }
     }
 
-    private static func loadJSON(url: URL) -> [Track] {
+    private static func loadSnapshot(url: URL) -> LibrarySnapshot? {
         guard let data = try? Data(contentsOf: url),
               let snapshot = try? JSONDecoder().decode(LibrarySnapshot.self, from: data) else {
-            return []
+            return nil
         }
-        return snapshot.tracks
+        return snapshot
+    }
+
+    private static func playlist(from record: RustPlaylist) -> Playlist? {
+        guard let id = UUID(uuidString: record.id) else {
+            Diagnostics.error(
+                "Ignoring playlist with invalid id: \(record.id)",
+                context: "library.sqlite"
+            )
+            return nil
+        }
+        let trackIDs = record.trackIDs.compactMap { UUID(uuidString: $0) }
+        return Playlist(id: id, name: record.name, trackIDs: trackIDs)
     }
 
     /// Converts a SQLite row into the UI model.

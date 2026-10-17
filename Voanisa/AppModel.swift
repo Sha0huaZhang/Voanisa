@@ -131,6 +131,32 @@ final class AppModel: ObservableObject {
         metadataTarget = nil
     }
 
+    // MARK: - Playlists
+
+    @discardableResult
+    func createPlaylist(name: String) -> Playlist? {
+        library.createPlaylist(name: name)
+    }
+
+    func renamePlaylist(_ playlist: Playlist, to name: String) {
+        library.renamePlaylist(playlist, to: name)
+    }
+
+    func deletePlaylist(_ playlist: Playlist) {
+        if selection == .playlist(playlist.id) {
+            selection = .songs
+        }
+        library.deletePlaylist(playlist)
+    }
+
+    func add(_ track: Track, to playlist: Playlist) {
+        library.add(track, to: playlist.id)
+    }
+
+    func remove(_ track: Track, from playlist: Playlist) {
+        library.remove(track, from: playlist.id)
+    }
+
     // MARK: - Import
 
     func applyImport(_ outcome: ImportOutcome) {

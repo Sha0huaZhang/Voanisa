@@ -11,6 +11,7 @@ pub enum StoreError {
     UnsupportedSchema { found: i32, supported: i32 },
     InvalidReorder,
     DuplicateTrack,
+    InvalidPlaylistName,
     NotFound,
 }
 
@@ -25,8 +26,11 @@ impl fmt::Display for StoreError {
             StoreError::InvalidReorder => {
                 write!(formatter, "reorder must contain every track exactly once")
             }
+            StoreError::InvalidPlaylistName => {
+                write!(formatter, "playlist name cannot be empty")
+            }
             StoreError::DuplicateTrack => write!(formatter, "track list contains duplicate ids"),
-            StoreError::NotFound => write!(formatter, "track not found"),
+            StoreError::NotFound => write!(formatter, "not found"),
         }
     }
 }
@@ -177,7 +181,10 @@ mod tests {
     #[test]
     fn migration_creates_tables_and_sets_version() {
         let store = Store::open_in_memory().expect("open in-memory store");
-        assert_eq!(store.schema_version().expect("schema version"), CURRENT_SCHEMA_VERSION);
+        assert_eq!(
+            store.schema_version().expect("schema version"),
+            CURRENT_SCHEMA_VERSION
+        );
 
         for table in ["tracks", "playlists", "playlist_items", "settings"] {
             assert!(
@@ -191,7 +198,10 @@ mod tests {
     fn migration_is_idempotent() {
         let store = Store::open_in_memory().expect("open in-memory store");
         migrate(store.connection()).expect("second migration");
-        assert_eq!(store.schema_version().expect("schema version"), CURRENT_SCHEMA_VERSION);
+        assert_eq!(
+            store.schema_version().expect("schema version"),
+            CURRENT_SCHEMA_VERSION
+        );
     }
 
     #[test]
@@ -204,7 +214,10 @@ mod tests {
         let result = Store::from_connection(connection);
         assert!(matches!(
             result,
-            Err(StoreError::UnsupportedSchema { found: 99, supported: 1 })
+            Err(StoreError::UnsupportedSchema {
+                found: 99,
+                supported: 1
+            })
         ));
     }
 

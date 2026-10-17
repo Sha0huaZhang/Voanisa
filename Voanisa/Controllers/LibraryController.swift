@@ -6,6 +6,7 @@ import Foundation
 @MainActor
 final class LibraryController: ObservableObject {
     @Published private(set) var tracks: [Track] = []
+    @Published private(set) var playlists: [Playlist] = []
     @Published var searchText = ""
 
     var onError: ((String) -> Void)?
@@ -20,6 +21,8 @@ final class LibraryController: ObservableObject {
         }
         tracks = LibraryStore.load()
         LibraryStore.migrateIfNeeded(tracks)
+        playlists = LibraryStore.loadPlaylists()
+        LibraryStore.migratePlaylistsIfNeeded(playlists, tracks: tracks)
     }
 
     var visibleTracks: [Track] {
@@ -43,7 +46,7 @@ final class LibraryController: ObservableObject {
 
     func save() {
         do {
-            try LibraryStore.save(tracks)
+            try LibraryStore.save(tracks, playlists: playlists)
         } catch {
             Diagnostics.error(error.localizedDescription, context: "library.save")
             onError?(error.localizedDescription)
@@ -52,7 +55,7 @@ final class LibraryController: ObservableObject {
 
     func exportLibrary(to url: URL) {
         do {
-            try LibraryStore.exportJSON(tracks, to: url)
+            try LibraryStore.exportJSON(tracks, playlists: playlists, to: url)
             Diagnostics.log("Exported \(tracks.count) tracks to \(url.path)")
         } catch {
             Diagnostics.error(error.localizedDescription, context: "library.export")
@@ -135,6 +138,114 @@ final class LibraryController: ObservableObject {
         }
     }
 
+    // MARK: - Playlists
+
+    func playlist(id: UUID) -> Playlist? {
+        playlists.first { $0.id == id }
+    }
+
+    func tracks(in playlist: Playlist) -> [Track] {
+        playlist.trackIDs.compactMap { track(id: $0) }
+    }
+
+    @discardableResult
+    func createPlaylist(name: String) -> Playlist? {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+
+        let playlist = Playlist(name: trimmed)
+        do {
+            _ = try RustStore.createPlaylist(
+                path: LibraryLocation.databaseURL,
+                id: playlist.id.uuidString,
+                name: playlist.name
+            ).get()
+            playlists.append(playlist)
+            save()
+            Diagnostics.log("创建歌单《\(playlist.name)》")
+            return playlist
+        } catch {
+            reportPlaylistError(error, context: "library.playlist.create")
+            return nil
+        }
+    }
+
+    func renamePlaylist(_ playlist: Playlist, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty,
+              let index = playlists.firstIndex(where: { $0.id == playlist.id }) else {
+            return
+        }
+
+        do {
+            try RustStore.renamePlaylist(
+                path: LibraryLocation.databaseURL,
+                id: playlist.id.uuidString,
+                name: trimmed
+            ).get()
+            playlists[index].name = trimmed
+            save()
+        } catch {
+            reportPlaylistError(error, context: "library.playlist.rename")
+        }
+    }
+
+    func deletePlaylist(_ playlist: Playlist) {
+        do {
+            _ = try RustStore.deletePlaylist(
+                path: LibraryLocation.databaseURL,
+                id: playlist.id.uuidString
+            ).get()
+            playlists.removeAll { $0.id == playlist.id }
+            save()
+            Diagnostics.log("删除歌单《\(playlist.name)》")
+        } catch {
+            reportPlaylistError(error, context: "library.playlist.delete")
+        }
+    }
+
+    func add(_ track: Track, to playlistID: UUID) {
+        guard let playlist = playlist(id: playlistID),
+              !playlist.trackIDs.contains(track.id) else {
+            return
+        }
+        setPlaylistTracks(playlist.trackIDs + [track.id], for: playlistID)
+    }
+
+    func remove(_ track: Track, from playlistID: UUID) {
+        guard let playlist = playlist(id: playlistID) else { return }
+        setPlaylistTracks(
+            playlist.trackIDs.filter { $0 != track.id },
+            for: playlistID
+        )
+    }
+
+    private func setPlaylistTracks(_ trackIDs: [UUID], for playlistID: UUID) {
+        guard let index = playlists.firstIndex(where: { $0.id == playlistID }) else {
+            return
+        }
+
+        var seen = Set<UUID>()
+        let unique = trackIDs.filter { seen.insert($0).inserted }
+
+        do {
+            try RustStore.setPlaylistTracks(
+                path: LibraryLocation.databaseURL,
+                id: playlistID.uuidString,
+                trackIDs: unique.map(\.uuidString)
+            ).get()
+            playlists[index].trackIDs = unique
+            save()
+        } catch {
+            reportPlaylistError(error, context: "library.playlist.tracks")
+        }
+    }
+
+    private func reportPlaylistError(_ error: Error, context: String) {
+        Diagnostics.error(error.localizedDescription, context: context)
+        onError?(error.localizedDescription)
+    }
+
     private func removeOriginalCovers(for id: UUID, keeping keptName: String? = nil) {
         guard let files = try? FileManager.default.contentsOfDirectory(
             at: LibraryLocation.originalCoversURL,
@@ -154,6 +265,9 @@ final class LibraryController: ObservableObject {
 
     func remove(_ track: Track) {
         tracks.removeAll { $0.id == track.id }
+        for index in playlists.indices {
+            playlists[index].trackIDs.removeAll { $0 == track.id }
+        }
         save()
 
         do {

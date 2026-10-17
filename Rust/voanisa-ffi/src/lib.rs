@@ -1,11 +1,29 @@
 use serde::de::DeserializeOwned;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 use voanisa_core::{probe_path, NewTrack, ProbeResult, Store, StoreError, TrackUpdate};
+
+#[derive(Deserialize)]
+struct NewPlaylistPayload {
+    id: String,
+    name: String,
+}
+
+#[derive(Deserialize)]
+struct RenamePlaylistPayload {
+    id: String,
+    name: String,
+}
+
+#[derive(Deserialize)]
+struct PlaylistTracksPayload {
+    playlist_id: String,
+    track_ids: Vec<String>,
+}
 
 const VERSION: &str = concat!(env!("CARGO_PKG_VERSION"), "\0");
 
@@ -214,6 +232,122 @@ pub extern "C" fn voanisa_sync_tracks_json(
 }
 
 #[no_mangle]
+pub extern "C" fn voanisa_playlists_json(path: *const c_char) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || {
+        with_store(&path, |store| match store.list_playlists() {
+            Ok(playlists) => success_json(&playlists),
+            Err(error) => store_error_json(&error),
+        })
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn voanisa_create_playlist_json(
+    path: *const c_char,
+    payload: *const c_char,
+) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let payload = match c_string_arg(payload, "payload") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || match parse_json::<NewPlaylistPayload>(&payload) {
+        Ok(payload) => with_store(&path, |store| {
+            match store.create_playlist(&payload.id, &payload.name) {
+                Ok(playlist) => success_json(&playlist),
+                Err(error) => store_error_json(&error),
+            }
+        }),
+        Err(error) => message_error_json(&error, "invalid_json"),
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn voanisa_rename_playlist_json(
+    path: *const c_char,
+    payload: *const c_char,
+) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let payload = match c_string_arg(payload, "payload") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(
+        move || match parse_json::<RenamePlaylistPayload>(&payload) {
+            Ok(payload) => with_store(&path, |store| {
+                match store.rename_playlist(&payload.id, &payload.name) {
+                    Ok(()) => ok_json(),
+                    Err(error) => store_error_json(&error),
+                }
+            }),
+            Err(error) => message_error_json(&error, "invalid_json"),
+        },
+    )
+}
+
+#[no_mangle]
+pub extern "C" fn voanisa_delete_playlist_json(
+    path: *const c_char,
+    id: *const c_char,
+) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let id = match c_string_arg(id, "id") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || {
+        with_store(&path, |store| match store.delete_playlist(&id) {
+            Ok(deleted) => success_json(&json!({ "deleted": deleted })),
+            Err(error) => store_error_json(&error),
+        })
+    })
+}
+
+#[no_mangle]
+pub extern "C" fn voanisa_set_playlist_tracks_json(
+    path: *const c_char,
+    payload: *const c_char,
+) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let payload = match c_string_arg(payload, "payload") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(
+        move || match parse_json::<PlaylistTracksPayload>(&payload) {
+            Ok(payload) => with_store(&path, |store| {
+                match store.set_playlist_tracks(&payload.playlist_id, &payload.track_ids) {
+                    Ok(()) => ok_json(),
+                    Err(error) => store_error_json(&error),
+                }
+            }),
+            Err(error) => message_error_json(&error, "invalid_json"),
+        },
+    )
+}
+
+#[no_mangle]
 pub extern "C" fn voanisa_string_free(value: *mut c_char) {
     if !value.is_null() {
         unsafe {
@@ -259,6 +393,7 @@ fn store_error_json(error: &StoreError) -> String {
         StoreError::NotFound => "not_found",
         StoreError::InvalidReorder => "invalid_reorder",
         StoreError::DuplicateTrack => "duplicate_track",
+        StoreError::InvalidPlaylistName => "invalid_name",
         StoreError::UnsupportedSchema { .. } => "schema",
         StoreError::Sqlite(_) => "sqlite",
     };
@@ -434,6 +569,75 @@ mod tests {
         ));
         assert_eq!(result["ok"], false);
         assert_eq!(result["kind"], "duplicate_track");
+
+        std::fs::remove_file(path).ok();
+    }
+
+    #[test]
+    fn playlist_roundtrip_through_c_abi() {
+        let path = temp_db();
+        let path_c = c(path.to_string_lossy().as_ref());
+
+        let batch = c(&format!(
+            "[{},{}]",
+            track_json("a", "A"),
+            track_json("b", "B")
+        ));
+        assert_eq!(
+            take(voanisa_insert_tracks_json(path_c.as_ptr(), batch.as_ptr()))["ok"],
+            true
+        );
+
+        let create = c(&json!({ "id": "p1", "name": "Favorites" }).to_string());
+        let created = take(voanisa_create_playlist_json(
+            path_c.as_ptr(),
+            create.as_ptr(),
+        ));
+        assert_eq!(created["ok"], true);
+        assert_eq!(created["data"]["name"], "Favorites");
+        assert!(created["data"]["track_ids"]
+            .as_array()
+            .expect("array")
+            .is_empty());
+
+        let set = c(&json!({
+            "playlist_id": "p1",
+            "track_ids": ["b", "a"]
+        })
+        .to_string());
+        assert_eq!(
+            take(voanisa_set_playlist_tracks_json(
+                path_c.as_ptr(),
+                set.as_ptr()
+            ))["ok"],
+            true
+        );
+
+        let listed = take(voanisa_playlists_json(path_c.as_ptr()));
+        assert_eq!(listed["data"][0]["track_ids"], json!(["b", "a"]));
+
+        let rename = c(&json!({ "id": "p1", "name": "Best" }).to_string());
+        assert_eq!(
+            take(voanisa_rename_playlist_json(
+                path_c.as_ptr(),
+                rename.as_ptr()
+            ))["ok"],
+            true
+        );
+
+        let invalid = c(&json!({ "id": "p2", "name": " " }).to_string());
+        let invalid_result = take(voanisa_create_playlist_json(
+            path_c.as_ptr(),
+            invalid.as_ptr(),
+        ));
+        assert_eq!(invalid_result["ok"], false);
+        assert_eq!(invalid_result["kind"], "invalid_name");
+
+        let deleted = take(voanisa_delete_playlist_json(
+            path_c.as_ptr(),
+            c("p1").as_ptr(),
+        ));
+        assert_eq!(deleted["data"]["deleted"], true);
 
         std::fs::remove_file(path).ok();
     }

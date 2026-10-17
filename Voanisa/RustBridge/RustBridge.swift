@@ -123,6 +123,39 @@ struct RustTrackUpdate: Encodable {
     }
 }
 
+struct RustPlaylist: Decodable, Identifiable {
+    let id: String
+    let name: String
+    let sortIndex: Int
+    let trackIDs: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case id, name
+        case sortIndex = "sort_index"
+        case trackIDs = "track_ids"
+    }
+}
+
+struct RustNewPlaylist: Encodable {
+    let id: String
+    let name: String
+}
+
+private struct RustRenamePlaylist: Encodable {
+    let id: String
+    let name: String
+}
+
+private struct RustPlaylistTracks: Encodable {
+    let playlistID: String
+    let trackIDs: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case playlistID = "playlist_id"
+        case trackIDs = "track_ids"
+    }
+}
+
 struct RustBridgeError: LocalizedError, Equatable {
     let message: String
     let kind: String?
@@ -143,8 +176,8 @@ private struct RustSchemaVersion: Decodable { let version: Int }
 
 /// Swift access to the Rust SQLite library.
 ///
-/// The Swift app does not read from this store yet; M1-3 only exposes and tests
-/// the bridge.
+/// Requests and responses travel as JSON, so Rust layout changes never break
+/// the Swift side.
 enum RustStore {
     static func schemaVersion(path: URL) -> Result<Int, RustBridgeError> {
         path.path.withCString { pathPointer in
@@ -202,6 +235,59 @@ enum RustStore {
     static func syncTracks(path: URL, tracks: [RustNewTrack]) -> Result<Void, RustBridgeError> {
         withEncodedVoid(path: path, value: tracks) { pathPointer, payloadPointer in
             voanisa_sync_tracks_json(pathPointer, payloadPointer)
+        }
+    }
+
+    static func playlists(path: URL) -> Result<[RustPlaylist], RustBridgeError> {
+        path.path.withCString { pathPointer in
+            let result: Result<[RustPlaylist], RustBridgeError> =
+                decode(voanisa_playlists_json(pathPointer))
+            return result
+        }
+    }
+
+    static func createPlaylist(
+        path: URL,
+        id: String,
+        name: String
+    ) -> Result<RustPlaylist, RustBridgeError> {
+        withEncoded(path: path, value: RustNewPlaylist(id: id, name: name)) {
+            pathPointer, payloadPointer in
+            voanisa_create_playlist_json(pathPointer, payloadPointer)
+        }
+    }
+
+    static func renamePlaylist(
+        path: URL,
+        id: String,
+        name: String
+    ) -> Result<Void, RustBridgeError> {
+        withEncodedVoid(path: path, value: RustRenamePlaylist(id: id, name: name)) {
+            pathPointer, payloadPointer in
+            voanisa_rename_playlist_json(pathPointer, payloadPointer)
+        }
+    }
+
+    static func deletePlaylist(path: URL, id: String) -> Result<Bool, RustBridgeError> {
+        path.path.withCString { pathPointer in
+            id.withCString { idPointer in
+                let result: Result<RustDeleteResult, RustBridgeError> =
+                    decode(voanisa_delete_playlist_json(pathPointer, idPointer))
+                return result.map(\.deleted)
+            }
+        }
+    }
+
+    static func setPlaylistTracks(
+        path: URL,
+        id: String,
+        trackIDs: [String]
+    ) -> Result<Void, RustBridgeError> {
+        withEncodedVoid(
+            path: path,
+            value: RustPlaylistTracks(playlistID: id, trackIDs: trackIDs)
+        ) { pathPointer, payloadPointer in
+            voanisa_set_playlist_tracks_json(pathPointer, payloadPointer)
         }
     }
 

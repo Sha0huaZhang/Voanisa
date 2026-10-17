@@ -60,4 +60,63 @@ final class RustStoreTests: XCTestCase {
 
         XCTAssertThrowsError(try RustStore.reorderTracks(path: database, ids: ["a"]).get())
     }
+
+    func testPlaylistCrudThroughBridge() throws {
+        let (directory, database) = try makeDatabaseURL()
+        defer { try? FileManager.default.removeItem(at: directory) }
+
+        let playlistID = UUID()
+        let firstTrack = UUID()
+        let secondTrack = UUID()
+
+        let created = try RustStore.createPlaylist(
+            path: database,
+            id: playlistID.uuidString,
+            name: "Favorites"
+        ).get()
+        XCTAssertEqual(created.name, "Favorites")
+        XCTAssertTrue(created.trackIDs.isEmpty)
+
+        let batch = [
+            RustNewTrack(
+                id: firstTrack.uuidString,
+                title: "A",
+                fileName: "a.mp3",
+                contentHash: "hash-a",
+                dateAdded: 0
+            ),
+            RustNewTrack(
+                id: secondTrack.uuidString,
+                title: "B",
+                fileName: "b.mp3",
+                contentHash: "hash-b",
+                dateAdded: 0
+            )
+        ]
+        _ = try RustStore.insertTracks(path: database, tracks: batch).get()
+
+        try RustStore.setPlaylistTracks(
+            path: database,
+            id: playlistID.uuidString,
+            trackIDs: [secondTrack.uuidString, firstTrack.uuidString]
+        ).get()
+
+        let playlists = try RustStore.playlists(path: database).get()
+        XCTAssertEqual(playlists.first?.trackIDs, [
+            secondTrack.uuidString,
+            firstTrack.uuidString
+        ])
+
+        try RustStore.renamePlaylist(
+            path: database,
+            id: playlistID.uuidString,
+            name: "Best"
+        ).get()
+        XCTAssertEqual(try RustStore.playlists(path: database).get().first?.name, "Best")
+
+        XCTAssertTrue(
+            try RustStore.deletePlaylist(path: database, id: playlistID.uuidString).get()
+        )
+        XCTAssertTrue(try RustStore.playlists(path: database).get().isEmpty)
+    }
 }

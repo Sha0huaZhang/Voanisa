@@ -20,6 +20,7 @@ struct ContentView: View {
                     get: { model.library.searchText },
                     set: { model.library.searchText = $0 }
                 ),
+                library: model.library,
                 onImport: imports.presentPanel
             )
             .navigationSplitViewColumnWidth(min: 170, ideal: 195, max: 240)
@@ -92,18 +93,16 @@ struct ContentView: View {
             AboutView()
         case .settings:
             SettingsView(library: model.library)
-        case .playlists:
-            ComingSoonView(
-                systemImage: "music.note.list",
-                title: "playlists.comingSoon.title",
-                message: "playlists.comingSoon.hint"
-            )
+        case .playlist(let id):
+            if let playlist = model.library.playlist(id: id) {
+                PlaylistDetailView(model: model, playlist: playlist)
+            } else {
+                Text("playlist.missing")
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
         case .albums:
-            ComingSoonView(
-                systemImage: "square.stack",
-                title: "albums.comingSoon.title",
-                message: "albums.comingSoon.hint"
-            )
+            AlbumsView(model: model)
         }
     }
 
