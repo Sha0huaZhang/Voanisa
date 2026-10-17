@@ -7,11 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */; };
 		06FA81E68087FE42112863FE /* CoverCropSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */; };
 		12D39F9440F68B8067E99126 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8867802AF5F8F4AF6ED77AEB /* AboutView.swift */; };
 		22C069C639DF4C2223C66852 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */; };
 		241DED57074D7855241D9508 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78A5103C669CC124AA58FD8 /* AppLanguage.swift */; };
 		26B7EBB50D6BFDBEB704A6B0 /* MediaKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BDAEF8412E70FBF89679BA1 /* MediaKeys.swift */; };
+		27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */; };
 		2F346090BC606BA297B5AD3C /* VoanisaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */; };
 		362F92813E9277E36C76DE79 /* PlayerControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE37896B19738772798DF38F /* PlayerControlBar.swift */; };
 		3E9272BD23A962650666F496 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */; };
@@ -28,11 +30,22 @@
 		A235AB71F7EB16567095709B /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */; };
 		B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF6A0D8A6BC6D1249699E8B /* ImportService.swift */; };
 		DF7166D0D0DD4E7713254DF8 /* LibraryLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A9C72705F2B739CDC513CB /* LibraryLocation.swift */; };
+		E886B0631CEB759D89108AAB /* SongSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */; };
 		F1F8C9F3B90E585760425C7C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3C0C450A883CEDC15B816 /* SettingsView.swift */; };
 		F7B1D96304039ECA39B3779B /* SidebarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1084173A90E1515DE94BE17A /* SidebarItem.swift */; };
 		FA3A1BD08CB442BD70BEB990 /* RustBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94D53DE54028716072D24A5 /* RustBridge.swift */; };
 		FE3657F0CF518113ABF77A40 /* CoverRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0708AC330AC503799CA8E67D /* CoverRenderer.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		45EC9A1B160A0E167C2ABD0F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7BD5EFDF99BFD33A99E75D6B /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 32996F53ED725AC78ACFCB70;
+			remoteInfo = Voanisa;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		054D7035A4AE5E29505217C2 /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
@@ -44,9 +57,12 @@
 		2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		39A9C72705F2B739CDC513CB /* LibraryLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryLocation.swift; sourceTree = "<group>"; };
 		3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSearchTests.swift; sourceTree = "<group>"; };
 		4D4CC0E75A8D823D1D352489 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoanisaApp.swift; sourceTree = "<group>"; };
 		57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
+		6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioContainerTests.swift; sourceTree = "<group>"; };
+		7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongReorderTests.swift; sourceTree = "<group>"; };
 		8867802AF5F8F4AF6ED77AEB /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		8F1C9EBD04E91C89BC1751CA /* Voanisa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Voanisa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		924F8E972CC81A146559280E /* SongListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongListView.swift; sourceTree = "<group>"; };
@@ -63,6 +79,7 @@
 		DFDF6E0C9C37083BC9C1BD87 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E94D53DE54028716072D24A5 /* RustBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBridge.swift; sourceTree = "<group>"; };
 		E9C7B03E0CA8E22F019C8649 /* AudioProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProbe.swift; sourceTree = "<group>"; };
+		F4CCEAF9274FB5109B27A03C /* VoanisaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoanisaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -102,6 +119,7 @@
 			isa = PBXGroup;
 			children = (
 				1F13126B53B70004A28AC68D /* Voanisa */,
+				DB0826AC58D238EA56728CD4 /* VoanisaTests */,
 				B350993EDAB235FA1F3F8D84 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -129,8 +147,19 @@
 			isa = PBXGroup;
 			children = (
 				8F1C9EBD04E91C89BC1751CA /* Voanisa.app */,
+				F4CCEAF9274FB5109B27A03C /* VoanisaTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DB0826AC58D238EA56728CD4 /* VoanisaTests */ = {
+			isa = PBXGroup;
+			children = (
+				6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */,
+				7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */,
+				4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */,
+			);
+			path = VoanisaTests;
 			sourceTree = "<group>";
 		};
 		DE94147DF21FADBF232BF037 /* RustBridge */ = {
@@ -177,6 +206,24 @@
 			productReference = 8F1C9EBD04E91C89BC1751CA /* Voanisa.app */;
 			productType = "com.apple.product-type.application";
 		};
+		9759AC4BE81293E6F95D024B /* VoanisaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 776ADAFCFC4D51C34AE84D10 /* Build configuration list for PBXNativeTarget "VoanisaTests" */;
+			buildPhases = (
+				404EF41CA08E79CECA1519FC /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				334E9C5EF30C753076EBBD41 /* PBXTargetDependency */,
+			);
+			name = VoanisaTests;
+			packageProductDependencies = (
+			);
+			productName = VoanisaTests;
+			productReference = F4CCEAF9274FB5109B27A03C /* VoanisaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -187,6 +234,9 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					32996F53ED725AC78ACFCB70 = {
+						ProvisioningStyle = Automatic;
+					};
+					9759AC4BE81293E6F95D024B = {
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -207,6 +257,7 @@
 			projectRoot = "";
 			targets = (
 				32996F53ED725AC78ACFCB70 /* Voanisa */,
+				9759AC4BE81293E6F95D024B /* VoanisaTests */,
 			);
 		};
 /* End PBXProject section */
@@ -246,6 +297,16 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		404EF41CA08E79CECA1519FC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */,
+				044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */,
+				E886B0631CEB759D89108AAB /* SongSearchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		863530C8AD68BC9506D3CE6D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -278,6 +339,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		334E9C5EF30C753076EBBD41 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 32996F53ED725AC78ACFCB70 /* Voanisa */;
+			targetProxy = 45EC9A1B160A0E167C2ABD0F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		F364DB697AD8EE2F1EC1CF87 /* Localizable.strings */ = {
 			isa = PBXVariantGroup;
@@ -298,6 +367,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				HEADER_SEARCH_PATHS = (
@@ -396,6 +466,25 @@
 			};
 			name = Debug;
 		};
+		413452BBCDE75BE7EBAF7DC5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.macwave.VoanisaTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Voanisa.app/Contents/MacOS/Voanisa";
+			};
+			name = Release;
+		};
 		8B4561090899B17F69041B74 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -435,6 +524,25 @@
 				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Voanisa/RustBridge/VoanisaCore.h";
 			};
 			name = Release;
+		};
+		92B1FF0AE9A87FBEA84DD2C1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.macwave.VoanisaTests;
+				SDKROOT = macosx;
+				SWIFT_VERSION = 5.0;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Voanisa.app/Contents/MacOS/Voanisa";
+			};
+			name = Debug;
 		};
 		C06C055E57F4E0C901C6B223 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -511,6 +619,15 @@
 			buildConfigurations = (
 				3FCAF8F9A9A585BD0706D5A4 /* Debug */,
 				C06C055E57F4E0C901C6B223 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		776ADAFCFC4D51C34AE84D10 /* Build configuration list for PBXNativeTarget "VoanisaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92B1FF0AE9A87FBEA84DD2C1 /* Debug */,
+				413452BBCDE75BE7EBAF7DC5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

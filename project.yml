@@ -50,3 +50,36 @@ targets:
         OTHER_LDFLAGS:
           - "$(inherited)"
           - "-lvoanisa_ffi"
+      configs:
+        Debug:
+          ENABLE_TESTABILITY: YES
+
+  VoanisaTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: VoanisaTests
+    dependencies:
+      - target: Voanisa
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.macwave.VoanisaTests
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.0"
+        MACOSX_DEPLOYMENT_TARGET: "15.0"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Voanisa.app/Contents/MacOS/Voanisa"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+
+schemes:
+  Voanisa:
+    build:
+      targets:
+        Voanisa: all
+        VoanisaTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - VoanisaTests
