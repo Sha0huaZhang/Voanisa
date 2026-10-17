@@ -1,5 +1,6 @@
 import AppKit
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @ObservedObject var library: LibraryController
@@ -31,6 +32,16 @@ struct SettingsView: View {
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+
+                Button("settings.library.export") {
+                    exportLibrary()
+                }
+                .disabled(library.tracks.isEmpty)
+
+                Text("settings.library.export.hint")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
         .formStyle(.grouped)
@@ -41,6 +52,17 @@ struct SettingsView: View {
         } message: {
             Text("settings.language.restart.message")
         }
+    }
+
+    private func exportLibrary() {
+        let panel = NSSavePanel()
+        panel.title = String(localized: "settings.library.export")
+        panel.nameFieldStringValue = "library.json"
+        panel.allowedContentTypes = [.json]
+        panel.canCreateDirectories = true
+
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        library.exportLibrary(to: url)
     }
 
     /// Launches a fresh instance and quits this one so the new AppleLanguages

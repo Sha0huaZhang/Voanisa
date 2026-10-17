@@ -68,6 +68,11 @@ enum LibraryStore {
         }
     }
 
+    /// Writes a portable snapshot to an arbitrary location.
+    static func exportJSON(_ tracks: [Track], to url: URL) throws {
+        try saveJSON(tracks, url: url)
+    }
+
     /// Imports an existing `library.json` into an empty database.
     ///
     /// Runs once at launch; later saves keep both stores in sync.

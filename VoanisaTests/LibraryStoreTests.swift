@@ -139,6 +139,20 @@ final class LibraryStoreTests: XCTestCase {
         XCTAssertEqual(snapshot.tracks.map(\.id), [c.id, b.id])
     }
 
+    func testExportWritesAPortableSnapshot() throws {
+        let tracks = [makeTrack(title: "A"), makeTrack(title: "B")]
+        let destination = directory.appendingPathComponent("export.json")
+
+        try LibraryStore.exportJSON(tracks, to: destination)
+
+        let snapshot = try JSONDecoder().decode(
+            LibrarySnapshot.self,
+            from: Data(contentsOf: destination)
+        )
+        XCTAssertEqual(snapshot.version, 1)
+        XCTAssertEqual(snapshot.tracks, tracks)
+    }
+
     func testMigrationCopiesJSONTracksIntoEmptyDatabase() throws {
         let tracks = [makeTrack(title: "A"), makeTrack(title: "B")]
         try writeJSON(tracks)

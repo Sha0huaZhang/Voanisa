@@ -50,6 +50,16 @@ final class LibraryController: ObservableObject {
         }
     }
 
+    func exportLibrary(to url: URL) {
+        do {
+            try LibraryStore.exportJSON(tracks, to: url)
+            Diagnostics.log("Exported \(tracks.count) tracks to \(url.path)")
+        } catch {
+            Diagnostics.error(error.localizedDescription, context: "library.export")
+            onError?(error.localizedDescription)
+        }
+    }
+
     func remove(_ track: Track) {
         tracks.removeAll { $0.id == track.id }
         save()

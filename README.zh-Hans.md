@@ -42,14 +42,17 @@ Ogg Vorbis、Opus、WMA、APE、WavPack、DSF/DFF、Matroska/WebM 可以被识�
 
 ```
 ~/Music/Voanisa/
-  library.json
+  library.sqlite         # 主存储
+  library.json           # 可移植快照与备份
   Media/                 # 音频文件，UUID 命名
   Covers/Originals/      # 用户上传的封面原图
   Covers/Rendered/       # 界面使用的正方形封面
   .staging/              # 导入临时区
 ```
 
-导入时选择的原文件不会被修改或移动。
+歌曲保存在 `library.sqlite` 中。每次修改后 Voanisa 还会写入
+`library.json`；已有的快照会在启动时迁移进 SQLite，并在数据库不可用时用于
+恢复。导入时选择的原文件不会被修改或移动。
 
 ## 构建
 
@@ -98,10 +101,10 @@ python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
 
 ## Rust 核心（进行中）
 
-- `Rust/voanisa-core` —— 基于文件头的容器与编码探测
+- `Rust/voanisa-core` —— 文件头探测、SQLite 存储与曲库 CRUD
 - `Rust/voanisa-ffi` —— 返回 JSON 的 C ABI，以静态库链接
 - Xcode 每次构建前自动运行 `Scripts/build-rust.sh`
-- 测试：`cargo test --manifest-path Rust/Cargo.toml -p voanisa-core`
+- 测试：`cargo test --manifest-path Rust/Cargo.toml --workspace`
 
 其余 Swift 核心仍不依赖 SwiftUI 与 AppKit，可以按模块逐步迁移。
 

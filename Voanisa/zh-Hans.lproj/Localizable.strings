@@ -72,7 +72,9 @@
 /* 设置 */
 "settings.library"      = "曲库";
 "settings.songCount"    = "歌曲数量";
-"settings.library.hint" = "曲库是自包含的：音频、封面与 library.json 都保存在同一个文件夹中。";
+"settings.library.hint" = "歌曲保存在 SQLite 中，每次修改后还会写入一份可移植的 library.json 备份。";
+"settings.library.export" = "导出曲库…";
+"settings.library.export.hint" = "把曲库快照保存为可移植文件。";
 "settings.about"           = "关于";
 "settings.version"         = "版本";
 "settings.about.tagline"   = "为 macOS 打造的本地音乐库";

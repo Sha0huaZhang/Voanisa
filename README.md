@@ -43,14 +43,18 @@ reported as unsupported. They are the planned Rust decoder layer.
 
 ```
 ~/Music/Voanisa/
-  library.json
+  library.sqlite         primary store
+  library.json           portable snapshot and backup
   Media/                 audio files, UUID names
   Covers/Originals/      user-supplied cover originals
   Covers/Rendered/       square covers used by the UI
   .staging/              temporary import area
 ```
 
-The original files selected during import are never modified or moved.
+Songs live in `library.sqlite`. Voanisa also writes `library.json` after every
+change; an existing snapshot is migrated into SQLite at launch and is used for
+recovery if the database is unavailable. The original files selected during
+import are never modified or moved.
 
 ## Build
 
@@ -100,10 +104,10 @@ python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
 
 ## Rust core (in progress)
 
-- `Rust/voanisa-core` — header-based container and codec probing
+- `Rust/voanisa-core` — header-based probing, SQLite storage and library CRUD
 - `Rust/voanisa-ffi` — C ABI returning JSON, linked as a static library
 - Xcode runs `Scripts/build-rust.sh` before every build
-- Tests: `cargo test --manifest-path Rust/Cargo.toml -p voanisa-core`
+- Tests: `cargo test --manifest-path Rust/Cargo.toml --workspace`
 
 The remaining Swift core stays free of SwiftUI and AppKit so it can be migrated
 module by module.

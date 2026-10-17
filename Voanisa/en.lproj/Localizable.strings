@@ -73,7 +73,9 @@
 /* Settings */
 "settings.library"       = "Library";
 "settings.songCount"     = "Songs";
-"settings.library.hint"  = "The library is self-contained: audio, covers and library.json live in one folder.";
+"settings.library.hint"  = "Songs live in SQLite. A portable library.json snapshot is written after every change.";
+"settings.library.export" = "Export Library…";
+"settings.library.export.hint" = "Save a portable copy of the library snapshot.";
 "settings.about"           = "About";
 "settings.version"         = "Version";
 "settings.about.tagline"   = "A local music library for macOS";
