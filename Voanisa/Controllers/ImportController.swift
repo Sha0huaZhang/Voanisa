@@ -10,6 +10,13 @@ final class ImportController: ObservableObject {
     @Published var candidates: [ImportCandidate] = []
     @Published var isShowing = false
     @Published var isPreparing = false
+    @Published var skipDuplicates = true
+    @Published private(set) var isImporting = false
+    @Published private(set) var importedCount = 0
+    @Published private(set) var totalCount = 0
+    @Published private(set) var isCancelling = false
+
+    private var importTask: Task<Void, Never>?
 
     var onError: ((String) -> Void)?
 
@@ -55,16 +62,74 @@ final class ImportController: ObservableObject {
     }
 
     func cancel() {
-        isShowing = false
-        candidates = []
+        if isImporting {
+            cancelImport()
+            return
+        }
+        finish()
     }
 
     func finish() {
+        importTask?.cancel()
+        importTask = nil
         isShowing = false
+        isImporting = false
+        isCancelling = false
+        importedCount = 0
+        totalCount = 0
         candidates = []
     }
 
-    func commit(existing: [Track]) async throws -> ImportOutcome {
-        try await ImportService.commit(candidates: candidates, existing: existing)
+    func startImport(
+        existing: [Track],
+        onOutcome: @escaping (ImportOutcome) -> Void,
+        onError: @escaping (String) -> Void
+    ) {
+        guard !isImporting else { return }
+
+        isImporting = true
+        isCancelling = false
+        importedCount = 0
+        totalCount = candidates.count
+
+        let snapshot = candidates
+        let shouldSkipDuplicates = skipDuplicates
+
+        importTask = Task { [weak self] in
+            do {
+                let outcome = try await ImportService.commit(
+                    candidates: snapshot,
+                    existing: existing,
+                    skipDuplicates: shouldSkipDuplicates
+                ) { done, total in
+                    Task { @MainActor [weak self] in
+                        self?.importedCount = done
+                        self?.totalCount = total
+                    }
+                }
+
+                await MainActor.run {
+                    self?.finishImport()
+                    onOutcome(outcome)
+                }
+            } catch {
+                await MainActor.run {
+                    self?.finishImport()
+                    onError(error.localizedDescription)
+                }
+            }
+        }
+    }
+
+    func cancelImport() {
+        guard isImporting else { return }
+        isCancelling = true
+        importTask?.cancel()
+    }
+
+    private func finishImport() {
+        importTask = nil
+        isImporting = false
+        isCancelling = false
     }
 }

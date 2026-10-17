@@ -33,6 +33,8 @@ struct ImportOutcome: Sendable {
     var tracks: [Track]
     var skippedDuplicates: Int
     var failures: [String]
+    var failedCandidateIDs: [UUID] = []
+    var cancelled: Bool = false
 }
 
 enum ImportError: LocalizedError {
@@ -139,30 +141,61 @@ enum ImportService {
         return candidates
     }
 
-    static func commit(candidates: [ImportCandidate], existing: [Track]) async throws -> ImportOutcome {
-        try LibraryLocation.ensureDirectories()
-        LibraryLocation.cleanStaging()
+    static func commit(
+        candidates: [ImportCandidate],
+        existing: [Track],
+        skipDuplicates: Bool = true,
+        rootURL: URL = LibraryLocation.rootURL,
+        onProgress: ((Int, Int) -> Void)? = nil
+    ) async throws -> ImportOutcome {
+        try LibraryLocation.ensureDirectories(rootURL: rootURL)
+        LibraryLocation.cleanStaging(rootURL: rootURL)
+
+        let mediaURL = rootURL.appendingPathComponent("Media", isDirectory: true)
+        let coversURL = rootURL.appendingPathComponent("Covers", isDirectory: true)
+        let renderedCoversURL = coversURL.appendingPathComponent(
+            "Rendered",
+            isDirectory: true
+        )
+        let originalCoversURL = coversURL.appendingPathComponent(
+            "Originals",
+            isDirectory: true
+        )
+        let stagingURL = rootURL.appendingPathComponent(".staging", isDirectory: true)
+        let databaseURL = rootURL.appendingPathComponent("library.sqlite")
+        let jsonURL = rootURL.appendingPathComponent("library.json")
 
         var existingHashes = Set(existing.map(\.contentHash))
         var newTracks: [Track] = []
         var failures: [String] = []
+        var failedCandidateIDs: [UUID] = []
         var skipped = 0
+        var cancelled = false
+        let total = candidates.count
 
-        for candidate in candidates {
+        for (index, candidate) in candidates.enumerated() {
+            if Task.isCancelled {
+                cancelled = true
+                break
+            }
+            defer { onProgress?(index + 1, total) }
+
             if let error = candidate.error {
                 failures.append("\(candidate.sourceURL.lastPathComponent)：\(error)")
+                failedCandidateIDs.append(candidate.id)
                 continue
             }
 
             let title = candidate.title.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !title.isEmpty else {
                 failures.append(ImportError.emptyTitle(candidate.sourceURL.lastPathComponent).localizedDescription)
+                failedCandidateIDs.append(candidate.id)
                 continue
             }
 
             do {
                 let hash = try sha256(of: candidate.sourceURL)
-                guard !existingHashes.contains(hash) else {
+                if skipDuplicates, existingHashes.contains(hash) {
                     skipped += 1
                     Diagnostics.log("跳过重复文件 \(candidate.sourceURL.lastPathComponent)")
                     continue
@@ -176,11 +209,14 @@ enum ImportService {
                 let stagedURL: URL
                 let fileExtension: String
                 if needsExtraction {
-                    stagedURL = try await extractAudio(from: candidate.sourceURL)
+                    stagedURL = try await extractAudio(
+                        from: candidate.sourceURL,
+                        stagingURL: stagingURL
+                    )
                     fileExtension = "m4a"
                 } else {
                     fileExtension = preferredExtension(for: candidate)
-                    let destination = LibraryLocation.stagingURL
+                    let destination = stagingURL
                         .appendingPathComponent("\(id.uuidString).\(fileExtension)")
                     if FileManager.default.fileExists(atPath: destination.path) {
                         try FileManager.default.removeItem(at: destination)
@@ -190,7 +226,7 @@ enum ImportService {
                 }
 
                 let fileName = "\(id.uuidString).\(fileExtension)"
-                let finalURL = LibraryLocation.mediaURL(for: fileName)
+                let finalURL = mediaURL.appendingPathComponent(fileName)
                 if FileManager.default.fileExists(atPath: finalURL.path) {
                     try FileManager.default.removeItem(at: finalURL)
                 }
@@ -199,7 +235,10 @@ enum ImportService {
                 var coverFileName: String?
                 if let cover = candidate.coverJPEG {
                     let coverName = "\(id.uuidString).jpg"
-                    try cover.write(to: LibraryLocation.coverURL(for: coverName), options: .atomic)
+                    try cover.write(
+                        to: renderedCoversURL.appendingPathComponent(coverName),
+                        options: .atomic
+                    )
                     coverFileName = coverName
                 }
                 if let original = candidate.originalCoverData {
@@ -207,7 +246,7 @@ enum ImportService {
                     let originalName = "\(id.uuidString).\(ext)"
                     do {
                         try original.write(
-                            to: LibraryLocation.originalCoversURL.appendingPathComponent(originalName),
+                            to: originalCoversURL.appendingPathComponent(originalName),
                             options: .atomic
                         )
                     } catch {
@@ -236,17 +275,36 @@ enum ImportService {
                 existingHashes.insert(hash)
                 Diagnostics.log("导入《\(title)》，格式 \(candidate.probe.formatDescription)")
             } catch {
+                if Task.isCancelled {
+                    cancelled = true
+                    break
+                }
                 failures.append("\(candidate.sourceURL.lastPathComponent)：\(error.localizedDescription)")
+                failedCandidateIDs.append(candidate.id)
                 Diagnostics.log("导入失败 \(candidate.sourceURL.lastPathComponent)：\(error.localizedDescription)")
             }
         }
 
         if !newTracks.isEmpty {
-            try LibraryStore.save(existing + newTracks)
+            try LibraryStore.save(
+                existing + newTracks,
+                databaseURL: databaseURL,
+                jsonURL: jsonURL
+            )
         }
-        LibraryLocation.cleanStaging()
+        LibraryLocation.cleanStaging(rootURL: rootURL)
 
-        return ImportOutcome(tracks: newTracks, skippedDuplicates: skipped, failures: failures)
+        if cancelled {
+            Diagnostics.log("导入已取消：已导入 \(newTracks.count) 首")
+        }
+
+        return ImportOutcome(
+            tracks: newTracks,
+            skippedDuplicates: skipped,
+            failures: failures,
+            failedCandidateIDs: failedCandidateIDs,
+            cancelled: cancelled
+        )
     }
 
     // MARK: - Helpers
@@ -280,7 +338,10 @@ enum ImportService {
 
     /// MP4/MOV files are copied as audio-only M4A so the library never contains
     /// video files and the “one audio file = one song” model stays intact.
-    private static func extractAudio(from url: URL) async throws -> URL {
+    private static func extractAudio(
+        from url: URL,
+        stagingURL: URL
+    ) async throws -> URL {
         let asset = AVURLAsset(url: url)
         let duration = try await asset.load(.duration)
         guard let audioTrack = try await asset.loadTracks(withMediaType: .audio).first else {
@@ -300,7 +361,7 @@ enum ImportService {
             at: .zero
         )
 
-        let output = LibraryLocation.stagingURL
+        let output = stagingURL
             .appendingPathComponent("\(UUID().uuidString).m4a")
         guard let session = AVAssetExportSession(
             asset: composition,

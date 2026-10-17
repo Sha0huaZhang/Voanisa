@@ -39,6 +39,7 @@ struct ContentView: View {
                 controller: imports,
                 existingTracks: model.library.tracks,
                 onApply: model.applyImport,
+                onFinish: imports.finish,
                 onCancel: imports.cancel,
                 onError: { model.presentError($0, context: "import") }
             )

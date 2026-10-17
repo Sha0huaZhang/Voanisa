@@ -24,6 +24,7 @@
 		449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC88943A2A6285354A683454 /* FixtureTests.swift */; };
 		44B45A2EB39B9EE48FE483F0 /* AlbumsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E96AF76BA33DB75C9867A4 /* AlbumsView.swift */; };
 		4C855FE2A16CC8FA05A33987 /* ImportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC642489D09BF2D1EBC578 /* ImportController.swift */; };
+		5B01DE0010E67674FC3B3E8F /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */; };
 		662EFF64F60D522690FF77D7 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85883D1DD1E9B9FE24B4537 /* SidebarView.swift */; };
 		6987FEE750F3742723441E17 /* SongListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F8E972CC81A146559280E /* SongListView.swift */; };
 		767AD8A7938CEA4DBB3AA2A5 /* Diagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E99FD786FFE1685186D40F6 /* Diagnostics.swift */; };
@@ -66,6 +67,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportServiceTests.swift; sourceTree = "<group>"; };
 		054D7035A4AE5E29505217C2 /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
 		0708AC330AC503799CA8E67D /* CoverRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverRenderer.swift; sourceTree = "<group>"; };
 		0E99FD786FFE1685186D40F6 /* Diagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnostics.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 				6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */,
 				5AAD62D67EE8C5C73F2A709D /* AudioMetadataTests.swift */,
 				FC88943A2A6285354A683454 /* FixtureTests.swift */,
+				00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */,
 				59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */,
 				77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */,
 				7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */,
@@ -368,6 +371,7 @@
 				27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */,
 				96B8E02808149239AD202C2E /* AudioMetadataTests.swift in Sources */,
 				449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */,
+				5B01DE0010E67674FC3B3E8F /* ImportServiceTests.swift in Sources */,
 				F9C9F69EC190D4A65F1AB832 /* LibraryStoreTests.swift in Sources */,
 				E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */,
 				044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */,

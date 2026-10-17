@@ -30,7 +30,17 @@ enum LibraryLocation {
     static var libraryFileURL: URL { rootURL.appendingPathComponent("library.json") }
 
     static func ensureDirectories() throws {
-        for url in [rootURL, mediaURL, originalCoversURL, renderedCoversURL, stagingURL] {
+        try ensureDirectories(rootURL: rootURL)
+    }
+
+    static func ensureDirectories(rootURL: URL) throws {
+        let media = rootURL.appendingPathComponent("Media", isDirectory: true)
+        let covers = rootURL.appendingPathComponent("Covers", isDirectory: true)
+        let originals = covers.appendingPathComponent("Originals", isDirectory: true)
+        let rendered = covers.appendingPathComponent("Rendered", isDirectory: true)
+        let staging = rootURL.appendingPathComponent(".staging", isDirectory: true)
+
+        for url in [rootURL, media, originals, rendered, staging] {
             try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         }
     }
@@ -45,7 +55,15 @@ enum LibraryLocation {
 
     /// Removes stale staging entries left behind by a crash or a cancelled import.
     static func cleanStaging() {
-        guard let children = try? FileManager.default.contentsOfDirectory(at: stagingURL, includingPropertiesForKeys: nil) else {
+        cleanStaging(rootURL: rootURL)
+    }
+
+    static func cleanStaging(rootURL: URL) {
+        let staging = rootURL.appendingPathComponent(".staging", isDirectory: true)
+        guard let children = try? FileManager.default.contentsOfDirectory(
+            at: staging,
+            includingPropertiesForKeys: nil
+        ) else {
             return
         }
         for child in children {

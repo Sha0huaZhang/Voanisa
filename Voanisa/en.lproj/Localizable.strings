@@ -71,6 +71,14 @@
 "import.removeCover"   = "Remove Cover";
 "import.confirm"       = "Import";
 "import.importing"     = "Importing…";
+"import.skipDuplicates" = "Skip duplicate files";
+"import.progress"      = "%d of %d";
+"import.cancelImport"  = "Cancel Import";
+"import.cancelling"    = "Cancelling…";
+"import.result.title"  = "Import finished";
+"import.result.cancelled" = "Import cancelled";
+"import.result.summary" = "%d imported · %d skipped · %d failed";
+"import.retryFailed"   = "Retry Failed";
 "import.count"         = "%d songs";
 "import.selectFile"    = "Select a file to edit.";
 "import.title.required" = "Enter a title.";
@@ -148,6 +156,7 @@
 "common.create"   = "Create";
 "common.rename"   = "Rename";
 "common.back"     = "Back";
+"common.done"     = "Done";
 "common.addToPlaylist" = "Add to Playlist";
 "common.editMetadata" = "Edit Metadata…";
 "common.showInFinder" = "Show in Finder";

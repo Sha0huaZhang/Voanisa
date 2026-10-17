@@ -6,6 +6,7 @@ struct ImportSheet: View {
     @ObservedObject var controller: ImportController
     let existingTracks: [Track]
     let onApply: (ImportOutcome) -> Void
+    let onFinish: () -> Void
     let onCancel: () -> Void
     let onError: (String) -> Void
 
@@ -14,8 +15,9 @@ struct ImportSheet: View {
     @State private var cropImage: CGImage?
     @State private var cropTargetID: UUID?
 
-    @State private var isImporting = false
     @State private var didAttempt = false
+    @State private var result: ImportOutcome?
+    @State private var importedThisSession: [Track] = []
 
     private var candidates: [ImportCandidate] { controller.candidates }
 
@@ -40,15 +42,26 @@ struct ImportSheet: View {
         VStack(spacing: 0) {
             header
             Divider()
-            HStack(spacing: 0) {
-                candidateList
-                    .frame(width: 250)
-                Divider()
-                editor
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            if let result {
+                resultView(result)
+            } else {
+                HStack(spacing: 0) {
+                    candidateList
+                        .frame(width: 250)
+                        .disabled(controller.isImporting)
+                    Divider()
+                    editor
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .disabled(controller.isImporting)
+                }
             }
+
             Divider()
-            footer
+
+            if result == nil {
+                footer
+            }
         }
         .frame(width: 760, height: 560)
         .onAppear {
@@ -80,6 +93,103 @@ struct ImportSheet: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(16)
+    }
+
+    private func resultView(_ outcome: ImportOutcome) -> some View {
+        let failed = failedCandidates(for: outcome)
+        let succeeded = outcome.failures.isEmpty && !outcome.cancelled
+        return VStack(spacing: 16) {
+            Spacer()
+
+            Image(systemName: succeeded ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
+                .font(.system(size: 42))
+                .foregroundStyle(succeeded ? Color.green : Color.orange)
+
+            Text(resultTitle(outcome))
+                .font(.title3)
+                .fontWeight(.semibold)
+
+            Text(
+                String(
+                    format: String(localized: "import.result.summary"),
+                    outcome.tracks.count,
+                    outcome.skippedDuplicates,
+                    outcome.failures.count
+                )
+            )
+            .foregroundStyle(.secondary)
+
+            if !outcome.failures.isEmpty {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ForEach(
+                            Array(outcome.failures.enumerated()),
+                            id: \.offset
+                        ) { _, failure in
+                            Text(failure)
+                                .font(.callout)
+                                .foregroundColor(.red)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                .frame(maxHeight: 140)
+                .padding(12)
+                .background(.quaternary.opacity(0.5), in: RoundedRectangle(cornerRadius: 8))
+            }
+
+            Spacer()
+
+            HStack(spacing: 12) {
+                if !failed.isEmpty {
+                    Button {
+                        retry(failed)
+                    } label: {
+                        Text("import.retryFailed")
+                            .foregroundColor(.blue)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 3)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .stroke(Color.blue, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Button(action: onFinish) {
+                    Text("common.done")
+                        .foregroundColor(.blue)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 3)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 6)
+                                .stroke(Color.blue, lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+                .keyboardShortcut(.defaultAction)
+            }
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    private func resultTitle(_ outcome: ImportOutcome) -> LocalizedStringKey {
+        outcome.cancelled ? "import.result.cancelled" : "import.result.title"
+    }
+
+    private func failedCandidates(for outcome: ImportOutcome) -> [ImportCandidate] {
+        let ids = Set(outcome.failedCandidateIDs)
+        return controller.candidates.filter { ids.contains($0.id) }
+    }
+
+    private func retry(_ failed: [ImportCandidate]) {
+        controller.candidates = failed
+        selectedID = failed.first(where: { $0.error == nil })?.id ?? failed.first?.id
+        didAttempt = false
+        result = nil
     }
 
     private var candidateList: some View {
@@ -214,21 +324,38 @@ struct ImportSheet: View {
 
     private var footer: some View {
         HStack(spacing: 12) {
+            Toggle("import.skipDuplicates", isOn: $controller.skipDuplicates)
+                .toggleStyle(.checkbox)
+                .disabled(controller.isImporting)
+
             Text(String(format: String(localized: "import.count"), importableCount))
                 .font(.callout)
                 .foregroundStyle(.secondary)
 
-            if isImporting {
-                ProgressView().controlSize(.small)
-                Text("import.importing")
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
+            if controller.isImporting {
+                ProgressView(
+                    value: Double(controller.importedCount),
+                    total: Double(max(controller.totalCount, 1))
+                )
+                .controlSize(.small)
+                .frame(width: 120)
+
+                Text(
+                    String(
+                        format: String(localized: "import.progress"),
+                        controller.importedCount,
+                        controller.totalCount
+                    )
+                )
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .monospacedDigit()
             }
 
             Spacer()
 
-            Button(action: onCancel) {
-                Text("common.cancel")
+            Button(action: cancelAction) {
+                Text(cancelTitle)
                     .foregroundColor(.red)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
@@ -239,21 +366,49 @@ struct ImportSheet: View {
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.cancelAction)
+            .disabled(controller.isCancelling)
 
             Button(action: performImport) {
-                Text("import.confirm")
-                    .foregroundColor(importableCount > 0 ? .blue : .secondary)
+                Text(importButtonTitle)
+                    .foregroundColor(canImport ? .blue : .secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 3)
                     .overlay(
                         RoundedRectangle(cornerRadius: 6)
-                            .stroke(importableCount > 0 ? Color.blue : Color.secondary.opacity(0.4), lineWidth: 1)
+                            .stroke(
+                                canImport ? Color.blue : Color.secondary.opacity(0.4),
+                                lineWidth: 1
+                            )
                     )
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.defaultAction)
+            .disabled(!canImport)
         }
         .padding(16)
+    }
+
+    private var canImport: Bool {
+        !controller.isImporting && importableCount > 0
+    }
+
+    private var cancelTitle: LocalizedStringKey {
+        if controller.isCancelling {
+            return "import.cancelling"
+        }
+        return controller.isImporting ? "import.cancelImport" : "common.cancel"
+    }
+
+    private var importButtonTitle: LocalizedStringKey {
+        controller.isImporting ? "import.importing" : "import.confirm"
+    }
+
+    private func cancelAction() {
+        if controller.isImporting {
+            controller.cancelImport()
+        } else {
+            onCancel()
+        }
     }
 
     private func binding<T>(
@@ -314,22 +469,25 @@ struct ImportSheet: View {
 
     private func performImport() {
         didAttempt = true
-        guard !isImporting, importableCount > 0 else { return }
+        guard canImport else { return }
 
-        isImporting = true
-        Task {
-            do {
-                let outcome = try await controller.commit(existing: existingTracks)
-                await MainActor.run {
-                    isImporting = false
-                    onApply(outcome)
-                }
-            } catch {
-                await MainActor.run {
-                    isImporting = false
-                    onError(error.localizedDescription)
-                }
-            }
+        controller.startImport(
+            existing: existingTracks + importedThisSession,
+            onOutcome: handleOutcome,
+            onError: onError
+        )
+    }
+
+    private func handleOutcome(_ outcome: ImportOutcome) {
+        importedThisSession.append(contentsOf: outcome.tracks)
+        onApply(outcome)
+
+        if outcome.failures.isEmpty,
+           !outcome.cancelled,
+           outcome.skippedDuplicates == 0 {
+            onFinish()
+        } else {
+            result = outcome
         }
     }
 }

@@ -160,14 +160,15 @@ final class AppModel: ObservableObject {
     // MARK: - Import
 
     func applyImport(_ outcome: ImportOutcome) {
-        library.append(outcome.tracks)
-        imports.finish()
+        if !outcome.tracks.isEmpty {
+            library.append(outcome.tracks)
+        }
 
         if player.currentTrackID == nil, let first = outcome.tracks.first {
             play(first)
         }
-        if !outcome.failures.isEmpty {
-            presentError(outcome.failures.joined(separator: "\n"), context: "import")
+        if outcome.cancelled {
+            Diagnostics.log("导入已取消：新增 \(outcome.tracks.count) 首")
         }
         if outcome.skippedDuplicates > 0 {
             Diagnostics.log("导入完成：新增 \(outcome.tracks.count) 首，跳过重复 \(outcome.skippedDuplicates) 首")
