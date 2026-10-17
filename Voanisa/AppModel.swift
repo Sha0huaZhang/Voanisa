@@ -2,7 +2,15 @@ import Foundation
 
 @MainActor
 final class AppModel: ObservableObject {
-    @Published var selection: SidebarItem? = .songs
+    @Published var selection: SidebarItem? = .songs {
+        didSet {
+            if case .albums = selection ?? .songs {
+                return
+            }
+            selectedAlbumID = nil
+        }
+    }
+    @Published var selectedAlbumID: String?
     @Published var repeatMode: RepeatMode = .off
 
     @Published var errorMessage: String?
@@ -40,9 +48,44 @@ final class AppModel: ObservableObject {
         library.track(id: player.currentTrackID)
     }
 
+    /// The list currently on screen. This is the source of truth for next/previous,
+    /// matching Elysia's "the visible list is the playback order" rule.
+    var activeScope: PlaybackScope {
+        switch selection ?? .songs {
+        case .playlist(let id):
+            return .playlist(id)
+        case .albums:
+            if let selectedAlbumID {
+                return .album(selectedAlbumID)
+            }
+            return .library
+        default:
+            return .library
+        }
+    }
+
+    var activeTracks: [Track] {
+        switch activeScope {
+        case .library:
+            return library.tracks
+        case .playlist(let id):
+            guard let playlist = library.playlist(id: id) else { return [] }
+            return library.tracks(in: playlist)
+        case .album(let id):
+            return AlbumGrouping.groups(from: library.tracks)
+                .first { $0.id == id }?
+                .tracks ?? []
+        }
+    }
+
     // MARK: - Playback
 
     func play(_ track: Track) {
+        if player.currentTrackID == track.id {
+            player.togglePlayPause()
+            return
+        }
+
         do {
             try player.play(track: track)
         } catch {
@@ -55,31 +98,37 @@ final class AppModel: ObservableObject {
 
     func togglePlayPause() {
         if player.currentTrackID == nil {
-            if let first = library.visibleTracks.first { play(first) }
+            if let first = activeTracks.first { play(first) }
         } else {
             player.togglePlayPause()
         }
     }
 
     func playOffset(_ offset: Int) {
-        let list = library.visibleTracks
+        let list = activeTracks
         guard !list.isEmpty else { return }
 
-        guard let currentID = player.currentTrackID,
-              let index = list.firstIndex(where: { $0.id == currentID }) else {
+        guard let currentID = player.currentTrackID else {
             if let first = list.first { play(first) }
             return
         }
 
-        var target = index + offset
-        if target < 0 {
-            guard repeatMode == .all else { return }
-            target = list.count - 1
-        } else if target >= list.count {
-            guard repeatMode == .all else { return }
-            target = 0
+        // Elysia's rule: if the playing song is not in the list currently shown,
+        // there is no safe anchor. Do not jump to an arbitrary song.
+        guard list.contains(where: { $0.id == currentID }) else {
+            Diagnostics.log("切歌跳过：当前曲目不在当前列表（\(list.count) 首）")
+            return
         }
-        play(list[target])
+
+        guard let targetID = PlaybackNavigation.targetID(
+            currentID: currentID,
+            trackIDs: list.map(\.id),
+            offset: offset,
+            repeatAll: repeatMode == .all
+        ), let target = list.first(where: { $0.id == targetID }) else {
+            return
+        }
+        play(target)
     }
 
     func cycleRepeatMode() {

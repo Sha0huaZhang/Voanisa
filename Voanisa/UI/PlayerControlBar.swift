@@ -35,6 +35,13 @@ struct PlayerControlBar: View {
         }
         .padding(.horizontal, 20)
         .frame(height: 66)
+        .onChange(of: player.currentTrackID) { _, _ in
+            // Never let a drag from the previous song decide the new song's
+            // progress display. This is the same correspondence rule as
+            // Elysia's PositionSync: a changed track invalidates old UI state.
+            isDraggingPosition = false
+            dragPosition = 0
+        }
     }
 
     private var transportControls: some View {

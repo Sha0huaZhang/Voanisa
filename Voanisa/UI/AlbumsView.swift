@@ -4,8 +4,6 @@ struct AlbumsView: View {
     @ObservedObject var model: AppModel
     @ObservedObject private var library: LibraryController
 
-    @State private var selectedAlbumID: String?
-
     init(model: AppModel) {
         self.model = model
         _library = ObservedObject(wrappedValue: model.library)
@@ -16,14 +14,14 @@ struct AlbumsView: View {
     }
 
     private var selectedAlbum: AlbumGroup? {
-        albums.first { $0.id == selectedAlbumID }
+        albums.first { $0.id == model.selectedAlbumID }
     }
 
     var body: some View {
         Group {
             if let selectedAlbum {
                 AlbumDetailView(model: model, album: selectedAlbum) {
-                    selectedAlbumID = nil
+                    model.selectedAlbumID = nil
                 }
             } else if albums.isEmpty {
                 emptyState
@@ -41,7 +39,7 @@ struct AlbumsView: View {
             ) {
                 ForEach(albums) { album in
                     Button {
-                        selectedAlbumID = album.id
+                        model.selectedAlbumID = album.id
                     } label: {
                         AlbumCard(album: album)
                     }
