@@ -89,6 +89,23 @@ Scripts/package-dmg.sh
 覆盖，或设为 `-` 使用 ad-hoc 签名。Hardened Runtime 被刻意关闭：应用采用直接
 分发，个人开发者团队也无法公证。
 
+### 查看打包好的镜像
+
+`Scripts/voanisadmgrun` 会挂载镜像并在 Finder 中打开，是检查安装体验最快的
+方式：
+
+```sh
+Scripts/voanisadmgrun              # dmg/ 下最新的镜像
+Scripts/voanisadmgrun path.dmg     # 指定镜像
+Scripts/voanisadmgrun --eject      # 卸载
+```
+
+想把它当作普通命令使用，可以链接到 `PATH` 中的目录：
+
+```sh
+ln -s "$PWD/Scripts/voanisadmgrun" ~/.local/bin/voanisadmgrun
+```
+
 构建已签名但未公证，首次打开时 Gatekeeper 可能要求右键 → 打开。也可以清除
 隔离标记：
 

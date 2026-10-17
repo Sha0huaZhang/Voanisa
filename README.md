@@ -98,6 +98,23 @@ The script uses the first `Apple Development` identity in the keychain; set
 is intentionally off: the app is distributed directly, and a personal team
 cannot notarize anyway.
 
+### Looking at a packaged image
+
+`Scripts/voanisadmgrun` mounts a packaged image and opens it in Finder, which is
+the quickest way to check the install experience:
+
+```sh
+Scripts/voanisadmgrun              # newest image in dmg/
+Scripts/voanisadmgrun path.dmg     # a specific image
+Scripts/voanisadmgrun --eject      # eject it again
+```
+
+To have it as a command, link it somewhere on your `PATH`:
+
+```sh
+ln -s "$PWD/Scripts/voanisadmgrun" ~/.local/bin/voanisadmgrun
+```
+
 Because the build is signed but not notarized, Gatekeeper may ask for a
 right-click → Open the first time. Or clear the quarantine flag:
 
