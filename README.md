@@ -43,15 +43,22 @@ dependency and no files written outside the library.
 
 MP3, AAC/ADTS, M4A, ALAC, FLAC, WAV, AIFF, CAF.
 
-Ogg Vorbis and Opus are decoded in-process by the Rust core (Symphonia and
-`opus-pure`) and played through `AVAudioEngine`. No external decoder binary,
-codec pack or ffmpeg installation is involved, and nothing has to be installed
-next to the app.
+These are decoded in-process by the Rust core and played through
+`AVAudioEngine`. No external decoder binary, codec pack or ffmpeg installation
+is involved, and nothing has to be installed next to the app.
+
+- Ogg Vorbis — Symphonia
+- Ogg Opus — `opus-pure` (Ogg encapsulation, pre-skip and end-trim)
+- WavPack — `wavicle` (lossless, mono/stereo up to 32-bit; hybrid mode and
+  DSD are out of scope, and files over ~19 minutes of stereo 44.1 kHz exceed
+  the in-memory decode limit)
+- Monkey's Audio (APE) — `ape-decoder` (all compression levels, frame-level
+  seeking; files written by Monkey's Audio 3.95 and newer)
 
 MP4/MOV files are imported as audio-only M4A; the video track is discarded.
 
-WMA, APE, WavPack, DSF/DFF and Matroska/WebM are detected by signature but not
-decoded yet.
+WMA, DSD (DSF/DFF) and Matroska/WebM are detected by signature but not decoded
+yet.
 
 ## Library
 
@@ -110,17 +117,17 @@ python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
 ## Roadmap
 
 1. Rust portable core: header probing, SQLite library, tag reading and
-   Symphonia/`opus-pure` decoding for Ogg and Opus.
+   Symphonia/`opus-pure`/`wavicle`/`ape-decoder` decoding.
 2. Playlists and albums.
 3. Optional Apple Music integration: merge the Music library into Voanisa,
    with explicit import/remove actions.
-4. WMA, APE, WavPack and DSD stay unsupported until a pure-Rust decoder fits;
-   Voanisa deliberately does not ship or bundle ffmpeg.
+4. WMA and DSD stay unsupported until a pure-Rust decoder fits; Voanisa
+   deliberately does not ship or bundle ffmpeg.
 
 ## Rust core (in progress)
 
 - `Rust/voanisa-core` — header-based probing, SQLite storage, library CRUD and
-  streaming PCM decoding for Ogg/Opus
+  streaming PCM decoding for Ogg, Opus, WavPack and APE
 - `Rust/voanisa-ffi` — C ABI returning JSON, linked as a static library
 - Xcode runs `Scripts/build-rust.sh` before every build
 - Tests: `cargo test --manifest-path Rust/Cargo.toml --workspace`

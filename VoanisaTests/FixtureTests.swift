@@ -44,8 +44,8 @@ final class FixtureTests: XCTestCase {
             Set(urls.map(\.lastPathComponent)),
             Set([
                 "tone-a.wav", "tone-b.wav", "tagged.m4a",
-                "tone.ogg", "tone.opus", "tone.wv",
-                "tagged.ogg", "tagged.opus"
+                "tone.ogg", "tone.opus", "tone.wv", "tone.ape", "tone.wma",
+                "tagged.ogg", "tagged.opus", "tagged.wv", "tagged.ape"
             ])
         )
     }

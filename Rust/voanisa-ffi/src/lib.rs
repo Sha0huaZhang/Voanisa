@@ -6,7 +6,8 @@ use std::os::raw::c_char;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 use voanisa_core::{
-    read_tags, probe_path, AudioDecoder, NewTrack, ProbeResult, Store, StoreError, TrackUpdate,
+    inspect, read_tags, probe_path, AudioDecoder, NewTrack, ProbeResult, Store, StoreError,
+    TrackUpdate,
 };
 
 #[derive(Deserialize)]
@@ -195,6 +196,21 @@ pub extern "C" fn voanisa_decoder_close(handle: *mut VoanisaDecoder) {
         return;
     }
     drop(unsafe { Box::from_raw(handle) });
+}
+
+/// Stream properties read from headers only. JSON shape matches
+/// `voanisa_decoder_info_json`, but no audio is decoded.
+#[no_mangle]
+pub extern "C" fn voanisa_stream_info_json(path: *const c_char) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || match inspect(Path::new(&path)) {
+        Ok(info) => success_json(&info),
+        Err(error) => message_error_json(&error, "decode"),
+    })
 }
 
 /// Basic tags for containers AVFoundation cannot read.

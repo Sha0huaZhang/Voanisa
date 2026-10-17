@@ -5,7 +5,7 @@ pub mod probe;
 pub mod store;
 pub mod tags;
 
-pub use decode::{AudioDecoder, DecoderInfo};
+pub use decode::{inspect, AudioDecoder, DecoderInfo};
 pub use library::{NewTrack, TrackRecord, TrackUpdate};
 pub use playlist::PlaylistRecord;
 pub use probe::{detect, probe_path, quick_container, ProbeResult};

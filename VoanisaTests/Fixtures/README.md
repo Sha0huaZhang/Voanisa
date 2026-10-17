@@ -9,7 +9,13 @@ Small files used by the Swift and Rust tests.
   Rust decoder path; both stereo, so the interleaving is exercised.
 - `audio/tagged.ogg`, `audio/tagged.opus` — the same tone with Vorbis/Opus
   comments (title, artist, album, track number).
-- `audio/tone.wv` — WavPack, used to prove unsupported containers are still
+- `audio/tone.wv`, `audio/tagged.wv` — WavPack, lossless 16-bit stereo (the
+  tagged one carries an APEv2 tag written by ffmpeg).
+- `audio/tone.ape`, `audio/tagged.ape` — Monkey's Audio, 16-bit stereo 44.1 kHz.
+  The audio is `sine_16s_c2000.ape` from the `ape-decoder` test corpus (MIT or
+  Apache-2.0); `tagged.ape` is that file with an APEv2 tag appended for the tag
+  reader tests.
+- `audio/tone.wma` — WMA, used to prove unsupported containers are still
   detected and refused.
 - `images/cover-a.png`, `images/cover-b.png` — 256×256 placeholder covers.
 - `images/missing-cover.png` is intentionally absent; tests use it to verify

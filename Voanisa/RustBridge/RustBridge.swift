@@ -34,11 +34,13 @@ enum RustCore {
         return try? result.get()
     }
 
-    /// Opens a decoder just long enough to report its stream properties.
+    /// Stream properties read from headers only, so probing never decodes a
+    /// whole WavPack or APE file.
     static func decoderInfo(url: URL) -> RustDecoderInfo? {
-        guard let decoder = RustAudioDecoder(url: url) else { return nil }
-        defer { decoder.close() }
-        return decoder.info
+        let result: Result<RustDecoderInfo, RustBridgeError> = url.path.withCString { pointer in
+            decodeEnvelope(voanisa_stream_info_json(pointer))
+        }
+        return try? result.get()
     }
 
     /// Why `voanisa_decoder_open` would fail for this file.

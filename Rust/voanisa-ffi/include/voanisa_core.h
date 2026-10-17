@@ -31,6 +31,10 @@ char *voanisa_decoder_open_error_json(const char *path);
 ///        "channels":2,"duration_seconds":213.4}
 char *voanisa_decoder_info_json(VoanisaDecoder *decoder);
 
+/// Same JSON as voanisa_decoder_info_json, read from headers only. Used for
+/// probing a library without decoding audio.
+char *voanisa_stream_info_json(const char *path);
+
 /// Fills `out` with up to `frames * channels` floats. Returns the frames read,
 /// 0 at end of stream, or -1 on error (see voanisa_decoder_error_json).
 int64_t voanisa_decoder_read(VoanisaDecoder *decoder, float *out, uint32_t frames);

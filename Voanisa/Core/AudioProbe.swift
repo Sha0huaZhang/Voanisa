@@ -101,8 +101,10 @@ enum AudioProbe {
         }
 
         switch headerContainer {
-        case .ogg, .opus:
-            // The Rust core decodes Ogg Vorbis and Opus in-process.
+        case .ogg, .opus, .wavpack, .ape:
+            // The Rust core decodes these in-process: Symphonia and
+            // `opus-pure` for Ogg, `wavicle` for WavPack, `ape-decoder` for
+            // Monkey's Audio.
             if let stream = RustCore.decoderInfo(url: url) {
                 return AudioProbeResult(
                     container: headerContainer,
@@ -128,7 +130,7 @@ enum AudioProbe {
                     headerContainer.displayName
                 )
             )
-        case .mkv, .webm, .wma, .ape, .wavpack, .dsf, .dff:
+        case .mkv, .webm, .wma, .dsf, .dff:
             // Recognised by signature but not decoded yet.
             return AudioProbeResult(
                 container: headerContainer,

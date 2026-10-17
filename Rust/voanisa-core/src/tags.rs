@@ -1,13 +1,16 @@
 //! Basic tags for containers AVFoundation cannot read.
 //!
 //! Opus comments come from `opus-pure`'s Ogg layer, Vorbis comments and the
-//! other Symphonia-supported formats come from Symphonia's metadata reader.
+//! other Symphonia-supported formats come from Symphonia's metadata reader,
+//! and APE/WavPack read APEv2 tags (with ID3v2 as an APE fallback).
 //! Cover art is not handled here: the import pipeline keeps the UI's square
 //! placeholder for these files until a picture is chosen by hand.
 
 use std::fs::File;
+use std::io::BufReader;
 use std::path::Path;
 
+use ape_decoder::ApeDecoder;
 use serde::Serialize;
 use symphonia::core::formats::probe::Hint;
 use symphonia::core::formats::FormatOptions;
@@ -28,16 +31,112 @@ pub struct TrackTags {
 /// Reads whatever basic tags a container offers. Unknown or unreadable files
 /// return empty tags rather than an error so import can proceed.
 pub fn read_tags(path: &Path) -> TrackTags {
-    let container = crate::probe::quick_container(path);
-    let mut tags = if container == "opus" {
-        opus_tags(path)
-    } else {
-        symphonia_tags(path)
+    let mut tags = match crate::probe::quick_container(path).as_str() {
+        "opus" => opus_tags(path),
+        "ape" => ape_tags(path),
+        "wavpack" => wavpack_tags(path),
+        _ => symphonia_tags(path),
     };
-    tags.duration_seconds = crate::decode::AudioDecoder::open(path)
-        .map(|decoder| decoder.info().duration_seconds)
+    // `inspect` reads headers only, so a library scan never decodes a whole
+    // WavPack or APE file just to learn its duration.
+    tags.duration_seconds = crate::decode::inspect(path)
+        .map(|info| info.duration_seconds)
         .unwrap_or(0.0);
     tags
+}
+
+fn ape_tags(path: &Path) -> TrackTags {
+    let Ok(file) = File::open(path) else {
+        return TrackTags::default();
+    };
+    let Ok(mut decoder) = ApeDecoder::new(BufReader::new(file)) else {
+        return TrackTags::default();
+    };
+
+    let mut tags = TrackTags::default();
+    if let Ok(Some(tag)) = decoder.read_tag() {
+        tags = tags_from_apev2(tag.get("Title"), tag.get("Artist"), tag.get("Album"), tag.get("Album Artist").or_else(|| tag.get("AlbumArtist")), tag.get("Track").or_else(|| tag.get("TrackNumber")), tag.get("Disc").or_else(|| tag.get("DiscNumber")));
+    }
+
+    // APE files often carry ID3v2 instead, or as well.
+    if tags.title.is_none() && tags.artist.is_none() && tags.album.is_none() {
+        if let Ok(Some(id3)) = decoder.read_id3v2_tag() {
+            tags.title = clean_owned(id3.title());
+            tags.artist = clean_owned(id3.artist());
+            tags.album = clean_owned(id3.album());
+            tags.track_number = id3.track().and_then(|value| parse_number(&value));
+        }
+    }
+    tags
+}
+
+fn wavpack_tags(path: &Path) -> TrackTags {
+    let Ok(bytes) = std::fs::read(path) else {
+        return TrackTags::default();
+    };
+
+    let mut found: std::collections::HashMap<String, String> = std::collections::HashMap::new();
+    for (key, value) in crate::decode::apev2_items(&bytes) {
+        found.insert(key.to_ascii_uppercase(), value);
+    }
+    let get = |keys: &[&str]| {
+        keys.iter()
+            .find_map(|key| found.get(*key).cloned())
+            .and_then(|value| clean_owned(Some(value)))
+    };
+
+    tags_from_apev2(
+        get(&["TITLE"]).as_deref(),
+        get(&["ARTIST"]).as_deref(),
+        get(&["ALBUM"]).as_deref(),
+        get(&["ALBUM ARTIST", "ALBUMARTIST"]).as_deref(),
+        get(&["TRACK", "TRACKNUMBER"]).as_deref(),
+        get(&["DISC", "DISCNUMBER"]).as_deref(),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn tags_from_apev2(
+    title: Option<&str>,
+    artist: Option<&str>,
+    album: Option<&str>,
+    album_artist: Option<&str>,
+    track: Option<&str>,
+    disc: Option<&str>,
+) -> TrackTags {
+    TrackTags {
+        title: clean(title),
+        artist: clean(artist),
+        album: clean(album),
+        album_artist: clean(album_artist),
+        track_number: track.and_then(parse_number),
+        disc_number: disc.and_then(parse_number),
+        duration_seconds: 0.0,
+    }
+}
+
+fn clean(value: Option<&str>) -> Option<String> {
+    value.and_then(|value| {
+        let trimmed = value.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    })
+}
+
+fn clean_owned(value: Option<String>) -> Option<String> {
+    value.and_then(|value| clean(Some(&value)))
+}
+
+/// Accepts "3", "3/12" and "03".
+fn parse_number(value: &str) -> Option<u32> {
+    value
+        .split(['/', '-'])
+        .next()
+        .and_then(|part| part.trim().parse::<u32>().ok())
+        .filter(|number| *number > 0)
 }
 
 fn opus_tags(path: &Path) -> TrackTags {
@@ -198,6 +297,18 @@ mod tests {
         let tags = read_tags(&path);
         assert_eq!(tags.artist.as_deref(), Some("Voanisa"));
         assert_eq!(tags.track_number, Some(1));
+    }
+
+    #[test]
+    fn reads_ape_and_wavpack_tags() {
+        for name in ["tagged.ape", "tagged.wv"] {
+            let tags = read_tags(&fixture(name));
+            assert_eq!(tags.title.as_deref(), Some("Voanisa Test Tone"), "{name}");
+            assert_eq!(tags.artist.as_deref(), Some("Voanisa"), "{name}");
+            assert_eq!(tags.album.as_deref(), Some("Fixtures"), "{name}");
+            assert_eq!(tags.track_number, Some(1), "{name}");
+            assert!(tags.duration_seconds > 0.2, "{name}");
+        }
     }
 
     #[test]
