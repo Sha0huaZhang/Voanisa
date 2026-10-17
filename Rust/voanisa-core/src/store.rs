@@ -9,6 +9,8 @@ pub const CURRENT_SCHEMA_VERSION: i32 = 1;
 pub enum StoreError {
     Sqlite(rusqlite::Error),
     UnsupportedSchema { found: i32, supported: i32 },
+    InvalidReorder,
+    NotFound,
 }
 
 impl fmt::Display for StoreError {
@@ -19,6 +21,10 @@ impl fmt::Display for StoreError {
                 formatter,
                 "library schema {found} is newer than supported schema {supported}"
             ),
+            StoreError::InvalidReorder => {
+                write!(formatter, "reorder must contain every track exactly once")
+            }
+            StoreError::NotFound => write!(formatter, "track not found"),
         }
     }
 }
