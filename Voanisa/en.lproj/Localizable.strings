@@ -1,0 +1,109 @@
+/*
+   Voanisa — English language pack.
+
+   Keys are semantic. Keep this file and zh-Hans.lproj in sync when a key is
+   added or removed.
+*/
+
+/* Sidebar */
+"sidebar.library"   = "Library";
+"sidebar.songs"     = "Songs";
+"sidebar.playlists" = "Playlists";
+"sidebar.albums"    = "Albums";
+"sidebar.settings"  = "Settings";
+"sidebar.import"    = "Import Audio";
+
+/* Search */
+"search.placeholder" = "Search songs";
+"search.clear"       = "Clear search";
+
+/* Song list */
+"songs.empty.title"   = "No songs yet";
+"songs.empty.hint"    = "Press Import Audio to add files. Every audio file becomes a song.";
+"songs.noMatch.title" = "No matching songs";
+"songs.noMatch.hint"  = "Try a different keyword";
+
+/* Player */
+"player.notPlaying" = "Not playing";
+"player.previous"   = "Previous";
+"player.playPause"  = "Play / Pause";
+"player.next"       = "Next";
+"player.repeat"     = "Repeat";
+
+/* Coming soon */
+"playlists.comingSoon.title" = "Playlists are coming soon";
+"playlists.comingSoon.hint"  = "The prototype focuses on importing, naming and playing local audio.";
+"albums.comingSoon.title"    = "Albums are coming soon";
+"albums.comingSoon.hint"     = "Albums will be built from the metadata of imported songs.";
+
+/* Import */
+"import.panel.title"   = "Import Audio";
+"import.panel.message" = "Choose audio files or a folder. Every file becomes one song.";
+"import.panel.prompt"  = "Import";
+"import.title"         = "Import Audio";
+"import.subtitle"      = "Give each file a name and a square cover before it enters the library.";
+"import.name"          = "Title";
+"import.artist"        = "Artist";
+"import.album"         = "Album";
+"import.cover"         = "Cover";
+"import.chooseCover"   = "Choose Cover…";
+"import.removeCover"   = "Remove Cover";
+"import.confirm"       = "Import";
+"import.importing"     = "Importing…";
+"import.count"         = "%d songs";
+"import.selectFile"    = "Select a file to edit.";
+"import.title.required" = "Enter a title.";
+"import.noFiles"       = "No supported audio files found.";
+
+/* Cover crop */
+"crop.title"  = "Crop Cover";
+"crop.hint"   = "Drag to move, use the slider to zoom. The cover must be square.";
+"crop.cancel" = "Cancel";
+"crop.confirm" = "Use This Cover";
+
+/* Settings */
+"settings.library"       = "Library";
+"settings.songCount"     = "Songs";
+"settings.location"      = "Location";
+"settings.openFolder"    = "Show Library Folder";
+"settings.library.hint"  = "The library is self-contained: audio, covers and library.json live in one folder.";
+"settings.about"         = "About";
+"settings.version"       = "Version";
+"settings.about.hint"    = "Voanisa 0.1.0 prototype. Local audio only; Apple Music integration comes later.";
+
+/* Formats */
+"format.unknown"              = "Unknown";
+"probe.unsupported"           = "The prototype cannot decode %@ yet; the Rust decoder is planned.";
+"probe.unsupportedGeneric"    = "This format is not supported by the prototype yet.";
+"probe.noAudioTrack"          = "No audio track was found.";
+
+/* Errors */
+"error.title"       = "Something Went Wrong";
+"error.play"        = "Could not play this file.";
+"error.cover"       = "Could not read this image.";
+"error.noAudioTrack" = "The file has no audio track.";
+"error.staging"     = "Could not prepare the import.";
+"error.export"      = "Could not extract audio from this file.";
+"error.emptyTitle"  = "%@ has no title.";
+
+/* Drop overlay */
+"drop.hint" = "Drop audio files to import";
+
+/* Progress */
+"progress.preparing" = "Reading files…";
+
+/* Menu */
+"menu.import" = "Import Audio…";
+
+/* Shared */
+"common.cancel"   = "Cancel";
+"common.gotIt"    = "Got it";
+"common.play"     = "Play";
+"common.showInFinder" = "Show in Finder";
+"common.remove"   = "Remove from Library…";
+"common.remove.confirm.title"   = "Remove this song?";
+"common.remove.confirm.message" = "“%@” and its cover will be moved to the Trash.";
+"common.remove.confirm.button"  = "Move to Trash";
+
+/* Track */
+"track.unknownArtist" = "Unknown Artist";

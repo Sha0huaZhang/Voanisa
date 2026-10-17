@@ -60,3 +60,22 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+
+# macOS
+.DS_Store
+._*
+
+# Xcode build products
+build/
+DerivedData/
+*.xcarchive
+
+# Packaged releases
+dmg/
+
+# Python
+__pycache__/
+*.pyc
+
+# VS Code workspace state
+.vscode/

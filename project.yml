@@ -1,0 +1,37 @@
+name: Voanisa
+options:
+  bundleIdPrefix: org.macwave
+  deploymentTarget:
+    macOS: "15.0"
+  developmentLanguage: en
+  createIntermediateGroups: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_HARDENED_RUNTIME: NO
+
+targets:
+  Voanisa:
+    type: application
+    platform: macOS
+    sources:
+      - path: Voanisa
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.macwave.Voanisa
+        PRODUCT_NAME: Voanisa
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_CFBundleIconFile: AppIcon
+        INFOPLIST_KEY_CFBundleIconName: AppIcon
+        INFOPLIST_KEY_CFBundleDisplayName: Voanisa
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.music
+        INFOPLIST_KEY_NSHumanReadableCopyright: "Copyright © 2026 Sha0huaZhang. MIT License."
+        INFOPLIST_KEY_NSHighResolutionCapable: YES
+        SWIFT_EMIT_LOC_STRINGS: YES
+        ENABLE_PREVIEWS: YES
