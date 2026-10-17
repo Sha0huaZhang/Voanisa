@@ -75,7 +75,7 @@ xattr -dr com.apple.quarantine /Applications/Voanisa.app
 
 ## App icon
 
-The checked-in icon is a generated placeholder. Replace
+The checked-in icon is temporary artwork. Replace
 `images/Voanisa-icon-1024.png` and regenerate the full size set:
 
 ```sh
