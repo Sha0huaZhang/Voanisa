@@ -1,11 +1,8 @@
-import AppKit
 import Foundation
 
 @MainActor
 final class AppModel: ObservableObject {
-    @Published private(set) var tracks: [Track] = []
     @Published var selection: SidebarItem? = .songs
-    @Published var searchText = ""
     @Published var repeatMode: RepeatMode = .off
 
     @Published var errorMessage: String?
@@ -15,15 +12,9 @@ final class AppModel: ObservableObject {
 
     let player = PlaybackEngine()
     let imports = ImportController()
-    private let artworkCache = NSCache<NSString, NSImage>()
+    let library = LibraryController()
 
     init() {
-        do {
-            try LibraryLocation.ensureDirectories()
-        } catch {
-            Diagnostics.log("无法创建曲库目录：\(error.localizedDescription)")
-        }
-        tracks = LibraryStore.load()
         Diagnostics.markSession()
         Diagnostics.log("Rust core \(RustCore.version)")
 
@@ -31,6 +22,9 @@ final class AppModel: ObservableObject {
             self?.advanceAfterFinish()
         }
         imports.onError = { [weak self] message in
+            self?.presentError(message)
+        }
+        library.onError = { [weak self] message in
             self?.presentError(message)
         }
 
@@ -41,13 +35,8 @@ final class AppModel: ObservableObject {
         )
     }
 
-    var visibleTracks: [Track] {
-        SongSearch.filter(tracks, query: searchText)
-    }
-
     var currentTrack: Track? {
-        guard let id = player.currentTrackID else { return nil }
-        return tracks.first { $0.id == id }
+        library.track(id: player.currentTrackID)
     }
 
     // MARK: - Playback
@@ -62,14 +51,14 @@ final class AppModel: ObservableObject {
 
     func togglePlayPause() {
         if player.currentTrackID == nil {
-            if let first = visibleTracks.first { play(first) }
+            if let first = library.visibleTracks.first { play(first) }
         } else {
             player.togglePlayPause()
         }
     }
 
     func playOffset(_ offset: Int) {
-        let list = visibleTracks
+        let list = library.visibleTracks
         guard !list.isEmpty else { return }
 
         guard let currentID = player.currentTrackID,
@@ -110,19 +99,6 @@ final class AppModel: ObservableObject {
 
     // MARK: - Library
 
-    func reorder(_ newTracks: [Track]) {
-        tracks = newTracks
-        save()
-    }
-
-    func save() {
-        do {
-            try LibraryStore.save(tracks)
-        } catch {
-            presentError(error.localizedDescription)
-        }
-    }
-
     func requestDelete(_ track: Track) {
         deleteTarget = track
     }
@@ -132,45 +108,14 @@ final class AppModel: ObservableObject {
         if player.currentTrackID == track.id {
             player.stop()
         }
-        tracks.removeAll { $0.id == track.id }
-        save()
-
-        let audioURL = LibraryLocation.mediaURL(for: track.fileName)
-        try? FileManager.default.trashItem(at: audioURL, resultingItemURL: nil)
-        if let cover = track.coverFileName {
-            try? FileManager.default.trashItem(
-                at: LibraryLocation.coverURL(for: cover),
-                resultingItemURL: nil
-            )
-        }
-        artworkCache.removeObject(forKey: track.id.uuidString as NSString)
-        Diagnostics.log("移除《\(track.title)》")
+        library.remove(track)
         deleteTarget = nil
-    }
-
-    func showInFinder(_ track: Track) {
-        NSWorkspace.shared.activateFileViewerSelecting([LibraryLocation.mediaURL(for: track.fileName)])
-    }
-
-    func artwork(for track: Track) async -> NSImage? {
-        let key = track.id.uuidString as NSString
-        if let cached = artworkCache.object(forKey: key) { return cached }
-        guard let coverName = track.coverFileName else { return nil }
-
-        let url = LibraryLocation.coverURL(for: coverName)
-        let data = await Task.detached(priority: .utility) {
-            try? Data(contentsOf: url)
-        }.value
-        guard let data, let image = NSImage(data: data) else { return nil }
-        artworkCache.setObject(image, forKey: key)
-        return image
     }
 
     // MARK: - Import
 
     func applyImport(_ outcome: ImportOutcome) {
-        tracks.append(contentsOf: outcome.tracks)
-        save()
+        library.append(outcome.tracks)
         imports.finish()
 
         if player.currentTrackID == nil, let first = outcome.tracks.first {
@@ -189,21 +134,5 @@ final class AppModel: ObservableObject {
     func presentError(_ message: String) {
         errorMessage = message
         isShowingError = true
-    }
-}
-
-enum SongSearch {
-    static func isActive(_ query: String) -> Bool {
-        !query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-    }
-
-    static func filter(_ tracks: [Track], query: String) -> [Track] {
-        let trimmed = query.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !trimmed.isEmpty else { return tracks }
-        return tracks.filter { track in
-            track.title.localizedCaseInsensitiveContains(trimmed)
-                || track.artist.localizedCaseInsensitiveContains(trimmed)
-                || track.album.localizedCaseInsensitiveContains(trimmed)
-        }
     }
 }

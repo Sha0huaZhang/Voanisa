@@ -4,6 +4,7 @@ import SwiftUI
 struct SongListView: View {
     @ObservedObject var model: AppModel
     @ObservedObject private var player: PlaybackEngine
+    @ObservedObject private var library: LibraryController
 
     @State private var draggingID: UUID?
     @State private var dragGrabOffsetY: CGFloat?
@@ -11,17 +12,18 @@ struct SongListView: View {
     @State private var draggedArtwork: NSImage?
     @State private var rowFrames: [UUID: CGRect] = [:]
 
-    private var songs: [Track] { model.visibleTracks }
-    private var isSearching: Bool { SongSearch.isActive(model.searchText) }
+    private var songs: [Track] { library.visibleTracks }
+    private var isSearching: Bool { SongSearch.isActive(library.searchText) }
 
     init(model: AppModel) {
         self.model = model
         _player = ObservedObject(wrappedValue: model.player)
+        _library = ObservedObject(wrappedValue: model.library)
     }
 
     var body: some View {
         Group {
-            if model.tracks.isEmpty {
+            if library.tracks.isEmpty {
                 emptyState(
                     systemImage: "music.note.list",
                     title: "songs.empty.title",
@@ -50,7 +52,7 @@ struct SongListView: View {
                             isDragging: draggingID == song.id,
                             isReorderEnabled: !isSearching,
                             onPlay: { model.play(song) },
-                            onShowInFinder: { model.showInFinder(song) },
+                            onShowInFinder: { library.showInFinder(song) },
                             onRemove: { model.requestDelete(song) },
                             onDragChanged: { pointerY, startY, artwork in
                                 if draggingID != song.id {
@@ -112,7 +114,7 @@ struct SongListView: View {
         let reordered = SongReorder.moving(song.id, toSlot: slot, in: songs)
         guard reordered != songs else { return }
         withAnimation(.easeInOut(duration: 0.15)) {
-            model.reorder(reordered)
+            library.reorder(reordered)
         }
     }
 

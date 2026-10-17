@@ -4,6 +4,7 @@ import SwiftUI
 struct PlayerControlBar: View {
     @ObservedObject var model: AppModel
     @ObservedObject private var player: PlaybackEngine
+    @ObservedObject private var library: LibraryController
 
     @State private var isDraggingPosition = false
     @State private var dragPosition: Double = 0
@@ -14,6 +15,11 @@ struct PlayerControlBar: View {
     init(model: AppModel) {
         self.model = model
         _player = ObservedObject(wrappedValue: model.player)
+        _library = ObservedObject(wrappedValue: model.library)
+    }
+
+    private var currentTrack: Track? {
+        library.track(id: player.currentTrackID)
     }
 
     var body: some View {
@@ -82,23 +88,23 @@ struct PlayerControlBar: View {
                 }
                 .frame(width: 36, height: 36)
                 .clipShape(RoundedRectangle(cornerRadius: 5))
-                .task(id: model.currentTrack?.id) {
-                    if let track = model.currentTrack {
-                        artwork = await model.artwork(for: track)
+                .task(id: currentTrack?.id) {
+                    if let track = currentTrack {
+                        artwork = await library.artwork(for: track)
                     } else {
                         artwork = nil
                     }
                 }
 
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(model.currentTrack?.title ?? String(localized: "player.notPlaying"))
+                    Text(currentTrack?.title ?? String(localized: "player.notPlaying"))
                         .font(.system(size: 12))
                         .fontWeight(player.isPlaying ? .bold : .semibold)
                         .foregroundStyle(player.isPlaying ? Color.red : Color.primary)
                         .lineLimit(1)
                         .truncationMode(.middle)
 
-                    Text(model.currentTrack?.displayArtist ?? "—")
+                    Text(currentTrack?.displayArtist ?? "—")
                         .font(.system(size: 10))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)

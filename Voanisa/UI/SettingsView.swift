@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 struct SettingsView: View {
-    @ObservedObject var model: AppModel
+    @ObservedObject var library: LibraryController
     @AppStorage("appLanguage") private var appLanguageRawValue = AppLanguage.system.rawValue
     @State private var isConfirmingRestart = false
 
@@ -23,7 +23,7 @@ struct SettingsView: View {
 
             Section("settings.library") {
                 LabeledContent("settings.songCount") {
-                    Text("\(model.tracks.count)")
+                    Text("\(library.tracks.count)")
                         .foregroundStyle(.secondary)
                 }
 

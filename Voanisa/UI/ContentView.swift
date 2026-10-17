@@ -16,7 +16,10 @@ struct ContentView: View {
         NavigationSplitView {
             SidebarView(
                 selection: $model.selection,
-                searchText: $model.searchText,
+                searchText: Binding(
+                    get: { model.library.searchText },
+                    set: { model.library.searchText = $0 }
+                ),
                 onImport: imports.presentPanel
             )
             .navigationSplitViewColumnWidth(min: 170, ideal: 195, max: 240)
@@ -33,7 +36,7 @@ struct ContentView: View {
         )) {
             ImportSheet(
                 controller: imports,
-                existingTracks: model.tracks,
+                existingTracks: model.library.tracks,
                 onApply: model.applyImport,
                 onCancel: imports.cancel,
                 onError: model.presentError
@@ -78,7 +81,7 @@ struct ContentView: View {
         case .about:
             AboutView()
         case .settings:
-            SettingsView(model: model)
+            SettingsView(library: model.library)
         case .playlists:
             ComingSoonView(
                 systemImage: "music.note.list",
