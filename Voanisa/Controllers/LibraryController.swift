@@ -187,13 +187,11 @@ final class LibraryController: ObservableObject {
     func artwork(for track: Track) async -> NSImage? {
         let key = track.id.uuidString as NSString
         if let cached = artworkCache.object(forKey: key) { return cached }
-        guard let coverName = track.coverFileName else { return nil }
 
-        let url = LibraryLocation.coverURL(for: coverName)
-        let data = await Task.detached(priority: .utility) {
-            try? Data(contentsOf: url)
+        let coverName = track.coverFileName
+        let image = await Task.detached(priority: .utility) {
+            Artwork.image(for: coverName)
         }.value
-        guard let data, let image = NSImage(data: data) else { return nil }
         artworkCache.setObject(image, forKey: key)
         return image
     }

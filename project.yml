@@ -59,6 +59,8 @@ targets:
     platform: macOS
     sources:
       - path: VoanisaTests
+        excludes:
+          - Fixtures
     dependencies:
       - target: Voanisa
     settings:

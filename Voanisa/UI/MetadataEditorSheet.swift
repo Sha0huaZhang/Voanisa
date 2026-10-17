@@ -104,13 +104,9 @@ struct MetadataEditorSheet: View {
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                     } else {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(Color.gray.opacity(0.22))
-                            .overlay(
-                                Image(systemName: "photo")
-                                    .font(.system(size: 28))
-                                    .foregroundStyle(.secondary)
-                            )
+                        Image(nsImage: DefaultArtwork.image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
                     }
                 }
                 .frame(width: 160, height: 160)

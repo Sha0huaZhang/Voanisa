@@ -77,22 +77,18 @@ struct PlayerControlBar: View {
                             .resizable()
                             .aspectRatio(contentMode: .fill)
                     } else {
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(Color.gray.opacity(0.3))
-                            .overlay(
-                                Image(systemName: "music.note")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(.secondary)
-                            )
+                        Image(nsImage: DefaultArtwork.image)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
                     }
                 }
                 .frame(width: 36, height: 36)
                 .clipShape(RoundedRectangle(cornerRadius: 5))
-                .task(id: currentTrack?.id) {
+                .task(id: currentTrack?.coverFileName) {
                     if let track = currentTrack {
                         artwork = await library.artwork(for: track)
                     } else {
-                        artwork = nil
+                        artwork = DefaultArtwork.image
                     }
                 }
 

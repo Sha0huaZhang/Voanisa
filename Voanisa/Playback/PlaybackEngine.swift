@@ -27,6 +27,8 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var timer: Timer?
     private var currentTrack: Track?
     private var lastNowPlayingUpdate = Date.distantPast
+    private var nowPlayingArtwork: MPMediaItemArtwork?
+    private var nowPlayingArtworkKey: String?
 
     func play(track: Track) throws {
         let url = LibraryLocation.mediaURL(for: track.fileName)
@@ -91,6 +93,8 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         isPlaying = false
         position = 0
         duration = 0
+        nowPlayingArtwork = nil
+        nowPlayingArtworkKey = nil
         MPNowPlayingInfoCenter.default().nowPlayingInfo = nil
         MPNowPlayingInfoCenter.default().playbackState = .stopped
     }
@@ -147,9 +151,14 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
             MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1.0 : 0.0
         ]
 
-        if let coverName = track.coverFileName,
-           let image = NSImage(contentsOf: LibraryLocation.coverURL(for: coverName)) {
-            info[MPMediaItemPropertyArtwork] = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+        let artworkKey = track.coverFileName ?? "<default>"
+        if artworkKey != nowPlayingArtworkKey {
+            let image = Artwork.image(for: track.coverFileName)
+            nowPlayingArtwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+            nowPlayingArtworkKey = artworkKey
+        }
+        if let nowPlayingArtwork {
+            info[MPMediaItemPropertyArtwork] = nowPlayingArtwork
         }
 
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info

@@ -173,13 +173,9 @@ struct SongDragCard: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
             } else {
-                RoundedRectangle(cornerRadius: 4)
-                    .fill(Color.gray.opacity(0.3))
-                    .overlay(
-                        Image(systemName: "music.note")
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                    )
+                Image(nsImage: DefaultArtwork.image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
             }
         }
         .frame(width: size, height: size)
@@ -229,13 +225,9 @@ struct SongRowView: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                 } else {
-                    RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.gray.opacity(0.3))
-                        .overlay(
-                            Image(systemName: "music.note")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.secondary)
-                        )
+                    Image(nsImage: DefaultArtwork.image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
                 }
             }
             .frame(width: 40, height: 40)
@@ -306,15 +298,10 @@ struct SongRowView: View {
     }
 
     private func loadArtwork() async {
-        guard let coverName = song.coverFileName else {
-            artworkImage = nil
-            return
-        }
-        let url = LibraryLocation.coverURL(for: coverName)
-        let data = await Task.detached(priority: .utility) {
-            try? Data(contentsOf: url)
+        let coverName = song.coverFileName
+        artworkImage = await Task.detached(priority: .utility) {
+            Artwork.image(for: coverName)
         }.value
-        artworkImage = data.flatMap(NSImage.init(data:))
     }
 }
 

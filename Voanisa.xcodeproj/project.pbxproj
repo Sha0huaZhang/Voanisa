@@ -11,6 +11,7 @@
 		06FA81E68087FE42112863FE /* CoverCropSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */; };
 		12D39F9440F68B8067E99126 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8867802AF5F8F4AF6ED77AEB /* AboutView.swift */; };
 		1431984CB3D1172ED1E0516D /* TrackMetadataEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8475B6C244B64B0FAA9C4ECD /* TrackMetadataEditTests.swift */; };
+		17DE47AF21CC64FC6313D481 /* DefaultArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98D723A53399756AA9BA6D66 /* DefaultArtwork.swift */; };
 		1FD9CF0FC223EE5F09712BB7 /* TrackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0DCC274F18881470F769F0 /* TrackTests.swift */; };
 		22C069C639DF4C2223C66852 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */; };
 		241DED57074D7855241D9508 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78A5103C669CC124AA58FD8 /* AppLanguage.swift */; };
@@ -19,6 +20,7 @@
 		2F346090BC606BA297B5AD3C /* VoanisaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */; };
 		362F92813E9277E36C76DE79 /* PlayerControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE37896B19738772798DF38F /* PlayerControlBar.swift */; };
 		3E9272BD23A962650666F496 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */; };
+		449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC88943A2A6285354A683454 /* FixtureTests.swift */; };
 		4C855FE2A16CC8FA05A33987 /* ImportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC642489D09BF2D1EBC578 /* ImportController.swift */; };
 		662EFF64F60D522690FF77D7 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85883D1DD1E9B9FE24B4537 /* SidebarView.swift */; };
 		6987FEE750F3742723441E17 /* SongListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F8E972CC81A146559280E /* SongListView.swift */; };
@@ -34,6 +36,7 @@
 		A235AB71F7EB16567095709B /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */; };
 		B4119FFAF43E184A375FE671 /* LibraryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86991DAB39661E74351BA35 /* LibraryController.swift */; };
 		B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF6A0D8A6BC6D1249699E8B /* ImportService.swift */; };
+		BA223FA89D5660552FB0F3DB /* ArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */; };
 		BD7ABC152AA49BAB92B68A57 /* TrackMetadataEdit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB02D996D7332B60F92031 /* TrackMetadataEdit.swift */; };
 		DF7166D0D0DD4E7713254DF8 /* LibraryLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A9C72705F2B739CDC513CB /* LibraryLocation.swift */; };
 		E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */; };
@@ -66,6 +69,7 @@
 		39A9C72705F2B739CDC513CB /* LibraryLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryLocation.swift; sourceTree = "<group>"; };
 		3AD517CDEE85E8AAA65252CE /* MetadataEditorSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetadataEditorSheet.swift; sourceTree = "<group>"; };
 		3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkTests.swift; sourceTree = "<group>"; };
 		4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSearchTests.swift; sourceTree = "<group>"; };
 		4D4CC0E75A8D823D1D352489 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoanisaApp.swift; sourceTree = "<group>"; };
@@ -79,6 +83,7 @@
 		8F1C9EBD04E91C89BC1751CA /* Voanisa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Voanisa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		924F8E972CC81A146559280E /* SongListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongListView.swift; sourceTree = "<group>"; };
 		94AB02D996D7332B60F92031 /* TrackMetadataEdit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMetadataEdit.swift; sourceTree = "<group>"; };
+		98D723A53399756AA9BA6D66 /* DefaultArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultArtwork.swift; sourceTree = "<group>"; };
 		9A342DD02A493CFEF54AEF42 /* PlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackEngine.swift; sourceTree = "<group>"; };
 		9BDAEF8412E70FBF89679BA1 /* MediaKeys.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaKeys.swift; sourceTree = "<group>"; };
 		9D2C3D126C143800052A6D2C /* ComingSoonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComingSoonView.swift; sourceTree = "<group>"; };
@@ -96,6 +101,7 @@
 		E94D53DE54028716072D24A5 /* RustBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBridge.swift; sourceTree = "<group>"; };
 		E9C7B03E0CA8E22F019C8649 /* AudioProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProbe.swift; sourceTree = "<group>"; };
 		F4CCEAF9274FB5109B27A03C /* VoanisaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoanisaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FC88943A2A6285354A683454 /* FixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -123,6 +129,7 @@
 				9D2C3D126C143800052A6D2C /* ComingSoonView.swift */,
 				DBAB9270999A8AB99CDF2C6B /* ContentView.swift */,
 				159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */,
+				98D723A53399756AA9BA6D66 /* DefaultArtwork.swift */,
 				A9F94669C61DCDA67D3B501A /* ImportSheet.swift */,
 				3AD517CDEE85E8AAA65252CE /* MetadataEditorSheet.swift */,
 				DE37896B19738772798DF38F /* PlayerControlBar.swift */,
@@ -183,7 +190,9 @@
 		DB0826AC58D238EA56728CD4 /* VoanisaTests */ = {
 			isa = PBXGroup;
 			children = (
+				3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */,
 				6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */,
+				FC88943A2A6285354A683454 /* FixtureTests.swift */,
 				59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */,
 				77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */,
 				7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */,
@@ -333,7 +342,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA223FA89D5660552FB0F3DB /* ArtworkTests.swift in Sources */,
 				27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */,
+				449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */,
 				F9C9F69EC190D4A65F1AB832 /* LibraryStoreTests.swift in Sources */,
 				E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */,
 				044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */,
@@ -355,6 +366,7 @@
 				845A69CBBF12F318D4391D3A /* ContentView.swift in Sources */,
 				06FA81E68087FE42112863FE /* CoverCropSheet.swift in Sources */,
 				FE3657F0CF518113ABF77A40 /* CoverRenderer.swift in Sources */,
+				17DE47AF21CC64FC6313D481 /* DefaultArtwork.swift in Sources */,
 				767AD8A7938CEA4DBB3AA2A5 /* Diagnostics.swift in Sources */,
 				4C855FE2A16CC8FA05A33987 /* ImportController.swift in Sources */,
 				B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */,

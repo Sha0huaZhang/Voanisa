@@ -284,14 +284,21 @@ mod tests {
     use super::*;
     use serde_json::{json, Value};
     use std::path::PathBuf;
+    use std::sync::atomic::{AtomicU64, Ordering};
     use std::time::{SystemTime, UNIX_EPOCH};
 
     fn temp_db() -> PathBuf {
+        static SEQUENCE: AtomicU64 = AtomicU64::new(0);
+
         let nanos = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("clock")
             .as_nanos();
-        std::env::temp_dir().join(format!("voanisa-ffi-{}-{nanos}.sqlite", std::process::id()))
+        let sequence = SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        std::env::temp_dir().join(format!(
+            "voanisa-ffi-{}-{nanos}-{sequence}.sqlite",
+            std::process::id()
+        ))
     }
 
     fn c(value: &str) -> CString {
