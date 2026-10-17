@@ -1,6 +1,13 @@
+<div align="center">
+    <img src="images/Voanisa-icon-1024.png" alt="Logo" width="256" />
+    <h1>Voanisa</h1>
+</div>
+
 # Voanisa
 
 A local music library for macOS, in the visual spirit of Elysia.
+
+**English** · [简体中文](./README.zh-Hans.md)
 
 This repository contains the **0.1.0 prototype**. Every imported audio file
 becomes one song in a self-contained library. Audio is copied into the library,
