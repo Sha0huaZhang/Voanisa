@@ -64,12 +64,15 @@
 /* Settings */
 "settings.library"       = "Library";
 "settings.songCount"     = "Songs";
-"settings.location"      = "Location";
-"settings.openFolder"    = "Show Library Folder";
 "settings.library.hint"  = "The library is self-contained: audio, covers and library.json live in one folder.";
-"settings.about"         = "About";
-"settings.version"       = "Version";
-"settings.about.hint"    = "Voanisa 0.1.0 prototype. Local audio only; Apple Music integration comes later.";
+"settings.about"           = "About";
+"settings.version"         = "Version";
+"settings.about.tagline"   = "A local music library for macOS";
+"settings.about.description" = "Import audio, name it, design a square cover, and play it locally — no Apple Music required.";
+"settings.about.rustCore"  = "Rust core";
+"settings.about.github"    = "GitHub";
+"settings.about.license"   = "MIT License";
+"settings.about.copyright" = "© 2026 Sha0huaZhang";
 
 /* Formats */
 "format.unknown"              = "Unknown";
@@ -94,6 +97,7 @@
 
 /* Menu */
 "menu.import" = "Import Audio…";
+"menu.about"  = "About Voanisa";
 
 /* Shared */
 "common.cancel"   = "Cancel";

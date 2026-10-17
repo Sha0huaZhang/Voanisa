@@ -82,17 +82,29 @@ struct AudioProbeResult: Sendable {
 /// video tracks that must be stripped during import.
 enum AudioProbe {
     static func quickContainer(for url: URL) -> AudioContainer {
-        detectContainer(in: readHeader(url))
+        if let payload = RustCore.probe(url: url),
+           payload.recognized,
+           let container = AudioContainer(rawValue: payload.container) {
+            return container
+        }
+        return detectContainer(in: readHeader(url))
     }
 
     static func probe(url: URL) async -> AudioProbeResult {
-        let headerContainer = detectContainer(in: readHeader(url))
+        let rust = RustCore.probe(url: url)
+        let headerContainer: AudioContainer
+        if let payload = rust, payload.recognized,
+           let container = AudioContainer(rawValue: payload.container) {
+            headerContainer = container
+        } else {
+            headerContainer = detectContainer(in: readHeader(url))
+        }
 
         switch headerContainer {
         case .ogg, .opus, .mkv, .webm, .wma, .ape, .wavpack, .dsf, .dff:
             return AudioProbeResult(
                 container: headerContainer,
-                codec: nil,
+                codec: rust?.codec,
                 duration: 0,
                 hasVideo: false,
                 sampleRate: 0,
@@ -130,7 +142,7 @@ enum AudioProbe {
 
             let descriptions = (try? await audioTrack.load(.formatDescriptions)) ?? []
             let first = descriptions.first
-            let codec = first.map { fourCC(CMFormatDescriptionGetMediaSubType($0)) }
+            let codec = first.map { fourCC(CMFormatDescriptionGetMediaSubType($0)) } ?? rust?.codec
             let stream = first.flatMap { CMAudioFormatDescriptionGetStreamBasicDescription($0)?.pointee }
             let sampleRate = stream?.mSampleRate ?? 0
             let channels = Int(stream?.mChannelsPerFrame ?? 0)

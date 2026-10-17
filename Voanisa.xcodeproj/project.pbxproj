@@ -28,6 +28,7 @@
 		DF7166D0D0DD4E7713254DF8 /* LibraryLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A9C72705F2B739CDC513CB /* LibraryLocation.swift */; };
 		F1F8C9F3B90E585760425C7C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3C0C450A883CEDC15B816 /* SettingsView.swift */; };
 		F7B1D96304039ECA39B3779B /* SidebarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1084173A90E1515DE94BE17A /* SidebarItem.swift */; };
+		FA3A1BD08CB442BD70BEB990 /* RustBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94D53DE54028716072D24A5 /* RustBridge.swift */; };
 		FE3657F0CF518113ABF77A40 /* CoverRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0708AC330AC503799CA8E67D /* CoverRenderer.swift */; };
 /* End PBXBuildFile section */
 
@@ -37,6 +38,7 @@
 		0E99FD786FFE1685186D40F6 /* Diagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnostics.swift; sourceTree = "<group>"; };
 		1084173A90E1515DE94BE17A /* SidebarItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SidebarItem.swift; sourceTree = "<group>"; };
 		159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverCropSheet.swift; sourceTree = "<group>"; };
+		271D1EE9E781401F1F2E7242 /* VoanisaCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoanisaCore.h; sourceTree = "<group>"; };
 		2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		39A9C72705F2B739CDC513CB /* LibraryLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryLocation.swift; sourceTree = "<group>"; };
 		3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -55,6 +57,7 @@
 		DBAB9270999A8AB99CDF2C6B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DE37896B19738772798DF38F /* PlayerControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlBar.swift; sourceTree = "<group>"; };
 		DFDF6E0C9C37083BC9C1BD87 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		E94D53DE54028716072D24A5 /* RustBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBridge.swift; sourceTree = "<group>"; };
 		E9C7B03E0CA8E22F019C8649 /* AudioProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProbe.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -69,6 +72,7 @@
 				F364DB697AD8EE2F1EC1CF87 /* Localizable.strings */,
 				6008CF78F76D088EF2F5655B /* Models */,
 				AFEFD33E4EA626D1C35E69EA /* Playback */,
+				DE94147DF21FADBF232BF037 /* RustBridge */,
 				45EF17533EAEB884C50FF31A /* UI */,
 			);
 			path = Voanisa;
@@ -123,6 +127,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		DE94147DF21FADBF232BF037 /* RustBridge */ = {
+			isa = PBXGroup;
+			children = (
+				E94D53DE54028716072D24A5 /* RustBridge.swift */,
+				271D1EE9E781401F1F2E7242 /* VoanisaCore.h */,
+			);
+			path = RustBridge;
+			sourceTree = "<group>";
+		};
 		FCCB4F3C31F97A84A32CFB22 /* Core */ = {
 			isa = PBXGroup;
 			children = (
@@ -143,6 +156,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0E731B7910DF0E2F7FB5FFDB /* Build configuration list for PBXNativeTarget "Voanisa" */;
 			buildPhases = (
+				D04FDEB9452EC9E74E661E31 /* Build Rust core */,
 				863530C8AD68BC9506D3CE6D /* Sources */,
 				B369730B9D6BD6AA95C4C7E4 /* Resources */,
 			);
@@ -203,6 +217,28 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		D04FDEB9452EC9E74E661E31 /* Build Rust core */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust core";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "$SRCROOT/Scripts/build-rust.sh";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		863530C8AD68BC9506D3CE6D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -222,6 +258,7 @@
 				26B7EBB50D6BFDBEB704A6B0 /* MediaKeys.swift in Sources */,
 				78907E7035D7F34775712313 /* PlaybackEngine.swift in Sources */,
 				362F92813E9277E36C76DE79 /* PlayerControlBar.swift in Sources */,
+				FA3A1BD08CB442BD70BEB990 /* RustBridge.swift in Sources */,
 				F1F8C9F3B90E585760425C7C /* SettingsView.swift in Sources */,
 				F7B1D96304039ECA39B3779B /* SidebarItem.swift in Sources */,
 				662EFF64F60D522690FF77D7 /* SidebarView.swift in Sources */,
@@ -253,7 +290,12 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Rust/build",
+				);
 				INFOPLIST_KEY_CFBundleDisplayName = Voanisa;
 				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
@@ -264,11 +306,20 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Rust/build",
+				);
 				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lvoanisa_ffi",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.macwave.Voanisa;
 				PRODUCT_NAME = Voanisa;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Voanisa/RustBridge/VoanisaCore.h";
 			};
 			name = Debug;
 		};
@@ -344,7 +395,12 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Rust/build",
+				);
 				INFOPLIST_KEY_CFBundleDisplayName = Voanisa;
 				INFOPLIST_KEY_CFBundleIconFile = AppIcon;
 				INFOPLIST_KEY_CFBundleIconName = AppIcon;
@@ -355,11 +411,20 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SRCROOT)/Rust/build",
+				);
 				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-lvoanisa_ffi",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = org.macwave.Voanisa;
 				PRODUCT_NAME = Voanisa;
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(SRCROOT)/Voanisa/RustBridge/VoanisaCore.h";
 			};
 			name = Release;
 		};

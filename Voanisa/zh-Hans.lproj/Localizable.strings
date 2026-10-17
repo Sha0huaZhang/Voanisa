@@ -63,12 +63,15 @@
 /* 设置 */
 "settings.library"      = "曲库";
 "settings.songCount"    = "歌曲数量";
-"settings.location"     = "位置";
-"settings.openFolder"   = "在 Finder 中显示曲库";
 "settings.library.hint" = "曲库是自包含的：音频、封面与 library.json 都保存在同一个文件夹中。";
-"settings.about"        = "关于";
-"settings.version"      = "版本";
-"settings.about.hint"   = "Voanisa 0.1.0 原型。目前仅支持本地音频，Apple Music 集成将在后续加入。";
+"settings.about"           = "关于";
+"settings.version"         = "版本";
+"settings.about.tagline"   = "为 macOS 打造的本地音乐库";
+"settings.about.description" = "导入音频，为它命名、设计正方形封面，然后在本地播放——无需 Apple Music。";
+"settings.about.rustCore"  = "Rust 核心";
+"settings.about.github"    = "GitHub";
+"settings.about.license"   = "MIT 许可证";
+"settings.about.copyright" = "© 2026 Sha0huaZhang";
 
 /* 格式 */
 "format.unknown"           = "未知";
@@ -93,6 +96,7 @@
 
 /* 菜单 */
 "menu.import" = "导入音频…";
+"menu.about"  = "关于 Voanisa";
 
 /* 通用 */
 "common.cancel"      = "取消";

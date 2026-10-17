@@ -96,8 +96,14 @@ python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
    导入/移除操作。
 4. 可选的 FFmpeg 模块，用于 WMA/APE/DSD。
 
-当前的 Swift 核心不依赖 SwiftUI 与 AppKit，因此可以在不改动界面的前提下
-替换为 Rust 核心。
+## Rust 核心（进行中）
+
+- `Rust/voanisa-core` —— 基于文件头的容器与编码探测
+- `Rust/voanisa-ffi` —— 返回 JSON 的 C ABI，以静态库链接
+- Xcode 每次构建前自动运行 `Scripts/build-rust.sh`
+- 测试：`cargo test --manifest-path Rust/Cargo.toml -p voanisa-core`
+
+其余 Swift 核心仍不依赖 SwiftUI 与 AppKit，可以按模块逐步迁移。
 
 ## 许可证
 

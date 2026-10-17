@@ -73,6 +73,10 @@ DerivedData/
 # Packaged releases
 dmg/
 
+# Rust build outputs
+Rust/target/
+Rust/build/
+
 # Python
 __pycache__/
 *.pyc

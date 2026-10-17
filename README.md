@@ -98,8 +98,15 @@ python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
    with explicit import/remove actions.
 4. Optional FFmpeg module for WMA/APE/DSD.
 
-The current Swift core stays free of SwiftUI and AppKit so it can be replaced
-by the Rust core without touching the interface.
+## Rust core (in progress)
+
+- `Rust/voanisa-core` — header-based container and codec probing
+- `Rust/voanisa-ffi` — C ABI returning JSON, linked as a static library
+- Xcode runs `Scripts/build-rust.sh` before every build
+- Tests: `cargo test --manifest-path Rust/Cargo.toml -p voanisa-core`
+
+The remaining Swift core stays free of SwiftUI and AppKit so it can be migrated
+module by module.
 
 ## License
 

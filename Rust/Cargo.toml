@@ -1,0 +1,13 @@
+[workspace]
+members = ["voanisa-core", "voanisa-ffi"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Sha0huaZhang"]
+
+[profile.release]
+lto = "thin"
+codegen-units = 1

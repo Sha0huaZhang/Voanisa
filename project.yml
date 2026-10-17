@@ -19,6 +19,10 @@ targets:
     platform: macOS
     sources:
       - path: Voanisa
+    preBuildScripts:
+      - name: Build Rust core
+        script: "$SRCROOT/Scripts/build-rust.sh"
+        basedOnDependencyAnalysis: false
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: org.macwave.Voanisa
@@ -35,3 +39,14 @@ targets:
         INFOPLIST_KEY_NSHighResolutionCapable: YES
         SWIFT_EMIT_LOC_STRINGS: YES
         ENABLE_PREVIEWS: YES
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+        SWIFT_OBJC_BRIDGING_HEADER: "$(SRCROOT)/Voanisa/RustBridge/VoanisaCore.h"
+        HEADER_SEARCH_PATHS:
+          - "$(inherited)"
+          - "$(SRCROOT)/Rust/build"
+        LIBRARY_SEARCH_PATHS:
+          - "$(inherited)"
+          - "$(SRCROOT)/Rust/build"
+        OTHER_LDFLAGS:
+          - "$(inherited)"
+          - "-lvoanisa_ffi"

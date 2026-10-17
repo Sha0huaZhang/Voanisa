@@ -29,6 +29,7 @@ final class AppModel: ObservableObject {
         }
         tracks = LibraryStore.load()
         Diagnostics.markSession()
+        Diagnostics.log("Rust core \(RustCore.version)")
 
         player.onFinished = { [weak self] in
             self?.advanceAfterFinish()
@@ -150,10 +151,6 @@ final class AppModel: ObservableObject {
 
     func showInFinder(_ track: Track) {
         NSWorkspace.shared.activateFileViewerSelecting([LibraryLocation.mediaURL(for: track.fileName)])
-    }
-
-    func openLibraryFolder() {
-        NSWorkspace.shared.open(LibraryLocation.rootURL)
     }
 
     func artwork(for track: Track) async -> NSImage? {
