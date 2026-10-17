@@ -19,6 +19,7 @@ final class LibraryController: ObservableObject {
             Diagnostics.log("无法创建曲库目录：\(error.localizedDescription)")
         }
         tracks = LibraryStore.load()
+        LibraryStore.migrateIfNeeded(tracks)
     }
 
     var visibleTracks: [Track] {

@@ -199,6 +199,12 @@ enum RustStore {
         }
     }
 
+    static func syncTracks(path: URL, tracks: [RustNewTrack]) -> Result<Void, RustBridgeError> {
+        withEncodedVoid(path: path, value: tracks) { pathPointer, payloadPointer in
+            voanisa_sync_tracks_json(pathPointer, payloadPointer)
+        }
+    }
+
     private static func encodePayload<T: Encodable>(
         _ value: T
     ) -> Result<String, RustBridgeError> {

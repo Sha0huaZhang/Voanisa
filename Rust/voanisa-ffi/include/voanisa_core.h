@@ -32,6 +32,7 @@ char *voanisa_insert_tracks_json(const char *path, const char *payload);
 char *voanisa_update_track_json(const char *path, const char *payload);
 char *voanisa_delete_track_json(const char *path, const char *id);
 char *voanisa_reorder_tracks_json(const char *path, const char *payload);
+char *voanisa_sync_tracks_json(const char *path, const char *payload);
 void voanisa_string_free(char *value);
 
 #ifdef __cplusplus

@@ -10,6 +10,7 @@ pub enum StoreError {
     Sqlite(rusqlite::Error),
     UnsupportedSchema { found: i32, supported: i32 },
     InvalidReorder,
+    DuplicateTrack,
     NotFound,
 }
 
@@ -24,6 +25,7 @@ impl fmt::Display for StoreError {
             StoreError::InvalidReorder => {
                 write!(formatter, "reorder must contain every track exactly once")
             }
+            StoreError::DuplicateTrack => write!(formatter, "track list contains duplicate ids"),
             StoreError::NotFound => write!(formatter, "track not found"),
         }
     }

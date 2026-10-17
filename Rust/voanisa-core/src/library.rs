@@ -108,11 +108,12 @@ const SELECT_TRACKS: &str = "
 
 impl Store {
     pub fn list_tracks(&self) -> Result<Vec<TrackRecord>, StoreError> {
-        let mut statement = self
-            .connection()
-            .prepare(&format!("{SELECT_TRACKS} ORDER BY sort_index, date_added, id"))?;
+        let mut statement = self.connection().prepare(&format!(
+            "{SELECT_TRACKS} ORDER BY sort_index, date_added, id"
+        ))?;
         let rows = statement.query_map([], track_from_row)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(StoreError::from)
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(StoreError::from)
     }
 
     pub fn search_tracks(&self, query: &str) -> Result<Vec<TrackRecord>, StoreError> {
@@ -131,7 +132,8 @@ impl Store {
              ORDER BY sort_index, date_added, id"
         ))?;
         let rows = statement.query_map([pattern], track_from_row)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(StoreError::from)
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(StoreError::from)
     }
 
     pub fn insert_track(&self, track: &NewTrack) -> Result<TrackRecord, StoreError> {
@@ -193,7 +195,8 @@ impl Store {
         let connection = self.connection();
         let transaction = connection.unchecked_transaction()?;
 
-        let total: i64 = transaction.query_row("SELECT COUNT(*) FROM tracks", [], |row| row.get(0))?;
+        let total: i64 =
+            transaction.query_row("SELECT COUNT(*) FROM tracks", [], |row| row.get(0))?;
         if ids.len() as i64 != total {
             return Err(StoreError::InvalidReorder);
         }
@@ -210,6 +213,81 @@ impl Store {
             if changed == 0 {
                 return Err(StoreError::InvalidReorder);
             }
+        }
+
+        transaction.commit()?;
+        Ok(())
+    }
+
+    /// Makes the database match `tracks` in one transaction.
+    ///
+    /// Existing rows are updated in place instead of being deleted, so playlist
+    /// membership survives a metadata edit or a reorder. Missing rows are
+    /// removed and `sort_index` follows the slice order.
+    pub fn sync_tracks(&self, tracks: &[NewTrack]) -> Result<(), StoreError> {
+        let mut keep = HashSet::with_capacity(tracks.len());
+        for track in tracks {
+            if !keep.insert(track.id.as_str()) {
+                return Err(StoreError::DuplicateTrack);
+            }
+        }
+
+        let connection = self.connection();
+        let transaction = connection.unchecked_transaction()?;
+
+        let existing: Vec<String> = {
+            let mut statement = transaction.prepare("SELECT id FROM tracks")?;
+            let rows = statement.query_map([], |row| row.get(0))?;
+            rows.collect::<Result<Vec<_>, _>>()?
+        };
+        for id in existing {
+            if !keep.contains(id.as_str()) {
+                transaction.execute("DELETE FROM tracks WHERE id = ?1", [&id])?;
+            }
+        }
+
+        for (index, track) in tracks.iter().enumerate() {
+            transaction.execute(
+                "INSERT INTO tracks (
+                    id, title, artist, album, album_artist, track_number,
+                    disc_number, duration, file_name, cover_file_name, format,
+                    content_hash, source, music_persistent_id, date_added, sort_index
+                 ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16)
+                 ON CONFLICT(id) DO UPDATE SET
+                    title = excluded.title,
+                    artist = excluded.artist,
+                    album = excluded.album,
+                    album_artist = excluded.album_artist,
+                    track_number = excluded.track_number,
+                    disc_number = excluded.disc_number,
+                    duration = excluded.duration,
+                    file_name = excluded.file_name,
+                    cover_file_name = excluded.cover_file_name,
+                    format = excluded.format,
+                    content_hash = excluded.content_hash,
+                    source = excluded.source,
+                    music_persistent_id = excluded.music_persistent_id,
+                    date_added = excluded.date_added,
+                    sort_index = excluded.sort_index",
+                params![
+                    track.id,
+                    track.title,
+                    track.artist,
+                    track.album,
+                    track.album_artist,
+                    track.track_number,
+                    track.disc_number,
+                    track.duration,
+                    track.file_name,
+                    track.cover_file_name,
+                    track.format,
+                    track.content_hash,
+                    track.source,
+                    track.music_persistent_id,
+                    track.date_added,
+                    index as i64,
+                ],
+            )?;
         }
 
         transaction.commit()?;
@@ -333,17 +411,30 @@ mod tests {
             .expect("batch insert");
 
         assert_eq!(
-            records.iter().map(|record| record.id.as_str()).collect::<Vec<_>>(),
+            records
+                .iter()
+                .map(|record| record.id.as_str())
+                .collect::<Vec<_>>(),
             ["a", "b", "c"]
         );
-        assert_eq!(records.iter().map(|record| record.sort_index).collect::<Vec<_>>(), [0, 1, 2]);
+        assert_eq!(
+            records
+                .iter()
+                .map(|record| record.sort_index)
+                .collect::<Vec<_>>(),
+            [0, 1, 2]
+        );
     }
 
     #[test]
     fn list_is_ordered_by_sort_index() {
         let store = Store::open_in_memory().expect("open store");
-        store.insert_tracks(&[track("a", "A"), track("b", "B")]).expect("insert");
-        store.reorder_tracks(&["b".to_string(), "a".to_string()]).expect("reorder");
+        store
+            .insert_tracks(&[track("a", "A"), track("b", "B")])
+            .expect("insert");
+        store
+            .reorder_tracks(&["b".to_string(), "a".to_string()])
+            .expect("reorder");
 
         let titles: Vec<String> = store
             .list_tracks()
@@ -420,16 +511,27 @@ mod tests {
         store.insert_tracks(&[blue, night]).expect("insert");
 
         assert_eq!(store.search_tracks("blue").expect("title search").len(), 1);
-        assert_eq!(store.search_tracks("IKIMONO").expect("artist search").len(), 1);
-        assert_eq!(store.search_tracks("Naruto").expect("album search").len(), 1);
-        assert_eq!(store.search_tracks("周杰伦").expect("unicode search").len(), 1);
+        assert_eq!(
+            store.search_tracks("IKIMONO").expect("artist search").len(),
+            1
+        );
+        assert_eq!(
+            store.search_tracks("Naruto").expect("album search").len(),
+            1
+        );
+        assert_eq!(
+            store.search_tracks("周杰伦").expect("unicode search").len(),
+            1
+        );
         assert!(store.search_tracks("missing").expect("no match").is_empty());
     }
 
     #[test]
     fn wildcard_characters_are_escaped() {
         let store = Store::open_in_memory().expect("open store");
-        store.insert_track(&track("a", "100% Pure")).expect("insert");
+        store
+            .insert_track(&track("a", "100% Pure"))
+            .expect("insert");
         store.insert_track(&track("b", "100 Pure")).expect("insert");
 
         let results = store.search_tracks("100%").expect("search");
@@ -440,7 +542,9 @@ mod tests {
     #[test]
     fn reorder_rejects_incomplete_or_duplicate_lists() {
         let store = Store::open_in_memory().expect("open store");
-        store.insert_tracks(&[track("a", "A"), track("b", "B")]).expect("insert");
+        store
+            .insert_tracks(&[track("a", "A"), track("b", "B")])
+            .expect("insert");
 
         assert!(matches!(
             store.reorder_tracks(&["a".to_string()]),
@@ -454,5 +558,90 @@ mod tests {
             store.reorder_tracks(&["a".to_string(), "missing".to_string()]),
             Err(StoreError::InvalidReorder)
         ));
+    }
+
+    #[test]
+    fn sync_replaces_deletes_and_reorders_in_one_pass() {
+        let store = Store::open_in_memory().expect("open store");
+        store
+            .insert_tracks(&[track("a", "A"), track("b", "B"), track("c", "C")])
+            .expect("insert");
+
+        let mut b = track("b", "B2");
+        b.artist = "Artist".to_string();
+        let d = track("d", "D");
+
+        store.sync_tracks(&[b, d]).expect("sync");
+
+        let records = store.list_tracks().expect("list");
+        assert_eq!(
+            records
+                .iter()
+                .map(|record| record.id.as_str())
+                .collect::<Vec<_>>(),
+            ["b", "d"]
+        );
+        assert_eq!(records[0].title, "B2");
+        assert_eq!(records[0].artist, "Artist");
+        assert_eq!(
+            records
+                .iter()
+                .map(|record| record.sort_index)
+                .collect::<Vec<_>>(),
+            [0, 1]
+        );
+    }
+
+    #[test]
+    fn sync_with_no_tracks_clears_the_library() {
+        let store = Store::open_in_memory().expect("open store");
+        store
+            .insert_tracks(&[track("a", "A"), track("b", "B")])
+            .expect("insert");
+
+        store.sync_tracks(&[]).expect("sync");
+
+        assert!(store.list_tracks().expect("list").is_empty());
+    }
+
+    #[test]
+    fn sync_rejects_duplicate_ids() {
+        let store = Store::open_in_memory().expect("open store");
+
+        let result = store.sync_tracks(&[track("a", "A"), track("a", "Again")]);
+
+        assert!(matches!(result, Err(StoreError::DuplicateTrack)));
+        assert!(store.list_tracks().expect("list").is_empty());
+    }
+
+    #[test]
+    fn sync_keeps_playlist_items_for_existing_tracks() {
+        let store = Store::open_in_memory().expect("open store");
+        store.insert_track(&track("a", "A")).expect("insert");
+        store
+            .connection()
+            .execute(
+                "INSERT INTO playlists (id, name, sort_index, created_at) VALUES ('p', 'P', 0, 0)",
+                [],
+            )
+            .expect("insert playlist");
+        store
+            .connection()
+            .execute(
+                "INSERT INTO playlist_items (playlist_id, track_id, position) VALUES ('p', 'a', 0)",
+                [],
+            )
+            .expect("insert item");
+
+        let mut a = track("a", "A2");
+        a.album = "Album".to_string();
+        store.sync_tracks(&[a]).expect("sync");
+
+        let items: i64 = store
+            .connection()
+            .query_row("SELECT COUNT(*) FROM playlist_items", [], |row| row.get(0))
+            .expect("count");
+        assert_eq!(items, 1);
+        assert_eq!(store.list_tracks().expect("list")[0].title, "A2");
     }
 }

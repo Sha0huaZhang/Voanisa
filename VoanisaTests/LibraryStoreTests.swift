@@ -77,6 +77,89 @@ final class LibraryStoreTests: XCTestCase {
         XCTAssertEqual(tracks.map(\.title), ["JSON"])
     }
 
+    func testSaveFallsBackToJSONWhenDatabaseIsUnreadable() throws {
+        try Data("not a database".utf8).write(to: databaseURL, options: .atomic)
+        let tracks = [makeTrack(title: "A")]
+
+        XCTAssertThrowsError(
+            try LibraryStore.save(tracks, databaseURL: databaseURL, jsonURL: jsonURL)
+        )
+
+        XCTAssertFalse(FileManager.default.fileExists(atPath: databaseURL.path))
+        XCTAssertEqual(
+            LibraryStore.load(databaseURL: databaseURL, jsonURL: jsonURL).map(\.title),
+            ["A"]
+        )
+
+        // The next launch migrates the snapshot into a fresh database.
+        LibraryStore.migrateIfNeeded(tracks, databaseURL: databaseURL)
+        XCTAssertEqual(try RustStore.tracks(path: databaseURL).get().count, 1)
+    }
+
+    func testSaveMirrorsTrackChangesAndOrder() throws {
+        let a = makeTrack(title: "A")
+        let b = makeTrack(title: "B")
+        try LibraryStore.save([a, b], databaseURL: databaseURL, jsonURL: jsonURL)
+
+        XCTAssertEqual(try RustStore.tracks(path: databaseURL).get().map(\.id), [
+            a.id.uuidString,
+            b.id.uuidString
+        ])
+
+        var renamed = a
+        renamed.title = "A2"
+        renamed.artist = "Artist"
+        try LibraryStore.save([renamed, b], databaseURL: databaseURL, jsonURL: jsonURL)
+
+        let updated = try RustStore.tracks(path: databaseURL).get()
+        XCTAssertEqual(updated.map(\.title), ["A2", "B"])
+        XCTAssertEqual(updated.first?.artist, "Artist")
+
+        let c = makeTrack(title: "C")
+        try LibraryStore.save([renamed, b, c], databaseURL: databaseURL, jsonURL: jsonURL)
+        XCTAssertEqual(try RustStore.tracks(path: databaseURL).get().count, 3)
+
+        try LibraryStore.save([c, renamed, b], databaseURL: databaseURL, jsonURL: jsonURL)
+        XCTAssertEqual(try RustStore.tracks(path: databaseURL).get().map(\.id), [
+            c.id.uuidString,
+            renamed.id.uuidString,
+            b.id.uuidString
+        ])
+
+        try LibraryStore.save([c, b], databaseURL: databaseURL, jsonURL: jsonURL)
+        XCTAssertEqual(try RustStore.tracks(path: databaseURL).get().map(\.id), [
+            c.id.uuidString,
+            b.id.uuidString
+        ])
+
+        let snapshot = try JSONDecoder().decode(
+            LibrarySnapshot.self,
+            from: Data(contentsOf: jsonURL)
+        )
+        XCTAssertEqual(snapshot.tracks.map(\.id), [c.id, b.id])
+    }
+
+    func testMigrationCopiesJSONTracksIntoEmptyDatabase() throws {
+        let tracks = [makeTrack(title: "A"), makeTrack(title: "B")]
+        try writeJSON(tracks)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: databaseURL.path))
+
+        LibraryStore.migrateIfNeeded(tracks, databaseURL: databaseURL)
+
+        XCTAssertEqual(try RustStore.tracks(path: databaseURL).get().map(\.id), [
+            tracks[0].id.uuidString,
+            tracks[1].id.uuidString
+        ])
+        XCTAssertEqual(
+            LibraryStore.load(databaseURL: databaseURL, jsonURL: jsonURL).map(\.id),
+            tracks.map(\.id)
+        )
+
+        // A second launch must not duplicate the rows.
+        LibraryStore.migrateIfNeeded(tracks, databaseURL: databaseURL)
+        XCTAssertEqual(try RustStore.tracks(path: databaseURL).get().count, 2)
+    }
+
     private func writeJSON(_ tracks: [Track]) throws {
         let snapshot = LibrarySnapshot(tracks: tracks)
         let encoder = JSONEncoder()
@@ -84,11 +167,15 @@ final class LibraryStoreTests: XCTestCase {
         try encoder.encode(snapshot).write(to: jsonURL, options: .atomic)
     }
 
-    private func makeTrack(title: String) -> Track {
+    private func makeTrack(
+        id: UUID = UUID(),
+        title: String,
+        artist: String = ""
+    ) -> Track {
         Track(
-            id: UUID(),
+            id: id,
             title: title,
-            artist: "",
+            artist: artist,
             album: "",
             duration: 1,
             fileName: "\(title).mp3",

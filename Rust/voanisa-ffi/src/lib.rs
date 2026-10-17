@@ -29,8 +29,9 @@ pub extern "C" fn voanisa_probe_json(path: *const c_char) -> *mut c_char {
 
     let result = catch_unwind(AssertUnwindSafe(|| probe_path(Path::new(&path))));
     let json = match result {
-        Ok(Ok(probe)) => serde_json::to_string(&probe)
-            .unwrap_or_else(|error| error_json(&error.to_string())),
+        Ok(Ok(probe)) => {
+            serde_json::to_string(&probe).unwrap_or_else(|error| error_json(&error.to_string()))
+        }
         Ok(Err(error)) => error_json(&error),
         Err(_) => error_json("panic in Rust core"),
     };
@@ -147,10 +148,7 @@ pub extern "C" fn voanisa_update_track_json(
 }
 
 #[no_mangle]
-pub extern "C" fn voanisa_delete_track_json(
-    path: *const c_char,
-    id: *const c_char,
-) -> *mut c_char {
+pub extern "C" fn voanisa_delete_track_json(path: *const c_char, id: *const c_char) -> *mut c_char {
     let path = match c_string_arg(path, "path") {
         Ok(value) => value,
         Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
@@ -184,6 +182,30 @@ pub extern "C" fn voanisa_reorder_tracks_json(
 
     guard(move || match parse_json::<Vec<String>>(&payload) {
         Ok(ids) => with_store(&path, |store| match store.reorder_tracks(&ids) {
+            Ok(()) => ok_json(),
+            Err(error) => store_error_json(&error),
+        }),
+        Err(error) => message_error_json(&error, "invalid_json"),
+    })
+}
+
+/// Replaces the stored track list in one transaction.
+#[no_mangle]
+pub extern "C" fn voanisa_sync_tracks_json(
+    path: *const c_char,
+    payload: *const c_char,
+) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let payload = match c_string_arg(payload, "payload") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || match parse_json::<Vec<NewTrack>>(&payload) {
+        Ok(tracks) => with_store(&path, |store| match store.sync_tracks(&tracks) {
             Ok(()) => ok_json(),
             Err(error) => store_error_json(&error),
         }),
@@ -236,6 +258,7 @@ fn store_error_json(error: &StoreError) -> String {
     let kind = match error {
         StoreError::NotFound => "not_found",
         StoreError::InvalidReorder => "invalid_reorder",
+        StoreError::DuplicateTrack => "duplicate_track",
         StoreError::UnsupportedSchema { .. } => "schema",
         StoreError::Sqlite(_) => "sqlite",
     };
@@ -268,10 +291,7 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("clock")
             .as_nanos();
-        std::env::temp_dir().join(format!(
-            "voanisa-ffi-{}-{nanos}.sqlite",
-            std::process::id()
-        ))
+        std::env::temp_dir().join(format!("voanisa-ffi-{}-{nanos}.sqlite", std::process::id()))
     }
 
     fn c(value: &str) -> CString {
@@ -340,10 +360,7 @@ mod tests {
         let listed = take(voanisa_tracks_json(path_c.as_ptr(), std::ptr::null()));
         assert_eq!(listed["data"][0]["title"], "New");
 
-        let deleted = take(voanisa_delete_track_json(
-            path_c.as_ptr(),
-            c("a").as_ptr(),
-        ));
+        let deleted = take(voanisa_delete_track_json(path_c.as_ptr(), c("a").as_ptr()));
         assert_eq!(deleted["data"]["deleted"], true);
 
         let listed = take(voanisa_tracks_json(path_c.as_ptr(), std::ptr::null()));
@@ -357,14 +374,59 @@ mod tests {
         let path = temp_db();
         let path_c = c(path.to_string_lossy().as_ref());
 
-        let batch = c(&format!("[{},{}]", track_json("a", "A"), track_json("b", "B")));
+        let batch = c(&format!(
+            "[{},{}]",
+            track_json("a", "A"),
+            track_json("b", "B")
+        ));
         let inserted = take(voanisa_insert_tracks_json(path_c.as_ptr(), batch.as_ptr()));
         assert_eq!(inserted["ok"], true);
 
         let reorder = c("[\"a\"]");
-        let result = take(voanisa_reorder_tracks_json(path_c.as_ptr(), reorder.as_ptr()));
+        let result = take(voanisa_reorder_tracks_json(
+            path_c.as_ptr(),
+            reorder.as_ptr(),
+        ));
         assert_eq!(result["ok"], false);
         assert_eq!(result["kind"], "invalid_reorder");
+
+        std::fs::remove_file(path).ok();
+    }
+
+    #[test]
+    fn sync_replaces_rows_through_c_abi() {
+        let path = temp_db();
+        let path_c = c(path.to_string_lossy().as_ref());
+
+        let batch = c(&format!(
+            "[{},{}]",
+            track_json("a", "A"),
+            track_json("b", "B")
+        ));
+        assert_eq!(
+            take(voanisa_insert_tracks_json(path_c.as_ptr(), batch.as_ptr()))["ok"],
+            true
+        );
+
+        let sync = c(&format!("[{}]", track_json("b", "B2")));
+        let synced = take(voanisa_sync_tracks_json(path_c.as_ptr(), sync.as_ptr()));
+        assert_eq!(synced["ok"], true);
+
+        let listed = take(voanisa_tracks_json(path_c.as_ptr(), std::ptr::null()));
+        assert_eq!(listed["data"].as_array().expect("array").len(), 1);
+        assert_eq!(listed["data"][0]["title"], "B2");
+
+        let duplicate = c(&format!(
+            "[{},{}]",
+            track_json("c", "C"),
+            track_json("c", "C2")
+        ));
+        let result = take(voanisa_sync_tracks_json(
+            path_c.as_ptr(),
+            duplicate.as_ptr(),
+        ));
+        assert_eq!(result["ok"], false);
+        assert_eq!(result["kind"], "duplicate_track");
 
         std::fs::remove_file(path).ok();
     }
