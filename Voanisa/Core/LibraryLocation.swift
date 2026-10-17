@@ -3,7 +3,8 @@ import Foundation
 /// The self-contained Voanisa library:
 ///
 ///     ~/Music/Voanisa/
-///       library.json
+///       library.sqlite         primary store
+///       library.json           portable snapshot and migration fallback
 ///       Media/                 audio files, UUID names
 ///       Covers/Originals/      user-supplied cover originals
 ///       Covers/Rendered/       square covers used by the UI
@@ -25,6 +26,7 @@ enum LibraryLocation {
     static var originalCoversURL: URL { coversURL.appendingPathComponent("Originals", isDirectory: true) }
     static var renderedCoversURL: URL { coversURL.appendingPathComponent("Rendered", isDirectory: true) }
     static var stagingURL: URL { rootURL.appendingPathComponent(".staging", isDirectory: true) }
+    static var databaseURL: URL { rootURL.appendingPathComponent("library.sqlite") }
     static var libraryFileURL: URL { rootURL.appendingPathComponent("library.json") }
 
     static func ensureDirectories() throws {
