@@ -17,6 +17,7 @@
 		2F346090BC606BA297B5AD3C /* VoanisaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */; };
 		362F92813E9277E36C76DE79 /* PlayerControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE37896B19738772798DF38F /* PlayerControlBar.swift */; };
 		3E9272BD23A962650666F496 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */; };
+		4C855FE2A16CC8FA05A33987 /* ImportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC642489D09BF2D1EBC578 /* ImportController.swift */; };
 		662EFF64F60D522690FF77D7 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85883D1DD1E9B9FE24B4537 /* SidebarView.swift */; };
 		6987FEE750F3742723441E17 /* SongListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F8E972CC81A146559280E /* SongListView.swift */; };
 		767AD8A7938CEA4DBB3AA2A5 /* Diagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E99FD786FFE1685186D40F6 /* Diagnostics.swift */; };
@@ -75,6 +76,7 @@
 		C0B3C0C450A883CEDC15B816 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		D78A5103C669CC124AA58FD8 /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		DBAB9270999A8AB99CDF2C6B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		DBBC642489D09BF2D1EBC578 /* ImportController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportController.swift; sourceTree = "<group>"; };
 		DE37896B19738772798DF38F /* PlayerControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlBar.swift; sourceTree = "<group>"; };
 		DFDF6E0C9C37083BC9C1BD87 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E94D53DE54028716072D24A5 /* RustBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBridge.swift; sourceTree = "<group>"; };
@@ -89,6 +91,7 @@
 				3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */,
 				2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */,
 				5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */,
+				598D65A5B7C79A47D61FB1F9 /* Controllers */,
 				FCCB4F3C31F97A84A32CFB22 /* Core */,
 				F364DB697AD8EE2F1EC1CF87 /* Localizable.strings */,
 				6008CF78F76D088EF2F5655B /* Models */,
@@ -113,6 +116,14 @@
 				924F8E972CC81A146559280E /* SongListView.swift */,
 			);
 			path = UI;
+			sourceTree = "<group>";
+		};
+		598D65A5B7C79A47D61FB1F9 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				DBBC642489D09BF2D1EBC578 /* ImportController.swift */,
+			);
+			path = Controllers;
 			sourceTree = "<group>";
 		};
 		5B9F8E2B088D313B924FCF3E = {
@@ -320,6 +331,7 @@
 				06FA81E68087FE42112863FE /* CoverCropSheet.swift in Sources */,
 				FE3657F0CF518113ABF77A40 /* CoverRenderer.swift in Sources */,
 				767AD8A7938CEA4DBB3AA2A5 /* Diagnostics.swift in Sources */,
+				4C855FE2A16CC8FA05A33987 /* ImportController.swift in Sources */,
 				B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */,
 				9AB7F51575D32E478DA53823 /* ImportSheet.swift in Sources */,
 				DF7166D0D0DD4E7713254DF8 /* LibraryLocation.swift in Sources */,

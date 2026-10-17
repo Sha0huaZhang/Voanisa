@@ -3,7 +3,11 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct ImportSheet: View {
-    @ObservedObject var model: AppModel
+    @ObservedObject var controller: ImportController
+    let existingTracks: [Track]
+    let onApply: (ImportOutcome) -> Void
+    let onCancel: () -> Void
+    let onError: (String) -> Void
 
     @State private var selectedID: UUID?
     @State private var isCropping = false
@@ -13,7 +17,7 @@ struct ImportSheet: View {
     @State private var isImporting = false
     @State private var didAttempt = false
 
-    private var candidates: [ImportCandidate] { model.importCandidates }
+    private var candidates: [ImportCandidate] { controller.candidates }
 
     private var selectedIndex: Int? {
         guard let selectedID else { return nil }
@@ -168,7 +172,7 @@ struct ImportSheet: View {
                     }
                     if candidate.coverJPEG != nil {
                         Button("import.removeCover") {
-                            model.importCandidates[index].coverJPEG = nil
+                            controller.candidates[index].coverJPEG = nil
                         }
                         .foregroundStyle(.red)
                     }
@@ -192,7 +196,7 @@ struct ImportSheet: View {
 
             Spacer()
 
-            Button(action: model.cancelImport) {
+            Button(action: onCancel) {
                 Text("common.cancel")
                     .foregroundColor(.red)
                     .padding(.horizontal, 10)
@@ -227,16 +231,16 @@ struct ImportSheet: View {
     ) -> Binding<T> {
         Binding(
             get: {
-                guard let index = selectedIndex, model.importCandidates.indices.contains(index) else {
+                guard let index = selectedIndex, controller.candidates.indices.contains(index) else {
                     return fallback
                 }
-                return model.importCandidates[index][keyPath: keyPath]
+                return controller.candidates[index][keyPath: keyPath]
             },
             set: { newValue in
-                guard let index = selectedIndex, model.importCandidates.indices.contains(index) else {
+                guard let index = selectedIndex, controller.candidates.indices.contains(index) else {
                     return
                 }
-                model.importCandidates[index][keyPath: keyPath] = newValue
+                controller.candidates[index][keyPath: keyPath] = newValue
             }
         )
     }
@@ -251,14 +255,14 @@ struct ImportSheet: View {
 
         guard panel.runModal() == .OK, let url = panel.url else { return }
         guard let image = CoverRenderer.loadOrientedImage(url: url) else {
-            model.presentError(String(localized: "error.cover"))
+            onError(String(localized: "error.cover"))
             return
         }
 
         let original = CoverRenderer.jpegData(image, quality: 0.95)
-        if let index = model.importCandidates.firstIndex(where: { $0.id == candidate.id }) {
-            model.importCandidates[index].originalCoverData = original
-            model.importCandidates[index].originalCoverExtension = "jpg"
+        if let index = controller.candidates.firstIndex(where: { $0.id == candidate.id }) {
+            controller.candidates[index].originalCoverData = original
+            controller.candidates[index].originalCoverExtension = "jpg"
         }
 
         cropTargetID = candidate.id
@@ -268,11 +272,11 @@ struct ImportSheet: View {
 
     private func applyCrop(_ cropped: CGImage) {
         guard let target = cropTargetID,
-              let index = model.importCandidates.firstIndex(where: { $0.id == target }) else {
+              let index = controller.candidates.firstIndex(where: { $0.id == target }) else {
             return
         }
         let resized = CoverRenderer.resizedSquare(cropped, side: 1024) ?? cropped
-        model.importCandidates[index].coverJPEG = CoverRenderer.jpegData(resized)
+        controller.candidates[index].coverJPEG = CoverRenderer.jpegData(resized)
         cropTargetID = nil
         cropImage = nil
     }
@@ -284,18 +288,15 @@ struct ImportSheet: View {
         isImporting = true
         Task {
             do {
-                let outcome = try await ImportService.commit(
-                    candidates: model.importCandidates,
-                    existing: model.tracks
-                )
+                let outcome = try await controller.commit(existing: existingTracks)
                 await MainActor.run {
                     isImporting = false
-                    model.applyImport(outcome)
+                    onApply(outcome)
                 }
             } catch {
                 await MainActor.run {
                     isImporting = false
-                    model.presentError(error.localizedDescription)
+                    onError(error.localizedDescription)
                 }
             }
         }

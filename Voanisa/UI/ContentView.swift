@@ -4,14 +4,20 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
     @ObservedObject var model: AppModel
+    @ObservedObject private var imports: ImportController
     @State private var isDropTargeted = false
+
+    init(model: AppModel) {
+        self.model = model
+        _imports = ObservedObject(wrappedValue: model.imports)
+    }
 
     var body: some View {
         NavigationSplitView {
             SidebarView(
                 selection: $model.selection,
                 searchText: $model.searchText,
-                onImport: model.presentImportPanel
+                onImport: imports.presentPanel
             )
             .navigationSplitViewColumnWidth(min: 170, ideal: 195, max: 240)
         } detail: {
@@ -21,8 +27,17 @@ struct ContentView: View {
         .frame(minWidth: 860, minHeight: 620)
         .overlay(alignment: .topTrailing) { preparingOverlay }
         .overlay { dropOverlay }
-        .sheet(isPresented: $model.isShowingImport) {
-            ImportSheet(model: model)
+        .sheet(isPresented: Binding(
+            get: { imports.isShowing },
+            set: { imports.isShowing = $0 }
+        )) {
+            ImportSheet(
+                controller: imports,
+                existingTracks: model.tracks,
+                onApply: model.applyImport,
+                onCancel: imports.cancel,
+                onError: model.presentError
+            )
         }
         .alert("error.title", isPresented: $model.isShowingError) {
             Button("common.gotIt") {}
@@ -81,7 +96,7 @@ struct ContentView: View {
 
     @ViewBuilder
     private var preparingOverlay: some View {
-        if model.isPreparingImport {
+        if imports.isPreparing {
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
                 Text("progress.preparing")
@@ -136,7 +151,7 @@ struct ContentView: View {
 
         group.notify(queue: .main) {
             guard !urls.isEmpty else { return }
-            model.importURLs(urls)
+            imports.importURLs(urls)
         }
         return true
     }

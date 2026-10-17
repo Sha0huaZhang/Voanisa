@@ -1,6 +1,5 @@
 import AppKit
 import Foundation
-import UniformTypeIdentifiers
 
 @MainActor
 final class AppModel: ObservableObject {
@@ -9,16 +8,13 @@ final class AppModel: ObservableObject {
     @Published var searchText = ""
     @Published var repeatMode: RepeatMode = .off
 
-    @Published var importCandidates: [ImportCandidate] = []
-    @Published var isShowingImport = false
-    @Published var isPreparingImport = false
-
     @Published var errorMessage: String?
     @Published var isShowingError = false
 
     @Published var deleteTarget: Track?
 
     let player = PlaybackEngine()
+    let imports = ImportController()
     private let artworkCache = NSCache<NSString, NSImage>()
 
     init() {
@@ -33,6 +29,9 @@ final class AppModel: ObservableObject {
 
         player.onFinished = { [weak self] in
             self?.advanceAfterFinish()
+        }
+        imports.onError = { [weak self] message in
+            self?.presentError(message)
         }
 
         MediaKeys.install(
@@ -169,57 +168,10 @@ final class AppModel: ObservableObject {
 
     // MARK: - Import
 
-    func presentImportPanel() {
-        let panel = NSOpenPanel()
-        panel.title = String(localized: "import.panel.title")
-        panel.message = String(localized: "import.panel.message")
-        panel.prompt = String(localized: "import.panel.prompt")
-        panel.allowsMultipleSelection = true
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = true
-        panel.canCreateDirectories = false
-
-        var types: [UTType] = [.audio, .movie, .folder]
-        for ext in ["mp3", "m4a", "m4b", "aac", "flac", "wav", "aiff", "aif", "caf", "mp4", "mov", "m4v"] {
-            if let type = UTType(filenameExtension: ext), !types.contains(type) {
-                types.append(type)
-            }
-        }
-        panel.allowedContentTypes = types
-
-        if panel.runModal() == .OK {
-            importURLs(panel.urls)
-        }
-    }
-
-    func importURLs(_ urls: [URL]) {
-        guard !urls.isEmpty else { return }
-        isPreparingImport = true
-        Task {
-            let candidates = await Task.detached(priority: .userInitiated) {
-                await ImportService.prepare(urls: urls)
-            }.value
-
-            isPreparingImport = false
-            guard !candidates.isEmpty else {
-                presentError(String(localized: "import.noFiles"))
-                return
-            }
-            importCandidates = candidates
-            isShowingImport = true
-        }
-    }
-
-    func cancelImport() {
-        isShowingImport = false
-        importCandidates = []
-    }
-
     func applyImport(_ outcome: ImportOutcome) {
         tracks.append(contentsOf: outcome.tracks)
         save()
-        isShowingImport = false
-        importCandidates = []
+        imports.finish()
 
         if player.currentTrackID == nil, let first = outcome.tracks.first {
             play(first)

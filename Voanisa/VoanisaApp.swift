@@ -27,7 +27,7 @@ struct VoanisaApp: App {
             CommandGroup(replacing: .newItem) {}
             CommandGroup(after: .newItem) {
                 Button("menu.import") {
-                    model.presentImportPanel()
+                    model.imports.presentPanel()
                 }
                 .keyboardShortcut("o", modifiers: .command)
             }
