@@ -62,6 +62,14 @@
 "crop.cancel" = "Cancel";
 "crop.confirm" = "Use This Cover";
 
+/* Settings — language */
+"settings.language"                 = "Language";
+"settings.language.system"          = "Follow System";
+"settings.language.english"         = "English";
+"settings.language.chinese"         = "简体中文";
+"settings.language.restart.title"   = "Language Changed";
+"settings.language.restart.message" = "Voanisa needs to restart before the new language takes effect.";
+
 /* Settings */
 "settings.library"       = "Library";
 "settings.songCount"     = "Songs";
@@ -103,6 +111,8 @@
 /* Shared */
 "common.cancel"   = "Cancel";
 "common.gotIt"    = "Got it";
+"common.later"    = "Later";
+"common.restart"  = "Restart Now";
 "common.play"     = "Play";
 "common.showInFinder" = "Show in Finder";
 "common.remove"   = "Remove from Library…";

@@ -10,6 +10,7 @@
 		06FA81E68087FE42112863FE /* CoverCropSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */; };
 		12D39F9440F68B8067E99126 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8867802AF5F8F4AF6ED77AEB /* AboutView.swift */; };
 		22C069C639DF4C2223C66852 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */; };
+		241DED57074D7855241D9508 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78A5103C669CC124AA58FD8 /* AppLanguage.swift */; };
 		26B7EBB50D6BFDBEB704A6B0 /* MediaKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BDAEF8412E70FBF89679BA1 /* MediaKeys.swift */; };
 		2F346090BC606BA297B5AD3C /* VoanisaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */; };
 		362F92813E9277E36C76DE79 /* PlayerControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE37896B19738772798DF38F /* PlayerControlBar.swift */; };
@@ -56,6 +57,7 @@
 		A9F94669C61DCDA67D3B501A /* ImportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSheet.swift; sourceTree = "<group>"; };
 		ACF6A0D8A6BC6D1249699E8B /* ImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportService.swift; sourceTree = "<group>"; };
 		C0B3C0C450A883CEDC15B816 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		D78A5103C669CC124AA58FD8 /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		DBAB9270999A8AB99CDF2C6B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DE37896B19738772798DF38F /* PlayerControlBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerControlBar.swift; sourceTree = "<group>"; };
 		DFDF6E0C9C37083BC9C1BD87 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
@@ -107,6 +109,7 @@
 		6008CF78F76D088EF2F5655B /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				D78A5103C669CC124AA58FD8 /* AppLanguage.swift */,
 				1084173A90E1515DE94BE17A /* SidebarItem.swift */,
 				054D7035A4AE5E29505217C2 /* Track.swift */,
 			);
@@ -248,6 +251,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				12D39F9440F68B8067E99126 /* AboutView.swift in Sources */,
+				241DED57074D7855241D9508 /* AppLanguage.swift in Sources */,
 				A235AB71F7EB16567095709B /* AppModel.swift in Sources */,
 				91CF47E71DCD3899244B5CAD /* AudioProbe.swift in Sources */,
 				8E63760C2BD05AD727EAA5ED /* ComingSoonView.swift in Sources */,
