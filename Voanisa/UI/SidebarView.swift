@@ -17,8 +17,10 @@ struct SidebarView: View {
                     }
                 }
                 Section {
-                    Label(SidebarItem.settings.title, systemImage: SidebarItem.settings.systemImage)
-                        .tag(SidebarItem.settings)
+                    ForEach([SidebarItem.settings, .about]) { item in
+                        Label(item.title, systemImage: item.systemImage)
+                            .tag(item)
+                    }
                 }
             }
             .listStyle(.sidebar)

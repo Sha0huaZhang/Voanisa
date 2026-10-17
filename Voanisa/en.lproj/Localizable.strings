@@ -10,6 +10,7 @@
 "sidebar.songs"     = "Songs";
 "sidebar.playlists" = "Playlists";
 "sidebar.albums"    = "Albums";
+"sidebar.about"     = "About";
 "sidebar.settings"  = "Settings";
 "sidebar.import"    = "Import Audio";
 

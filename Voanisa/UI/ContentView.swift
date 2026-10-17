@@ -60,6 +60,8 @@ struct ContentView: View {
                 Divider()
                 SongListView(model: model)
             }
+        case .about:
+            AboutView()
         case .settings:
             SettingsView(model: model)
         case .playlists:

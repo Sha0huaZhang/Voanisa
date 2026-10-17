@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		06FA81E68087FE42112863FE /* CoverCropSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */; };
+		12D39F9440F68B8067E99126 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8867802AF5F8F4AF6ED77AEB /* AboutView.swift */; };
 		22C069C639DF4C2223C66852 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */; };
 		26B7EBB50D6BFDBEB704A6B0 /* MediaKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BDAEF8412E70FBF89679BA1 /* MediaKeys.swift */; };
 		2F346090BC606BA297B5AD3C /* VoanisaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */; };
@@ -45,6 +46,7 @@
 		4D4CC0E75A8D823D1D352489 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoanisaApp.swift; sourceTree = "<group>"; };
 		57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
+		8867802AF5F8F4AF6ED77AEB /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		8F1C9EBD04E91C89BC1751CA /* Voanisa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Voanisa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		924F8E972CC81A146559280E /* SongListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongListView.swift; sourceTree = "<group>"; };
 		9A342DD02A493CFEF54AEF42 /* PlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackEngine.swift; sourceTree = "<group>"; };
@@ -81,6 +83,7 @@
 		45EF17533EAEB884C50FF31A /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				8867802AF5F8F4AF6ED77AEB /* AboutView.swift */,
 				9D2C3D126C143800052A6D2C /* ComingSoonView.swift */,
 				DBAB9270999A8AB99CDF2C6B /* ContentView.swift */,
 				159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */,
@@ -244,6 +247,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12D39F9440F68B8067E99126 /* AboutView.swift in Sources */,
 				A235AB71F7EB16567095709B /* AppModel.swift in Sources */,
 				91CF47E71DCD3899244B5CAD /* AudioProbe.swift in Sources */,
 				8E63760C2BD05AD727EAA5ED /* ComingSoonView.swift in Sources */,

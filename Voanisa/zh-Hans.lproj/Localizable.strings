@@ -9,6 +9,7 @@
 "sidebar.songs"     = "歌曲";
 "sidebar.playlists" = "歌单";
 "sidebar.albums"    = "专辑";
+"sidebar.about"     = "关于";
 "sidebar.settings"  = "设置";
 "sidebar.import"    = "导入音频";
 
