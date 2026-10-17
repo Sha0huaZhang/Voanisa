@@ -22,10 +22,10 @@ final class AppModel: ObservableObject {
             self?.advanceAfterFinish()
         }
         imports.onError = { [weak self] message in
-            self?.presentError(message)
+            self?.presentError(message, context: "import")
         }
         library.onError = { [weak self] message in
-            self?.presentError(message)
+            self?.presentError(message, context: "library")
         }
 
         MediaKeys.install(
@@ -45,7 +45,10 @@ final class AppModel: ObservableObject {
         do {
             try player.play(track: track)
         } catch {
-            presentError(String(localized: "error.play") + "\n" + error.localizedDescription)
+            presentError(
+                String(localized: "error.play") + "\n" + error.localizedDescription,
+                context: "playback"
+            )
         }
     }
 
@@ -122,7 +125,7 @@ final class AppModel: ObservableObject {
             play(first)
         }
         if !outcome.failures.isEmpty {
-            presentError(outcome.failures.joined(separator: "\n"))
+            presentError(outcome.failures.joined(separator: "\n"), context: "import")
         }
         if outcome.skippedDuplicates > 0 {
             Diagnostics.log("导入完成：新增 \(outcome.tracks.count) 首，跳过重复 \(outcome.skippedDuplicates) 首")
@@ -131,7 +134,8 @@ final class AppModel: ObservableObject {
 
     // MARK: - Errors
 
-    func presentError(_ message: String) {
+    func presentError(_ message: String, context: String = "app") {
+        Diagnostics.error(message, context: context)
         errorMessage = message
         isShowingError = true
     }

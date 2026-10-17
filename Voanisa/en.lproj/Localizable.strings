@@ -81,6 +81,7 @@
 "settings.about.rustCore"  = "Rust core";
 "settings.about.github"    = "GitHub";
 "settings.about.license"   = "MIT License";
+"settings.about.openLog"   = "Open Log";
 "settings.about.copyright" = "© 2026 Sha0huaZhang";
 
 /* Formats */

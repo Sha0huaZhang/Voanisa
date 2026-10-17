@@ -172,10 +172,14 @@ enum ImportService {
                 if let original = candidate.originalCoverData {
                     let ext = candidate.originalCoverExtension ?? "img"
                     let originalName = "\(id.uuidString).\(ext)"
-                    try? original.write(
-                        to: LibraryLocation.originalCoversURL.appendingPathComponent(originalName),
-                        options: .atomic
-                    )
+                    do {
+                        try original.write(
+                            to: LibraryLocation.originalCoversURL.appendingPathComponent(originalName),
+                            options: .atomic
+                        )
+                    } catch {
+                        Diagnostics.error(error.localizedDescription, context: "import.originalCover")
+                    }
                 }
 
                 let storedFormat = needsExtraction ? "M4A · AAC" : candidate.probe.formatDescription

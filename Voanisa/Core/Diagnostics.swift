@@ -35,6 +35,12 @@ enum Diagnostics {
         }
     }
 
+    /// A single place for failures that reach the user or are swallowed by a
+    /// best-effort operation.
+    static func error(_ message: String, context: String) {
+        log("[ERROR] \(context): \(message)")
+    }
+
     static func markSession() {
         log("")
         log("===== Voanisa \(AppVersion.display) =====")

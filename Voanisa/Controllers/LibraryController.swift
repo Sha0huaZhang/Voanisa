@@ -44,7 +44,7 @@ final class LibraryController: ObservableObject {
         do {
             try LibraryStore.save(tracks)
         } catch {
-            Diagnostics.log("保存曲库失败：\(error.localizedDescription)")
+            Diagnostics.error(error.localizedDescription, context: "library.save")
             onError?(error.localizedDescription)
         }
     }
@@ -53,15 +53,23 @@ final class LibraryController: ObservableObject {
         tracks.removeAll { $0.id == track.id }
         save()
 
-        try? FileManager.default.trashItem(
-            at: LibraryLocation.mediaURL(for: track.fileName),
-            resultingItemURL: nil
-        )
-        if let cover = track.coverFileName {
-            try? FileManager.default.trashItem(
-                at: LibraryLocation.coverURL(for: cover),
+        do {
+            try FileManager.default.trashItem(
+                at: LibraryLocation.mediaURL(for: track.fileName),
                 resultingItemURL: nil
             )
+        } catch {
+            Diagnostics.error(error.localizedDescription, context: "library.trash.audio")
+        }
+        if let cover = track.coverFileName {
+            do {
+                try FileManager.default.trashItem(
+                    at: LibraryLocation.coverURL(for: cover),
+                    resultingItemURL: nil
+                )
+            } catch {
+                Diagnostics.error(error.localizedDescription, context: "library.trash.cover")
+            }
         }
         artworkCache.removeObject(forKey: track.id.uuidString as NSString)
         Diagnostics.log("移除《\(track.title)》")

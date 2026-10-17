@@ -45,6 +45,9 @@ struct AboutView: View {
                 HStack(spacing: 14) {
                     Link("settings.about.github", destination: Self.githubURL)
                     Link("settings.about.license", destination: Self.licenseURL)
+                    Button("settings.about.openLog") {
+                        NSWorkspace.shared.open(Diagnostics.fileURL)
+                    }
                 }
 
                 Text("settings.about.copyright")
