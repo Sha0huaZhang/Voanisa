@@ -23,6 +23,8 @@ dependency and no files written outside the library.
 
 - Import audio files or whole folders from the sidebar, by drag and drop, or ⌘O
 - Detect the container from the **file header**, not the extension
+- Pre-fill title, artist, album, album artist, track/disc number and cover from
+  embedded tags when the file provides them
 - Give every song a title, artist, album, album artist, track/disc number and a
   square cover with pan/zoom crop
 - Edit metadata and replace or remove the cover at any time from the row menu

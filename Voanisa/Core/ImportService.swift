@@ -72,7 +72,9 @@ enum ImportService {
         }
 
         for url in urls {
-            let values = try? url.resourceValues(forKeys: [.isDirectoryKey, .isPackageKey])
+            let values = try? url.resourceValues(
+                forKeys: [.isDirectoryKey, .isPackageKey, .isRegularFileKey]
+            )
             if values?.isDirectory == true, values?.isPackage != true {
                 let keys: [URLResourceKey] = [.isRegularFileKey, .isDirectoryKey, .isPackageKey]
                 guard let enumerator = FileManager.default.enumerator(
@@ -103,8 +105,36 @@ enum ImportService {
 
         for url in files {
             let probe = await AudioProbe.probe(url: url)
-            let title = url.deletingPathExtension().lastPathComponent
-            candidates.append(ImportCandidate(sourceURL: url, probe: probe, title: title))
+            let embedded = probe.isSupported
+                ? await AudioMetadataReader.read(url: url)
+                : EmbeddedMetadata()
+
+            let fallbackTitle = url.deletingPathExtension().lastPathComponent
+            var candidate = ImportCandidate(
+                sourceURL: url,
+                probe: probe,
+                title: embedded.title ?? fallbackTitle
+            )
+            candidate.artist = embedded.artist ?? ""
+            candidate.album = embedded.album ?? ""
+            candidate.albumArtist = embedded.albumArtist ?? ""
+            candidate.trackNumber = embedded.trackNumber
+            candidate.discNumber = embedded.discNumber
+
+            if let artwork = embedded.artwork,
+               let image = CoverRenderer.loadOrientedImage(data: artwork),
+               let rendered = CoverRenderer.centeredSquareCoverJPEG(from: image) {
+                candidate.coverJPEG = rendered
+                candidate.originalCoverData = artwork
+                candidate.originalCoverExtension = CoverRenderer.imageFileExtension(
+                    for: artwork
+                )
+            }
+
+            if embedded.title != nil || embedded.artist != nil || embedded.album != nil {
+                Diagnostics.log("读取内嵌标签 \(url.lastPathComponent)")
+            }
+            candidates.append(candidate)
         }
         return candidates
     }

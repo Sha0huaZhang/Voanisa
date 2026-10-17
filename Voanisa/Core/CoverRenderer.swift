@@ -12,6 +12,17 @@ enum CoverRenderer {
     /// crop editor. The original file is not modified.
     static func loadOrientedImage(url: URL, maxPixelSize: Int = 2048) -> CGImage? {
         guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+        return load(source: source, maxPixelSize: maxPixelSize)
+    }
+
+    static func loadOrientedImage(data: Data, maxPixelSize: Int = 2048) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            return nil
+        }
+        return load(source: source, maxPixelSize: maxPixelSize)
+    }
+
+    private static func load(source: CGImageSource, maxPixelSize: Int) -> CGImage? {
         let options: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
             kCGImageSourceCreateThumbnailWithTransform: true,
@@ -67,5 +78,27 @@ enum CoverRenderer {
         guard let cropped = crop(image, to: cropRect),
               let resized = resizedSquare(cropped, side: side) else { return nil }
         return jpegData(resized)
+    }
+
+    /// Embedded artwork has no crop editor, so take the largest centred square.
+    static func centeredSquareCoverJPEG(from image: CGImage, side: Int = 1024) -> Data? {
+        let edge = CGFloat(min(image.width, image.height))
+        guard edge >= 1 else { return nil }
+
+        let rect = CGRect(
+            x: (CGFloat(image.width) - edge) / 2,
+            y: (CGFloat(image.height) - edge) / 2,
+            width: edge,
+            height: edge
+        )
+        return squareCoverJPEG(from: image, cropRect: rect, side: side)
+    }
+
+    static func imageFileExtension(for data: Data) -> String? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let type = CGImageSourceGetType(source) else {
+            return nil
+        }
+        return UTType(type as String)?.preferredFilenameExtension
     }
 }

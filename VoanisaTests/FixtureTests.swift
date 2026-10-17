@@ -42,8 +42,15 @@ final class FixtureTests: XCTestCase {
 
         XCTAssertEqual(
             Set(urls.map(\.lastPathComponent)),
-            Set(["tone-a.wav", "tone-b.wav"])
+            Set(["tone-a.wav", "tone-b.wav", "tagged.m4a"])
         )
+    }
+
+    func testExpandAcceptsADirectAudioFile() {
+        let url = audioDirectory.appendingPathComponent("tone-a.wav")
+        let urls = ImportService.expand(urls: [url])
+
+        XCTAssertEqual(urls.map(\.lastPathComponent), ["tone-a.wav"])
     }
 
     func testPlaceholderImageFixturesLoad() {

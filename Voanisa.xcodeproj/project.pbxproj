@@ -31,10 +31,12 @@
 		872D759BC03604055E823A19 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = F364DB697AD8EE2F1EC1CF87 /* Localizable.strings */; };
 		8E63760C2BD05AD727EAA5ED /* ComingSoonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D2C3D126C143800052A6D2C /* ComingSoonView.swift */; };
 		91CF47E71DCD3899244B5CAD /* AudioProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9C7B03E0CA8E22F019C8649 /* AudioProbe.swift */; };
+		96B8E02808149239AD202C2E /* AudioMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAD62D67EE8C5C73F2A709D /* AudioMetadataTests.swift */; };
 		9AB7F51575D32E478DA53823 /* ImportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F94669C61DCDA67D3B501A /* ImportSheet.swift */; };
 		9DFC50F1F1E94FB38F4964ED /* MetadataEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD517CDEE85E8AAA65252CE /* MetadataEditorSheet.swift */; };
 		A235AB71F7EB16567095709B /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */; };
 		B4119FFAF43E184A375FE671 /* LibraryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86991DAB39661E74351BA35 /* LibraryController.swift */; };
+		B55BB634DB665201C7CB499C /* AudioMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5243083786B57A543F799144 /* AudioMetadata.swift */; };
 		B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF6A0D8A6BC6D1249699E8B /* ImportService.swift */; };
 		BA223FA89D5660552FB0F3DB /* ArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */; };
 		BD7ABC152AA49BAB92B68A57 /* TrackMetadataEdit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB02D996D7332B60F92031 /* TrackMetadataEdit.swift */; };
@@ -73,8 +75,10 @@
 		4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSearchTests.swift; sourceTree = "<group>"; };
 		4D4CC0E75A8D823D1D352489 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoanisaApp.swift; sourceTree = "<group>"; };
+		5243083786B57A543F799144 /* AudioMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMetadata.swift; sourceTree = "<group>"; };
 		57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
 		59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStoreTests.swift; sourceTree = "<group>"; };
+		5AAD62D67EE8C5C73F2A709D /* AudioMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMetadataTests.swift; sourceTree = "<group>"; };
 		6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioContainerTests.swift; sourceTree = "<group>"; };
 		77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustStoreTests.swift; sourceTree = "<group>"; };
 		7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongReorderTests.swift; sourceTree = "<group>"; };
@@ -192,6 +196,7 @@
 			children = (
 				3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */,
 				6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */,
+				5AAD62D67EE8C5C73F2A709D /* AudioMetadataTests.swift */,
 				FC88943A2A6285354A683454 /* FixtureTests.swift */,
 				59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */,
 				77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */,
@@ -215,6 +220,7 @@
 		FCCB4F3C31F97A84A32CFB22 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				5243083786B57A543F799144 /* AudioMetadata.swift */,
 				E9C7B03E0CA8E22F019C8649 /* AudioProbe.swift */,
 				0708AC330AC503799CA8E67D /* CoverRenderer.swift */,
 				0E99FD786FFE1685186D40F6 /* Diagnostics.swift */,
@@ -344,6 +350,7 @@
 			files = (
 				BA223FA89D5660552FB0F3DB /* ArtworkTests.swift in Sources */,
 				27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */,
+				96B8E02808149239AD202C2E /* AudioMetadataTests.swift in Sources */,
 				449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */,
 				F9C9F69EC190D4A65F1AB832 /* LibraryStoreTests.swift in Sources */,
 				E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */,
@@ -361,6 +368,7 @@
 				12D39F9440F68B8067E99126 /* AboutView.swift in Sources */,
 				241DED57074D7855241D9508 /* AppLanguage.swift in Sources */,
 				A235AB71F7EB16567095709B /* AppModel.swift in Sources */,
+				B55BB634DB665201C7CB499C /* AudioMetadata.swift in Sources */,
 				91CF47E71DCD3899244B5CAD /* AudioProbe.swift in Sources */,
 				8E63760C2BD05AD727EAA5ED /* ComingSoonView.swift in Sources */,
 				845A69CBBF12F318D4391D3A /* ContentView.swift in Sources */,
