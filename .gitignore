@@ -83,3 +83,9 @@ __pycache__/
 
 # VS Code workspace state
 .vscode/
+
+# Private docs
+*.pages
+*.xlsx
+*.doc
+*.docx
