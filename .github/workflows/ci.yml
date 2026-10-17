@@ -37,7 +37,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Rust tests
-        run: cargo test --manifest-path Rust/Cargo.toml -p voanisa-core --locked
+        run: cargo test --manifest-path Rust/Cargo.toml --workspace --locked
 
       - name: Install XcodeGen
         run: brew install xcodegen

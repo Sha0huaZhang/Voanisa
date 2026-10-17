@@ -32,6 +32,7 @@
 		B4119FFAF43E184A375FE671 /* LibraryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86991DAB39661E74351BA35 /* LibraryController.swift */; };
 		B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF6A0D8A6BC6D1249699E8B /* ImportService.swift */; };
 		DF7166D0D0DD4E7713254DF8 /* LibraryLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A9C72705F2B739CDC513CB /* LibraryLocation.swift */; };
+		E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */; };
 		E886B0631CEB759D89108AAB /* SongSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */; };
 		F1F8C9F3B90E585760425C7C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0B3C0C450A883CEDC15B816 /* SettingsView.swift */; };
 		F7B1D96304039ECA39B3779B /* SidebarItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1084173A90E1515DE94BE17A /* SidebarItem.swift */; };
@@ -64,6 +65,7 @@
 		5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoanisaApp.swift; sourceTree = "<group>"; };
 		57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryStore.swift; sourceTree = "<group>"; };
 		6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioContainerTests.swift; sourceTree = "<group>"; };
+		77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustStoreTests.swift; sourceTree = "<group>"; };
 		7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongReorderTests.swift; sourceTree = "<group>"; };
 		8867802AF5F8F4AF6ED77AEB /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		8F1C9EBD04E91C89BC1751CA /* Voanisa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Voanisa.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -170,6 +172,7 @@
 			isa = PBXGroup;
 			children = (
 				6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */,
+				77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */,
 				7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */,
 				4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */,
 			);
@@ -316,6 +319,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */,
+				E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */,
 				044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */,
 				E886B0631CEB759D89108AAB /* SongSearchTests.swift in Sources */,
 			);

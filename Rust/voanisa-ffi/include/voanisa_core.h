@@ -18,7 +18,20 @@ const char *voanisa_core_version(void);
 /// voanisa_string_free().
 char *voanisa_probe_json(const char *path);
 
-/// Frees a string returned by voanisa_probe_json().
+/// SQLite library calls. Every function returns a heap-allocated JSON string:
+///
+///     {"ok":true,"data":...}
+///     {"ok":false,"error":"...","kind":"not_found"}
+///
+/// The caller owns the returned string and must release it with
+/// voanisa_string_free().
+char *voanisa_tracks_json(const char *path, const char *query);
+char *voanisa_schema_version_json(const char *path);
+char *voanisa_insert_track_json(const char *path, const char *payload);
+char *voanisa_insert_tracks_json(const char *path, const char *payload);
+char *voanisa_update_track_json(const char *path, const char *payload);
+char *voanisa_delete_track_json(const char *path, const char *id);
+char *voanisa_reorder_tracks_json(const char *path, const char *payload);
 void voanisa_string_free(char *value);
 
 #ifdef __cplusplus
