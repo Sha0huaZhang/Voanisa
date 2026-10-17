@@ -10,6 +10,7 @@
 		044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */; };
 		06FA81E68087FE42112863FE /* CoverCropSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */; };
 		12D39F9440F68B8067E99126 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8867802AF5F8F4AF6ED77AEB /* AboutView.swift */; };
+		1FD9CF0FC223EE5F09712BB7 /* TrackTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0DCC274F18881470F769F0 /* TrackTests.swift */; };
 		22C069C639DF4C2223C66852 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */; };
 		241DED57074D7855241D9508 /* AppLanguage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78A5103C669CC124AA58FD8 /* AppLanguage.swift */; };
 		26B7EBB50D6BFDBEB704A6B0 /* MediaKeys.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BDAEF8412E70FBF89679BA1 /* MediaKeys.swift */; };
@@ -79,6 +80,7 @@
 		A9F94669C61DCDA67D3B501A /* ImportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportSheet.swift; sourceTree = "<group>"; };
 		ACF6A0D8A6BC6D1249699E8B /* ImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportService.swift; sourceTree = "<group>"; };
 		C0B3C0C450A883CEDC15B816 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		CB0DCC274F18881470F769F0 /* TrackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackTests.swift; sourceTree = "<group>"; };
 		D78A5103C669CC124AA58FD8 /* AppLanguage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLanguage.swift; sourceTree = "<group>"; };
 		D86991DAB39661E74351BA35 /* LibraryController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryController.swift; sourceTree = "<group>"; };
 		DBAB9270999A8AB99CDF2C6B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 				77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */,
 				7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */,
 				4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */,
+				CB0DCC274F18881470F769F0 /* TrackTests.swift */,
 			);
 			path = VoanisaTests;
 			sourceTree = "<group>";
@@ -326,6 +329,7 @@
 				E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */,
 				044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */,
 				E886B0631CEB759D89108AAB /* SongSearchTests.swift in Sources */,
+				1FD9CF0FC223EE5F09712BB7 /* TrackTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

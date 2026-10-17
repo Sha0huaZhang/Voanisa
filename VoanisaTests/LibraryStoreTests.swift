@@ -34,7 +34,12 @@ final class LibraryStoreTests: XCTestCase {
             dateAdded: 1_700_000_000
         )
         new.artist = "Rust"
+        new.albumArtist = "Rust Collective"
+        new.trackNumber = 3
+        new.discNumber = 2
         new.format = "MP3"
+        new.source = "local"
+        new.musicPersistentID = "persistent-id"
         _ = try RustStore.insertTrack(path: databaseURL, track: new).get()
         try writeJSON([makeTrack(title: "JSON")])
 
@@ -43,6 +48,11 @@ final class LibraryStoreTests: XCTestCase {
         XCTAssertEqual(tracks.map(\.title), ["SQLite"])
         XCTAssertEqual(tracks.first?.id, id)
         XCTAssertEqual(tracks.first?.artist, "Rust")
+        XCTAssertEqual(tracks.first?.albumArtist, "Rust Collective")
+        XCTAssertEqual(tracks.first?.trackNumber, 3)
+        XCTAssertEqual(tracks.first?.discNumber, 2)
+        XCTAssertEqual(tracks.first?.source, "local")
+        XCTAssertEqual(tracks.first?.musicPersistentID, "persistent-id")
         XCTAssertEqual(tracks.first?.fileName, "sqlite.mp3")
         XCTAssertEqual(
             tracks.first?.dateAdded,
@@ -140,7 +150,13 @@ final class LibraryStoreTests: XCTestCase {
     }
 
     func testExportWritesAPortableSnapshot() throws {
-        let tracks = [makeTrack(title: "A"), makeTrack(title: "B")]
+        var a = makeTrack(title: "A")
+        a.albumArtist = "Album Artist"
+        a.trackNumber = 1
+        a.discNumber = 2
+        a.source = "music"
+        a.musicPersistentID = "persistent-id"
+        let tracks = [a, makeTrack(title: "B")]
         let destination = directory.appendingPathComponent("export.json")
 
         try LibraryStore.exportJSON(tracks, to: destination)
@@ -151,6 +167,20 @@ final class LibraryStoreTests: XCTestCase {
         )
         XCTAssertEqual(snapshot.version, 1)
         XCTAssertEqual(snapshot.tracks, tracks)
+    }
+
+    func testFullMetadataRoundTripsThroughSQLite() throws {
+        var track = makeTrack(title: "Full")
+        track.albumArtist = "Album Artist"
+        track.trackNumber = 4
+        track.discNumber = 1
+        track.source = "music"
+        track.musicPersistentID = "persistent-id"
+
+        try LibraryStore.save([track], databaseURL: databaseURL, jsonURL: jsonURL)
+
+        let loaded = LibraryStore.load(databaseURL: databaseURL, jsonURL: jsonURL)
+        XCTAssertEqual(loaded, [track])
     }
 
     func testMigrationCopiesJSONTracksIntoEmptyDatabase() throws {

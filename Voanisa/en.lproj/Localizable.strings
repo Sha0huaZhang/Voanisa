@@ -46,6 +46,9 @@
 "import.name"          = "Title";
 "import.artist"        = "Artist";
 "import.album"         = "Album";
+"import.albumArtist"   = "Album Artist";
+"import.trackNumber"   = "Track No.";
+"import.discNumber"    = "Disc No.";
 "import.cover"         = "Cover";
 "import.chooseCover"   = "Choose Cover…";
 "import.removeCover"   = "Remove Cover";

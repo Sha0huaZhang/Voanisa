@@ -45,6 +45,9 @@
 "import.name"          = "歌曲名";
 "import.artist"        = "歌手";
 "import.album"         = "专辑";
+"import.albumArtist"   = "专辑艺术家";
+"import.trackNumber"   = "曲目编号";
+"import.discNumber"    = "碟号";
 "import.cover"         = "封面";
 "import.chooseCover"   = "选择封面…";
 "import.removeCover"   = "移除封面";

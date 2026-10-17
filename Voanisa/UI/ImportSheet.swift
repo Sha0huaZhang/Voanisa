@@ -107,6 +107,18 @@ struct ImportSheet: View {
                     field("import.name", text: binding(\.title, fallback: ""))
                     field("import.artist", text: binding(\.artist, fallback: ""))
                     field("import.album", text: binding(\.album, fallback: ""))
+                    field("import.albumArtist", text: binding(\.albumArtist, fallback: ""))
+
+                    HStack(alignment: .top, spacing: 12) {
+                        numberField(
+                            "import.trackNumber",
+                            value: binding(\.trackNumber, fallback: nil)
+                        )
+                        numberField(
+                            "import.discNumber",
+                            value: binding(\.discNumber, fallback: nil)
+                        )
+                    }
 
                     if didAttempt,
                        candidate.error == nil,
@@ -138,6 +150,29 @@ struct ImportSheet: View {
                 .foregroundStyle(.secondary)
             TextField(title, text: text)
                 .textFieldStyle(.roundedBorder)
+        }
+    }
+
+    private func numberField(_ title: LocalizedStringKey, value: Binding<Int?>) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.callout)
+                .foregroundStyle(.secondary)
+            TextField(
+                title,
+                text: Binding(
+                    get: { value.wrappedValue.map(String.init) ?? "" },
+                    set: { text in
+                        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if trimmed.isEmpty {
+                            value.wrappedValue = nil
+                        } else if let number = Int(trimmed) {
+                            value.wrappedValue = number
+                        }
+                    }
+                )
+            )
+            .textFieldStyle(.roundedBorder)
         }
     }
 

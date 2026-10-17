@@ -119,6 +119,7 @@ enum SongSearch {
             track.title.localizedCaseInsensitiveContains(trimmed)
                 || track.artist.localizedCaseInsensitiveContains(trimmed)
                 || track.album.localizedCaseInsensitiveContains(trimmed)
+                || track.albumArtist.localizedCaseInsensitiveContains(trimmed)
         }
     }
 }

@@ -151,7 +151,12 @@ enum LibraryStore {
             coverFileName: record.coverFileName,
             format: record.format,
             contentHash: record.contentHash,
-            dateAdded: Date(timeIntervalSince1970: record.dateAdded)
+            dateAdded: Date(timeIntervalSince1970: record.dateAdded),
+            albumArtist: record.albumArtist,
+            trackNumber: record.trackNumber,
+            discNumber: record.discNumber,
+            source: record.source,
+            musicPersistentID: record.musicPersistentID
         )
     }
 }
@@ -168,9 +173,14 @@ private extension Track {
         )
         record.artist = artist
         record.album = album
+        record.albumArtist = albumArtist
+        record.trackNumber = trackNumber
+        record.discNumber = discNumber
         record.duration = duration
         record.coverFileName = coverFileName
         record.format = format
+        record.source = source
+        record.musicPersistentID = musicPersistentID
         return record
     }
 }

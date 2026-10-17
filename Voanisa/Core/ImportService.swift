@@ -9,6 +9,9 @@ struct ImportCandidate: Identifiable, Sendable {
     var title: String
     var artist: String = ""
     var album: String = ""
+    var albumArtist: String = ""
+    var trackNumber: Int?
+    var discNumber: Int?
     var coverJPEG: Data?
     var originalCoverData: Data?
     var originalCoverExtension: String?
@@ -193,7 +196,11 @@ enum ImportService {
                     coverFileName: coverFileName,
                     format: storedFormat,
                     contentHash: hash,
-                    dateAdded: Date()
+                    dateAdded: Date(),
+                    albumArtist: candidate.albumArtist
+                        .trimmingCharacters(in: .whitespacesAndNewlines),
+                    trackNumber: candidate.trackNumber,
+                    discNumber: candidate.discNumber
                 )
                 newTracks.append(track)
                 existingHashes.insert(hash)

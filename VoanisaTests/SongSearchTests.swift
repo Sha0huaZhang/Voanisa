@@ -2,7 +2,12 @@ import XCTest
 @testable import Voanisa
 
 final class SongSearchTests: XCTestCase {
-    private func track(title: String, artist: String = "", album: String = "") -> Track {
+    private func track(
+        title: String,
+        artist: String = "",
+        album: String = "",
+        albumArtist: String = ""
+    ) -> Track {
         Track(
             id: UUID(),
             title: title,
@@ -13,7 +18,8 @@ final class SongSearchTests: XCTestCase {
             coverFileName: nil,
             format: "MP3",
             contentHash: title,
-            dateAdded: Date(timeIntervalSince1970: 0)
+            dateAdded: Date(timeIntervalSince1970: 0),
+            albumArtist: albumArtist
         )
     }
 
@@ -43,6 +49,12 @@ final class SongSearchTests: XCTestCase {
     func testMatchesAlbum() {
         let result = SongSearch.filter(library, query: "naruto")
         XCTAssertEqual(result.map(\.title), ["Blue Bird"])
+    }
+
+    func testMatchesAlbumArtist() {
+        let list = [track(title: "Compilation", albumArtist: "Various Artists")]
+        let result = SongSearch.filter(list, query: "various")
+        XCTAssertEqual(result.map(\.title), ["Compilation"])
     }
 
     func testTrimsWhitespace() {
