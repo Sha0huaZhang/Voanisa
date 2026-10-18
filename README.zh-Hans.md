@@ -15,7 +15,7 @@
 
 ## 编程语言
 
-应用与可移植核心由 Swift、Rust 编写；C 只用于两者之间的两个 FFI 头文件，SQL 通过核心里的 SQLite 使用。Shell 与 Python 仅作构建工具，已从 GitHub 的语言统计中排除。
+应用与可移植核心由 Swift、Rust 编写。C 只出现在两者之间的两个 FFI 头文件里，SQL 通过核心里的 SQLite 使用；头文件、Shell/Python 工具与配置文件都不计入 GitHub 的语言统计，让语言条只反映项目真正使用的两种语言。
 
 ## 环境要求
 

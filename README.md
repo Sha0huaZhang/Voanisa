@@ -16,10 +16,10 @@ dependency and no files written outside the library.
 
 ## Languages
 
-Swift and Rust make up the app and the portable core; C appears only in the two
-FFI headers between them, and SQL is used through SQLite inside the core. Shell
-and Python are auxiliary build tooling and are kept out of GitHub's language
-statistics.
+Swift and Rust make up the app and the portable core. C appears only in the two
+FFI headers between them, and SQL is used through SQLite inside the core; the
+headers, the Shell/Python tooling and the configuration files are all kept out of
+GitHub's language bar so it reflects the two languages the project is written in.
 
 ## Requirements
 

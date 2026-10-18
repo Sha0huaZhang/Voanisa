@@ -1,12 +1,20 @@
 # GitHub language statistics
 #
-# The product is the Swift app plus the portable Rust core; the build and
-# packaging scripts are tooling. They stay in the repository and keep their
-# syntax highlighting, but they should not take space in the language bar.
+# Only the two languages that make up the product should appear in the language
+# bar: the Swift app and the portable Rust core. Everything else in this
+# repository is tooling, configuration or generated data, and those small slices
+# were being grouped into "Other". They keep their syntax highlighting on GitHub;
+# `linguist-detectable=false` only removes them from the statistics.
 *.py linguist-detectable=false
 *.sh linguist-detectable=false
 
-# The two headers are the C ABI between Swift and the Rust core. Linguist
-# defaults `.h` to C; stating it here keeps that true even if a C++ file is
-# added later (Linguist then starts guessing C++ for headers).
-*.h linguist-language=C
+# The two headers are the C ABI between Swift and the Rust core: real C, but a
+# 4 KB slice that only adds noise to the bar.
+*.h linguist-detectable=false
+
+# Project configuration and generated metadata.
+*.yml linguist-detectable=false
+*.yaml linguist-detectable=false
+*.json linguist-detectable=false
+*.toml linguist-detectable=false
+*.strings linguist-detectable=false
