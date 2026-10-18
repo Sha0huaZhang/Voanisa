@@ -20,7 +20,7 @@ final class StreamingAudioPlayer {
     private var reachedEnd = false
     private var generation = 0
     private var inFlight = 0
-    private var baseFrame: Int64 = 0
+    private var clock = StreamClock()
     private var volume: Float = 0.7
 
     /// 4096 frames is ~93 ms at 44.1 kHz: small enough for responsive seeking,
@@ -36,12 +36,17 @@ final class StreamingAudioPlayer {
     var isPlaying: Bool { playing }
 
     var position: Double {
+        clock.seconds(rendered: renderedSampleTime, sampleRate: sampleRate)
+    }
+
+    /// Frames the node has rendered on its current timeline, or `nil` when it is
+    /// not advancing — paused, stopped, or finished.
+    private var renderedSampleTime: Int64? {
         guard let nodeTime = node.lastRenderTime,
               let playerTime = node.playerTime(forNodeTime: nodeTime) else {
-            return Double(baseFrame) / max(sampleRate, 1)
+            return nil
         }
-        let frames = max(0, baseFrame + playerTime.sampleTime)
-        return Double(frames) / max(sampleRate, 1)
+        return playerTime.sampleTime
     }
 
     // MARK: - Transport
@@ -65,7 +70,7 @@ final class StreamingAudioPlayer {
         sampleRate = decoder.info.sampleRate
         channels = decoder.info.channels
         codec = decoder.info.codec
-        baseFrame = 0
+        clock = StreamClock()
         reachedEnd = false
         inFlight = 0
         playing = false
@@ -88,6 +93,7 @@ final class StreamingAudioPlayer {
     func play() {
         queue.async { [weak self] in
             guard let self, self.decoder != nil else { return }
+            self.resumeFromPauseIfNeeded()
             if !self.engine.isRunning {
                 try? self.engine.start()
             }
@@ -97,9 +103,32 @@ final class StreamingAudioPlayer {
         }
     }
 
+    /// Restarts the node's timeline at the frame the user paused on.
+    ///
+    /// `AVAudioPlayerNode.pause()` leaves the node's sample clock in a state it
+    /// will not report through `playerTime(forNodeTime:)`, while the progress
+    /// bar still needs an anchor. Seeking the decoder to the paused frame and
+    /// letting the node start a fresh timeline keeps both in agreement.
+    private func resumeFromPauseIfNeeded() {
+        guard let resume = clock.pausedFrame, let decoder else { return }
+
+        clock.pausedFrame = nil
+        clock.baseFrame = resume
+        generation += 1
+        inFlight = 0
+        reachedEnd = false
+        node.stop()
+        _ = decoder.seek(to: Double(resume) / max(sampleRate, 1))
+    }
+
     func pause() {
         queue.async { [weak self] in
             guard let self else { return }
+            // Freeze the frame before pausing: once the node stops, it reports no
+            // player time at all, and the unfrozen fallback is `baseFrame` — the
+            // point the last seek started from, usually zero. That snap to the
+            // seek origin is what emptied the progress bar.
+            self.clock.pausedFrame = self.clock.frame(rendered: self.renderedSampleTime)
             self.playing = false
             self.node.pause()
         }
@@ -115,7 +144,11 @@ final class StreamingAudioPlayer {
             self.reachedEnd = false
 
             _ = decoder.seek(to: seconds)
-            self.baseFrame = Int64((seconds * decoder.info.sampleRate).rounded())
+            let frame = Int64((seconds * decoder.info.sampleRate).rounded())
+            self.clock.baseFrame = frame
+            // Paused playback has no rendered time to add, so the frozen frame is
+            // the position itself.
+            self.clock.pausedFrame = self.playing ? nil : frame
 
             if self.playing {
                 self.node.play()
@@ -140,6 +173,7 @@ final class StreamingAudioPlayer {
             self.engine.stop()
             self.decoder?.close()
             self.decoder = nil
+            self.clock = StreamClock()
         }
     }
 
@@ -214,8 +248,37 @@ final class StreamingAudioPlayer {
 
     private func finish() {
         playing = false
+        // Anchor the clock at the end of the file: the node reports no player
+        // time once it runs dry, and the bar would otherwise jump back to the
+        // seek origin as soon as the last sample has been heard.
+        clock.pausedFrame = nil
+        clock.baseFrame = Int64((duration * max(sampleRate, 1)).rounded())
         DispatchQueue.main.async { [weak self] in
             self?.onFinished?()
         }
+    }
+}
+
+/// Frame arithmetic behind the progress bar.
+///
+/// While the node plays, the position is `baseFrame` plus the frames it has
+/// rendered on its current timeline. Paused and finished playback report no
+/// rendered time at all, so those positions are frozen into `pausedFrame` /
+/// `baseFrame`. Without that, the fallback was always the seek origin, which is
+/// why pausing used to empty the progress bar.
+struct StreamClock: Equatable {
+    /// Frames that came before the node's current timeline.
+    var baseFrame: Int64 = 0
+    /// The frame shown while playback is not advancing; nil while playing.
+    var pausedFrame: Int64?
+
+    func frame(rendered: Int64?) -> Int64 {
+        if let pausedFrame { return pausedFrame }
+        guard let rendered else { return baseFrame }
+        return baseFrame + max(0, rendered)
+    }
+
+    func seconds(rendered: Int64?, sampleRate: Double) -> Double {
+        Double(frame(rendered: rendered)) / max(sampleRate, 1)
     }
 }
