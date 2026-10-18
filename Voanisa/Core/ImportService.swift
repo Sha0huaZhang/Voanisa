@@ -99,17 +99,30 @@ enum ImportService {
                 for case let fileURL as URL in enumerator {
                     let fileValues = try? fileURL.resourceValues(forKeys: [.isRegularFileKey])
                     guard fileValues?.isRegularFile == true else { continue }
-                    guard AudioProbe.quickContainer(for: fileURL) != .unknown else { continue }
+                    // Header sniffing still decides; this only avoids opening
+                    // every photo and document in a large folder.
+                    guard Self.looksLikeAudio(fileURL) else { continue }
                     append(fileURL)
                 }
             } else if values?.isRegularFile == true {
-                guard AudioProbe.quickContainer(for: url) != .unknown else { continue }
+                // A file the user picked explicitly is always inspected.
                 append(url)
             }
         }
 
         return result
     }
+
+    private static func looksLikeAudio(_ url: URL) -> Bool {
+        audioExtensions.contains(url.pathExtension.lowercased())
+    }
+
+    private static let audioExtensions: Set<String> = [
+        "mp3", "mp2", "mp1", "m4a", "m4b", "m4r", "aac", "alac",
+        "flac", "wav", "wave", "aiff", "aif", "aifc", "caf",
+        "mp4", "mov", "m4v", "ogg", "oga", "opus", "wv", "ape",
+        "mka", "mkv", "webm", "wma", "dsf", "dff"
+    ]
 
     /// Probes files and reads their tags, a few at a time.
     ///
@@ -127,7 +140,7 @@ enum ImportService {
         let reportEvery = max(1, files.count / 200)
         var processed = 0
 
-        await withTaskGroup(of: (Int, ImportCandidate).self) { group in
+        await withTaskGroup(of: (Int, ImportCandidate?).self) { group in
             var next = 0
             let limit = min(8, files.count)
 
@@ -158,7 +171,12 @@ enum ImportService {
         return candidates.compactMap { $0 }
     }
 
-    private static func makeCandidate(for url: URL) async -> ImportCandidate {
+    private static func makeCandidate(for url: URL) async -> ImportCandidate? {
+        // The folder walk filters by extension; the header still has the last
+        // word, and is checked here so the eight-way group pays for it in
+        // parallel rather than during enumeration.
+        guard AudioProbe.quickContainer(for: url) != .unknown else { return nil }
+
         // One asset per file: probing and tag reading share the same parse.
         let asset = AVURLAsset(url: url)
         let probe = await AudioProbe.probe(url: url, asset: asset)
