@@ -340,6 +340,11 @@ struct RustTrack: Decodable, Identifiable {
     }
 }
 
+struct RustSnapshotCounts: Decodable {
+    let tracks: Int
+    let playlists: Int
+}
+
 struct RustNewTrack: Encodable {
     let id: String
     var title: String
@@ -460,6 +465,40 @@ private struct RustSchemaVersion: Decodable { let version: Int }
 /// Requests and responses travel as JSON, so Rust layout changes never break
 /// the Swift side.
 enum RustStore {
+    /// Writes `library.json` from SQLite: the core owns the snapshot format.
+    static func exportSnapshot(database: URL, to out: URL) -> RustSnapshotCounts? {
+        let result: Result<RustSnapshotCounts, RustBridgeError> = database.path.withCString {
+            dbPointer in
+            out.path.withCString { outPointer in
+                decodeEnvelope(voanisa_export_snapshot_json(dbPointer, outPointer))
+            }
+        }
+        switch result {
+        case .success(let counts):
+            return counts
+        case .failure(let error):
+            Diagnostics.error(error.message, context: "library.snapshot.export")
+            return nil
+        }
+    }
+
+    /// Restores a snapshot into SQLite, skipping rows that already exist.
+    static func importSnapshot(from json: URL, database: URL) -> RustSnapshotCounts? {
+        let result: Result<RustSnapshotCounts, RustBridgeError> = json.path.withCString {
+            jsonPointer in
+            database.path.withCString { dbPointer in
+                decodeEnvelope(voanisa_import_snapshot_json(jsonPointer, dbPointer))
+            }
+        }
+        switch result {
+        case .success(let counts):
+            return counts
+        case .failure(let error):
+            Diagnostics.error(error.message, context: "library.snapshot.import")
+            return nil
+        }
+    }
+
     static func schemaVersion(path: URL) -> Result<Int, RustBridgeError> {
         path.path.withCString { pathPointer in
             let result: Result<RustSchemaVersion, RustBridgeError> =

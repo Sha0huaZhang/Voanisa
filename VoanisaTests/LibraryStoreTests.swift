@@ -245,6 +245,31 @@ final class LibraryStoreTests: XCTestCase {
         )
     }
 
+    func testSnapshotIsWrittenByTheCoreAndRestoresTheDatabase() throws {
+        let track = makeTrack(title: "Roundtrip")
+        try LibraryStore.save([track], databaseURL: databaseURL, jsonURL: jsonURL)
+
+        // The core writes the same shape the app used to: our decoder must still
+        // read it, otherwise older snapshots and backups would break.
+        let snapshot = try JSONDecoder().decode(
+            LibrarySnapshot.self,
+            from: Data(contentsOf: jsonURL)
+        )
+        XCTAssertEqual(snapshot.version, 1)
+        XCTAssertEqual(snapshot.tracks, [track])
+
+        // Losing the database must restore it from the snapshot through Rust.
+        try FileManager.default.removeItem(at: databaseURL)
+        XCTAssertEqual(
+            LibraryStore.load(databaseURL: databaseURL, jsonURL: jsonURL).map(\.title),
+            ["Roundtrip"]
+        )
+        XCTAssertEqual(
+            try RustStore.tracks(path: databaseURL).get().map(\.title),
+            ["Roundtrip"]
+        )
+    }
+
     func testFullMetadataRoundTripsThroughSQLite() throws {
         var track = makeTrack(title: "Full")
         track.albumArtist = "Album Artist"

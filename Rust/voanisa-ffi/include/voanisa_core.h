@@ -80,6 +80,14 @@ char *voanisa_artwork_to_file_json(const char *path, const char *out);
 ///
 /// The caller owns the returned string and must release it with
 /// voanisa_string_free().
+/// Writes library.json from SQLite:
+///
+///     {"ok":true,"data":{"tracks":69,"playlists":1}}
+char *voanisa_export_snapshot_json(const char *database, const char *out);
+
+/// Restores library.json into SQLite, skipping rows that already exist.
+char *voanisa_import_snapshot_json(const char *json, const char *database);
+
 char *voanisa_tracks_json(const char *path, const char *query);
 char *voanisa_schema_version_json(const char *path);
 char *voanisa_insert_track_json(const char *path, const char *payload);

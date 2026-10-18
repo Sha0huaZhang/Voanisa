@@ -4,6 +4,7 @@ pub mod hash;
 pub mod library;
 pub mod playlist;
 pub mod probe;
+pub mod snapshot;
 pub mod store;
 pub mod tags;
 
@@ -13,5 +14,6 @@ pub use hash::{hash_bytes, hash_file};
 pub use library::{NewTrack, TrackRecord, TrackUpdate};
 pub use playlist::PlaylistRecord;
 pub use probe::{detect, probe_path, quick_container, ProbeResult};
+pub use snapshot::{import_snapshot, read_snapshot, write_snapshot, Snapshot, SnapshotCounts};
 pub use store::{migrate, user_version, Store, StoreError, CURRENT_SCHEMA_VERSION};
 pub use tags::{read_artwork, read_tags, write_artwork, write_tags, Artwork, TagWrite, TrackTags};

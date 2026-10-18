@@ -60,6 +60,20 @@ enum LibraryStore {
                 Diagnostics.error(error.localizedDescription, context: "library.sqlite.read")
             }
         }
+        // Restore the snapshot through the core first: it writes SQLite, which
+        // then becomes the single place the rest of the app reads from. The
+        // Swift decoder remains for a snapshot the core cannot parse.
+        if FileManager.default.fileExists(atPath: jsonURL.path),
+           let counts = RustStore.importSnapshot(from: jsonURL, database: databaseURL),
+           counts.tracks > 0 || counts.playlists > 0,
+           case .success(let records) = RustStore.tracks(path: databaseURL) {
+            let restored = records.compactMap { track(from: $0) }
+            if !restored.isEmpty {
+                Diagnostics.log("从 library.json 恢复了 \(restored.count) 首")
+                return restored
+            }
+        }
+
         return loadSnapshot(url: jsonURL)?.tracks ?? []
     }
 
@@ -132,7 +146,17 @@ enum LibraryStore {
             return copy
         }
 
-        try saveJSON(tracks: tracks, playlists: reconciled, url: jsonURL)
+        // The Rust core owns the snapshot format now; the Swift encoder stays as
+        // a fallback for the case where the database itself was unusable. The
+        // core must not run against a discarded database: opening it would
+        // create an empty one and export nothing.
+        var snapshotWritten = false
+        if databaseError == nil {
+            snapshotWritten = RustStore.exportSnapshot(database: databaseURL, to: jsonURL) != nil
+        }
+        if !snapshotWritten {
+            try saveJSON(tracks: tracks, playlists: reconciled, url: jsonURL)
+        }
 
         if let databaseError {
             throw databaseError

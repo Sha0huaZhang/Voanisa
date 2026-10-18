@@ -6,8 +6,9 @@ use std::os::raw::c_char;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 use voanisa_core::{
-    hash_file, inspect, read_tags, probe_path, write_artwork, write_square_cover, write_tags,
-    AudioDecoder, NewTrack, ProbeResult, Store, StoreError, TagWrite, TrackUpdate,
+    hash_file, import_snapshot, inspect, read_tags, probe_path, write_artwork, write_snapshot,
+    write_square_cover, write_tags, AudioDecoder, NewTrack, ProbeResult, Store, StoreError,
+    TagWrite, TrackUpdate,
 };
 
 #[derive(Deserialize)]
@@ -341,6 +342,53 @@ pub extern "C" fn voanisa_artwork_to_file_json(
         Ok(Some(mime)) => success_json(&json!({ "written": true, "mime": mime })),
         Ok(None) => success_json(&json!({ "written": false })),
         Err(error) => message_error_json(&error, "io"),
+    })
+}
+
+/// Writes `library.json` from SQLite. JSON:
+///
+///     {"ok":true,"data":{"tracks":69,"playlists":1}}
+#[no_mangle]
+pub extern "C" fn voanisa_export_snapshot_json(
+    database: *const c_char,
+    out: *const c_char,
+) -> *mut c_char {
+    let database = match c_string_arg(database, "database") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let out = match c_string_arg(out, "out") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || match write_snapshot(Path::new(&database), Path::new(&out)) {
+        Ok(counts) => success_json(&counts),
+        Err(error) => message_error_json(&error, "snapshot"),
+    })
+}
+
+/// Restores `library.json` into SQLite, skipping tracks and playlists that
+/// already exist. JSON:
+///
+///     {"ok":true,"data":{"tracks":69,"playlists":1}}
+#[no_mangle]
+pub extern "C" fn voanisa_import_snapshot_json(
+    json: *const c_char,
+    database: *const c_char,
+) -> *mut c_char {
+    let json = match c_string_arg(json, "json") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let database = match c_string_arg(database, "database") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || match import_snapshot(Path::new(&json), Path::new(&database)) {
+        Ok(counts) => success_json(&counts),
+        Err(error) => message_error_json(&error, "snapshot"),
     })
 }
 
