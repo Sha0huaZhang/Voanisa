@@ -8,6 +8,10 @@
 *.py linguist-detectable=false
 *.sh linguist-detectable=false
 
+# The command-line helper is deliberately extensionless so it reads like the
+# command it is; GitHub still detects it as Shell from its shebang.
+Scripts/voanisadmgrun linguist-detectable=false
+
 # The two headers are the C ABI between Swift and the Rust core: real C, but a
 # 4 KB slice that only adds noise to the bar.
 *.h linguist-detectable=false
