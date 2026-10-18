@@ -10,6 +10,28 @@ struct EmbeddedMetadata: Sendable {
     var trackNumber: Int? = nil
     var discNumber: Int? = nil
     var artwork: Data? = nil
+
+    /// True when every textual field is missing, which is the signal to ask
+    /// AVFoundation for a second opinion.
+    var isEmpty: Bool {
+        title == nil
+            && artist == nil
+            && album == nil
+            && albumArtist == nil
+            && trackNumber == nil
+            && discNumber == nil
+    }
+
+    /// Fills the gaps from another source, keeping what is already known.
+    mutating func merge(_ other: EmbeddedMetadata) {
+        title = title ?? other.title
+        artist = artist ?? other.artist
+        album = album ?? other.album
+        albumArtist = albumArtist ?? other.albumArtist
+        trackNumber = trackNumber ?? other.trackNumber
+        discNumber = discNumber ?? other.discNumber
+        artwork = artwork ?? other.artwork
+    }
 }
 
 /// Reads embedded tags and artwork with AVFoundation.

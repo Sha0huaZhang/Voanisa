@@ -6,6 +6,7 @@ license.workspace = true
 
 [dependencies]
 ape-decoder = "0.3"
+lofty = "0.22"
 opus-pure = "0.2"
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }

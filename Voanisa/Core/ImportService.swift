@@ -177,25 +177,37 @@ enum ImportService {
         // parallel rather than during enumeration.
         guard AudioProbe.quickContainer(for: url) != .unknown else { return nil }
 
-        // One asset per file: probing and tag reading share the same parse.
-        let asset = AVURLAsset(url: url)
-        let probe = await AudioProbe.probe(url: url, asset: asset)
-        var embedded = probe.isSupported
-            ? await AudioMetadataReader.read(url: url, asset: asset)
-            : EmbeddedMetadata()
-
-        // Ogg, Opus and the other portable formats have no AVFoundation
-        // metadata, so the Rust core supplies the basics.
-        if !probe.container.isNative, let tags = RustCore.tags(url: url) {
-            embedded.title = embedded.title ?? tags.title
-            embedded.artist = embedded.artist ?? tags.artist
-            embedded.album = embedded.album ?? tags.album
-            embedded.albumArtist = embedded.albumArtist ?? tags.albumArtist
-            embedded.trackNumber = embedded.trackNumber ?? tags.trackNumber
-            embedded.discNumber = embedded.discNumber ?? tags.discNumber
+        let probe = await AudioProbe.probe(url: url)
+        guard probe.isSupported else {
+            return ImportCandidate(
+                sourceURL: url,
+                probe: probe,
+                title: url.deletingPathExtension().lastPathComponent
+            )
         }
 
-        // Artwork for those containers only exists in their own metadata block.
+        // Tags come from the portable core: `lofty` reads ID3v1/v2, MP4 ilst,
+        // Vorbis comments, FLAC and APEv2, so one code path covers every
+        // container and no AVURLAsset has to be opened.
+        var embedded = EmbeddedMetadata()
+        if let tags = RustCore.tags(url: url) {
+            embedded.title = tags.title
+            embedded.artist = tags.artist
+            embedded.album = tags.album
+            embedded.albumArtist = tags.albumArtist
+            embedded.trackNumber = tags.trackNumber
+            embedded.discNumber = tags.discNumber
+        }
+
+        // Unusual tagging still gets a second chance from AVFoundation, but only
+        // when the core found nothing at all.
+        if embedded.isEmpty, probe.container.isNative {
+            let fallback = await AudioMetadataReader.read(url: url)
+            embedded.merge(fallback)
+        }
+
+        // Artwork lives in the container's own metadata block; the core writes
+        // the picture to a temporary file so the import path stays JSON-only.
         if embedded.artwork == nil {
             embedded.artwork = rustArtwork(for: url)
         }

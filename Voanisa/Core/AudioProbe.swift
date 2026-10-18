@@ -70,7 +70,13 @@ struct AudioProbeResult: Sendable {
 
     var formatDescription: String {
         var parts: [String] = [container.displayName]
-        if let codec, !codec.isEmpty { parts.append(codec.uppercased()) }
+        // "MP3 · MP3" says nothing; only show a codec that adds information.
+        if let codec,
+           !codec.isEmpty,
+           codec.lowercased() != container.rawValue,
+           codec.lowercased() != "unknown" {
+            parts.append(codec.uppercased())
+        }
         return parts.joined(separator: " · ")
     }
 }
@@ -90,7 +96,7 @@ enum AudioProbe {
         return .unknown
     }
 
-    static func probe(url: URL, asset: AVURLAsset? = nil) async -> AudioProbeResult {
+    static func probe(url: URL) async -> AudioProbeResult {
         let rust = RustCore.probe(url: url)
         let headerContainer: AudioContainer
         if let payload = rust, payload.recognized,
@@ -142,6 +148,23 @@ enum AudioProbe {
                     headerContainer.displayName
                 )
             )
+        case .mp3, .aac, .m4a, .flac, .wav, .aiff, .caf:
+            // Symphonia already reads these headers, so probing never opens an
+            // AVURLAsset: that was ~250 ms per file and the reason folder
+            // imports used to crawl. AVFoundation stays below for MP4/MOV,
+            // where it is also needed to strip video.
+            if let stream = RustCore.decoderInfo(url: url) {
+                return AudioProbeResult(
+                    container: headerContainer,
+                    codec: stream.codec,
+                    duration: stream.durationSeconds,
+                    hasVideo: false,
+                    sampleRate: stream.sampleRate,
+                    channelCount: stream.channels,
+                    isSupported: true,
+                    failureReason: nil
+                )
+            }
         case .mkv, .webm, .wma, .dsf, .dff:
             // Recognised by signature but not decoded yet.
             return AudioProbeResult(
@@ -161,7 +184,7 @@ enum AudioProbe {
             break
         }
 
-        let asset = asset ?? AVURLAsset(url: url)
+        let asset = AVURLAsset(url: url)
         do {
             let audioTracks = try await asset.loadTracks(withMediaType: .audio)
             let videoTracks = try await asset.loadTracks(withMediaType: .video)

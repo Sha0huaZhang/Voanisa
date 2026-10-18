@@ -11,6 +11,8 @@ use std::io::BufReader;
 use std::path::Path;
 
 use ape_decoder::ApeDecoder;
+use lofty::file::TaggedFileExt;
+use lofty::prelude::{Accessor, ItemKey};
 use serde::Serialize;
 use symphonia::core::formats::probe::Hint;
 use symphonia::core::formats::FormatOptions;
@@ -28,15 +30,32 @@ pub struct TrackTags {
     pub duration_seconds: f64,
 }
 
+impl TrackTags {
+    /// True when nothing but the (always computed) duration is present.
+    fn is_empty(&self) -> bool {
+        self.title.is_none()
+            && self.artist.is_none()
+            && self.album.is_none()
+            && self.album_artist.is_none()
+            && self.track_number.is_none()
+            && self.disc_number.is_none()
+    }
+}
+
 /// Reads whatever basic tags a container offers. Unknown or unreadable files
 /// return empty tags rather than an error so import can proceed.
 pub fn read_tags(path: &Path) -> TrackTags {
-    let mut tags = match crate::probe::quick_container(path).as_str() {
-        "opus" => opus_tags(path),
-        "ape" => ape_tags(path),
-        "wavpack" => wavpack_tags(path),
-        _ => symphonia_tags(path),
-    };
+    // `lofty` understands ID3v1/v2, MP4 ilst, Vorbis comments, FLAC and APEv2,
+    // including the MP3 tags Symphonia 0.6 does not parse at all.
+    let mut tags = lofty_tags(path).unwrap_or_default();
+    if tags.is_empty() {
+        tags = match crate::probe::quick_container(path).as_str() {
+            "opus" => opus_tags(path),
+            "ape" => ape_tags(path),
+            "wavpack" => wavpack_tags(path),
+            _ => symphonia_tags(path),
+        };
+    }
     // `inspect` reads headers only, so a library scan never decodes a whole
     // WavPack or APE file just to learn its duration.
     tags.duration_seconds = crate::decode::inspect(path)
@@ -58,6 +77,9 @@ pub struct Artwork {
 /// separate call from `read_tags`: a library scan never pays for artwork it will
 /// not show. APEv2 carries cover art as a binary item, which is not parsed yet.
 pub fn read_artwork(path: &Path) -> Option<Artwork> {
+    if let Some(artwork) = lofty_artwork(path) {
+        return Some(artwork);
+    }
     let visuals = symphonia_visuals(path)?;
     visuals.into_iter().find_map(|visual| {
         if visual.data.is_empty() {
@@ -83,6 +105,22 @@ pub fn write_artwork(path: &Path, out: &Path) -> Result<Option<String>, String> 
     std::fs::write(out, &artwork.data)
         .map_err(|error| format!("{}: {error}", out.display()))?;
     Ok(Some(artwork.mime))
+}
+
+fn lofty_artwork(path: &Path) -> Option<Artwork> {
+    let tagged = lofty::read_from_path(path).ok()?;
+    let tag = tagged.primary_tag().or_else(|| tagged.first_tag())?;
+    let picture = tag.pictures().iter().find(|picture| !picture.data().is_empty())?;
+
+    let mime = picture
+        .mime_type()
+        .map(|mime| mime.to_string())
+        .unwrap_or_else(|| sniff_image_mime(picture.data()).to_string());
+
+    Some(Artwork {
+        mime,
+        data: picture.data().to_vec(),
+    })
 }
 
 fn symphonia_visuals(path: &Path) -> Option<Vec<Visual>> {
@@ -120,6 +158,44 @@ fn sniff_image_mime(data: &[u8]) -> &'static str {
     } else {
         "application/octet-stream"
     }
+}
+
+fn lofty_tags(path: &Path) -> Option<TrackTags> {
+    let tagged = lofty::read_from_path(path).ok()?;
+    let tag = tagged.primary_tag().or_else(|| tagged.first_tag())?;
+
+    let mut tags = TrackTags {
+        title: clean_opt(tag.title().map(|value| value.to_string())),
+        artist: clean_opt(tag.artist().map(|value| value.to_string())),
+        album: clean_opt(tag.album().map(|value| value.to_string())),
+        album_artist: clean_opt(
+            tag.get_string(&ItemKey::AlbumArtist)
+                .map(|value| value.to_string()),
+        ),
+        track_number: tag
+            .track()
+            .or_else(|| raw_number_lofty(tag, ItemKey::TrackNumber)),
+        disc_number: tag
+            .disk()
+            .or_else(|| raw_number_lofty(tag, ItemKey::DiscNumber)),
+        duration_seconds: 0.0,
+    };
+
+    if tags.title.is_none() {
+        tags.title = clean_opt(
+            tag.get_string(&ItemKey::TrackTitle)
+                .map(|value| value.to_string()),
+        );
+    }
+    Some(tags)
+}
+
+fn raw_number_lofty(tag: &lofty::tag::Tag, key: ItemKey) -> Option<u32> {
+    tag.get_string(&key).and_then(parse_number)
+}
+
+fn clean_opt(value: Option<String>) -> Option<String> {
+    clean_owned(value)
 }
 
 fn ape_tags(path: &Path) -> TrackTags {
@@ -416,6 +492,59 @@ mod tests {
         ));
         assert_eq!(write_artwork(&fixture("tone.ogg"), &out).unwrap(), None);
         assert!(!out.exists());
+    }
+
+    #[test]
+    fn reads_id3v2_from_a_bare_mp3() {
+        // Symphonia does not parse ID3 at all, so this covers the `lofty` path
+        // that replaced AVFoundation for MP3 tags.
+        fn text_frame(id: &[u8; 4], text: &str) -> Vec<u8> {
+            let mut body = vec![0x03]; // UTF-8
+            body.extend_from_slice(text.as_bytes());
+            let mut frame = Vec::new();
+            frame.extend_from_slice(id);
+            frame.extend_from_slice(&(body.len() as u32).to_be_bytes());
+            frame.extend_from_slice(&[0, 0]);
+            frame.extend_from_slice(&body);
+            frame
+        }
+
+        let mut frames = Vec::new();
+        frames.extend(text_frame(b"TIT2", "ID3 Title"));
+        frames.extend(text_frame(b"TPE1", "ID3 Artist"));
+        frames.extend(text_frame(b"TALB", "ID3 Album"));
+        frames.extend(text_frame(b"TRCK", "7/12"));
+
+        let mut bytes = b"ID3\x03\x00\x00".to_vec();
+        let size = frames.len();
+        bytes.extend_from_slice(&[
+            ((size >> 21) & 0x7f) as u8,
+            ((size >> 14) & 0x7f) as u8,
+            ((size >> 7) & 0x7f) as u8,
+            (size & 0x7f) as u8,
+        ]);
+        bytes.extend_from_slice(&frames);
+        for _ in 0..4 {
+            let mut frame = vec![0u8; 417];
+            frame[0] = 0xFF;
+            frame[1] = 0xFB;
+            frame[2] = 0x90;
+            bytes.extend_from_slice(&frame);
+        }
+
+        let path = std::env::temp_dir().join(format!(
+            "voanisa-id3-{}.mp3",
+            std::process::id()
+        ));
+        std::fs::write(&path, &bytes).unwrap();
+
+        let tags = read_tags(&path);
+        std::fs::remove_file(&path).ok();
+
+        assert_eq!(tags.title.as_deref(), Some("ID3 Title"));
+        assert_eq!(tags.artist.as_deref(), Some("ID3 Artist"));
+        assert_eq!(tags.album.as_deref(), Some("ID3 Album"));
+        assert_eq!(tags.track_number, Some(7));
     }
 
     #[test]
