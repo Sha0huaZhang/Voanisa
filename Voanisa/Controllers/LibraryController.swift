@@ -149,7 +149,7 @@ final class LibraryController: ObservableObject {
     }
 
     @discardableResult
-    func createPlaylist(name: String) -> Playlist? {
+    func createPlaylist(name: String, trackIDs: [UUID] = []) -> Playlist? {
         let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
@@ -162,8 +162,15 @@ final class LibraryController: ObservableObject {
             ).get()
             playlists.append(playlist)
             save()
+
+            let valid = Set(tracks.map(\.id))
+            let chosen = trackIDs.filter(valid.contains)
+            if !chosen.isEmpty {
+                setPlaylistTracks(chosen, for: playlist.id)
+            }
+
             Diagnostics.log("创建歌单《\(playlist.name)》")
-            return playlist
+            return playlists.first { $0.id == playlist.id } ?? playlist
         } catch {
             reportPlaylistError(error, context: "library.playlist.create")
             return nil

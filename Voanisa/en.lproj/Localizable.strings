@@ -14,6 +14,12 @@
 "sidebar.import"    = "Import Audio";
 "sidebar.newPlaylist" = "New Playlist";
 "sidebar.playlistName" = "Name";
+"sidebar.playlistName.placeholder" = "Playlist name";
+"sidebar.duplicatePlaylist" = "A playlist with this name already exists";
+"sidebar.nameRequired"    = "Enter a playlist name";
+"sidebar.deletePlaylist.short" = "Delete Playlist";
+"sidebar.deletePlaylist.pick" = "Choose a Playlist to Delete";
+"sidebar.deletePlaylist.pickHint" = "Select a playlist above.";
 "sidebar.deletePlaylist" = "Delete Playlist…";
 "sidebar.deletePlaylist.confirm.title" = "Delete this playlist?";
 "sidebar.deletePlaylist.confirm.message" = "“%@” will be deleted. The songs stay in the library.";
@@ -27,6 +33,11 @@
 "songs.empty.hint"    = "Press Import Audio to add files. Every audio file becomes a song.";
 "songs.noMatch.title" = "No matching songs";
 "songs.noMatch.hint"  = "Try a different keyword";
+
+/* Delete picker */
+"songs.delete.pick"     = "Choose Songs to Delete";
+"songs.delete.pickHint" = "Select the songs to delete above.";
+"picker.selectedSongs"  = "%d songs selected";
 
 /* Player */
 "player.notPlaying" = "Not playing";
@@ -164,6 +175,8 @@
 "common.remove.confirm.title"   = "Remove this song?";
 "common.remove.confirm.message" = "“%@” and its cover will be moved to the Trash.";
 "common.remove.confirm.button"  = "Move to Trash";
+"common.remove.confirm.messageMany" = "These %d songs and their covers will be moved to the Trash.";
+"common.deleteSong"             = "Delete Song";
 
 /* Track */
 "track.unknownArtist" = "Unknown Artist";

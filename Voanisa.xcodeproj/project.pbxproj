@@ -29,6 +29,7 @@
 		62E0B35621FB351435B6FF3E /* SongAdvanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D55E7E82874A4E31108B27C /* SongAdvanceTests.swift */; };
 		662EFF64F60D522690FF77D7 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85883D1DD1E9B9FE24B4537 /* SidebarView.swift */; };
 		6987FEE750F3742723441E17 /* SongListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F8E972CC81A146559280E /* SongListView.swift */; };
+		6F5316E468C243BAF4B8DA55 /* SelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01548D92F295956CE7E4B8C1 /* SelectionSheet.swift */; };
 		767AD8A7938CEA4DBB3AA2A5 /* Diagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E99FD786FFE1685186D40F6 /* Diagnostics.swift */; };
 		78907E7035D7F34775712313 /* PlaybackEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A342DD02A493CFEF54AEF42 /* PlaybackEngine.swift */; };
 		7AABCAE3D79957E0D7E057DF /* PlaylistDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B049E4E1AD58F5F74D2823E3 /* PlaylistDetailView.swift */; };
@@ -70,6 +71,7 @@
 
 /* Begin PBXFileReference section */
 		00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportServiceTests.swift; sourceTree = "<group>"; };
+		01548D92F295956CE7E4B8C1 /* SelectionSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionSheet.swift; sourceTree = "<group>"; };
 		054D7035A4AE5E29505217C2 /* Track.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Track.swift; sourceTree = "<group>"; };
 		0708AC330AC503799CA8E67D /* CoverRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverRenderer.swift; sourceTree = "<group>"; };
 		0E99FD786FFE1685186D40F6 /* Diagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnostics.swift; sourceTree = "<group>"; };
@@ -153,6 +155,7 @@
 				3AD517CDEE85E8AAA65252CE /* MetadataEditorSheet.swift */,
 				DE37896B19738772798DF38F /* PlayerControlBar.swift */,
 				B049E4E1AD58F5F74D2823E3 /* PlaylistDetailView.swift */,
+				01548D92F295956CE7E4B8C1 /* SelectionSheet.swift */,
 				C0B3C0C450A883CEDC15B816 /* SettingsView.swift */,
 				A85883D1DD1E9B9FE24B4537 /* SidebarView.swift */,
 				924F8E972CC81A146559280E /* SongListView.swift */,
@@ -417,6 +420,7 @@
 				C8F838C9C340AB437506D06D /* Playlist.swift in Sources */,
 				7AABCAE3D79957E0D7E057DF /* PlaylistDetailView.swift in Sources */,
 				FA3A1BD08CB442BD70BEB990 /* RustBridge.swift in Sources */,
+				6F5316E468C243BAF4B8DA55 /* SelectionSheet.swift in Sources */,
 				F1F8C9F3B90E585760425C7C /* SettingsView.swift in Sources */,
 				F7B1D96304039ECA39B3779B /* SidebarItem.swift in Sources */,
 				662EFF64F60D522690FF77D7 /* SidebarView.swift in Sources */,

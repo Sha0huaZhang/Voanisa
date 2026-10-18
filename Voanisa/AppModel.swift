@@ -8,8 +8,14 @@ final class AppModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var isShowingError = false
 
-    @Published var deleteTarget: Track?
+    @Published var deleteTargets: [Track] = []
     @Published var metadataTarget: Track?
+    /// Shows the "choose songs to delete" picker when the toolbar button is
+    /// pressed without a selected row (Elysia's behaviour).
+    @Published var isPickingSongsToDelete = false
+    /// Shows the "choose a playlist to delete" picker.
+    @Published var isPickingPlaylistToDelete = false
+    @Published var playlistDeleteSelection: Set<UUID> = []
     /// The row the user clicked most recently; Delete and the Edit menu act on it.
     @Published var selectedTrackID: UUID?
 
@@ -142,7 +148,12 @@ final class AppModel: ObservableObject {
     // MARK: - Library
 
     func requestDelete(_ track: Track) {
-        deleteTarget = track
+        requestDelete([track])
+    }
+
+    func requestDelete(_ tracks: [Track]) {
+        guard !tracks.isEmpty else { return }
+        deleteTargets = tracks
     }
 
     /// Menu and keyboard entry point: acts on the row the user selected.
@@ -151,16 +162,28 @@ final class AppModel: ObservableObject {
         requestDelete(track)
     }
 
+    /// Toolbar entry point: an explicit selection wins, otherwise the picker
+    /// opens so the user names the target himself.
+    func requestDeleteFromToolbar() {
+        if let track = selectedTrack {
+            requestDelete(track)
+        } else {
+            isPickingSongsToDelete = true
+        }
+    }
+
     func confirmDelete() {
-        guard let track = deleteTarget else { return }
-        if player.currentTrackID == track.id {
-            player.stop()
+        let targets = deleteTargets
+        deleteTargets = []
+        for track in targets {
+            if player.currentTrackID == track.id {
+                player.stop()
+            }
+            if selectedTrackID == track.id {
+                selectedTrackID = nil
+            }
+            library.remove(track)
         }
-        library.remove(track)
-        if selectedTrackID == track.id {
-            selectedTrackID = nil
-        }
-        deleteTarget = nil
     }
 
     func requestMetadataEdit(_ track: Track) {
@@ -194,6 +217,12 @@ final class AppModel: ObservableObject {
             selection = .songs
         }
         library.deletePlaylist(playlist)
+    }
+
+    /// Opens the playlist picker, pre-selecting the playlist the user was in.
+    func requestPlaylistDelete(_ playlist: Playlist?) {
+        playlistDeleteSelection = playlist.map { [$0.id] } ?? []
+        isPickingPlaylistToDelete = true
     }
 
     func add(_ track: Track, to playlist: Playlist) {

@@ -42,64 +42,104 @@ struct SongListView: View {
     }
 
     private var songList: some View {
-        GeometryReader { container in
-            ZStack(alignment: .topLeading) {
-                List {
-                    ForEach(Array(songs.enumerated()), id: \.element.id) { index, song in
-                        SongRowView(
-                            song: song,
-                            isPlaying: song.id == player.currentTrackID && player.isPlaying,
-                            isSelected: model.selectedTrackID == song.id,
-                            isDragging: draggingID == song.id,
-                            isReorderEnabled: !isSearching,
-                            onSelect: { model.selectedTrackID = song.id },
-                            onPlay: { model.play(song) },
-                            onEdit: { model.requestMetadataEdit(song) },
-                            onShowInFinder: { library.showInFinder(song) },
-                            onRemove: { model.requestDelete(song) },
-                            playlists: library.playlists,
-                            onAddToPlaylist: { model.add(song, to: $0) },
-                            onRemoveFromPlaylist: nil,
-                            onDragChanged: { pointerY, startY, artwork in
-                                if draggingID != song.id {
-                                    draggingID = song.id
-                                    draggedArtwork = artwork
-                                    dragGrabOffsetY = SongReorder.grabOffset(
-                                        pointerStartY: startY,
-                                        rowMinY: rowFrames[song.id]?.minY ?? startY
+        VStack(spacing: 0) {
+            deleteBar
+
+            GeometryReader { container in
+                ZStack(alignment: .topLeading) {
+                    List {
+                        ForEach(Array(songs.enumerated()), id: \.element.id) { index, song in
+                            SongRowView(
+                                song: song,
+                                isPlaying: song.id == player.currentTrackID && player.isPlaying,
+                                isSelected: model.selectedTrackID == song.id,
+                                isDragging: draggingID == song.id,
+                                isReorderEnabled: !isSearching,
+                                onSelect: { model.selectedTrackID = song.id },
+                                onPlay: { model.play(song) },
+                                onEdit: { model.requestMetadataEdit(song) },
+                                onShowInFinder: { library.showInFinder(song) },
+                                onRemove: { model.requestDelete(song) },
+                                playlists: library.playlists,
+                                onAddToPlaylist: { model.add(song, to: $0) },
+                                onRemoveFromPlaylist: nil,
+                                onDragChanged: { pointerY, startY, artwork in
+                                    if draggingID != song.id {
+                                        draggingID = song.id
+                                        draggedArtwork = artwork
+                                        dragGrabOffsetY = SongReorder.grabOffset(
+                                            pointerStartY: startY,
+                                            rowMinY: rowFrames[song.id]?.minY ?? startY
+                                        )
+                                    }
+                                    dragPointerY = pointerY
+                                },
+                                onDragEnded: { pointerY, startY in
+                                    finishDrag(
+                                        of: song,
+                                        index: index,
+                                        translation: pointerY - startY
                                     )
                                 }
-                                dragPointerY = pointerY
-                            },
-                            onDragEnded: { pointerY, startY in
-                                finishDrag(of: song, index: index, translation: pointerY - startY)
-                            }
-                        )
-                        .listRowInsets(EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10))
-                        .listRowSeparator(.hidden)
+                            )
+                            .listRowInsets(
+                                EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
+                            )
+                            .listRowSeparator(.hidden)
+                        }
+                    }
+                    .listStyle(.plain)
+                    .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
+                    .onDeleteCommand { model.deleteSelectedTrack() }
+
+                    if let id = draggingID,
+                       let frame = rowFrames[id],
+                       let song = songs.first(where: { $0.id == id }),
+                       let pointerY = dragPointerY,
+                       let grabOffset = dragGrabOffsetY {
+                        SongDragCard(song: song, artwork: draggedArtwork)
+                            .frame(width: frame.width, height: frame.height)
+                            .offset(y: SongReorder.dragCardTop(
+                                pointerY: pointerY,
+                                grabOffsetY: grabOffset,
+                                containerMinY: container.frame(in: .global).minY
+                            ))
+                            .allowsHitTesting(false)
                     }
                 }
-                .listStyle(.plain)
-                .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
-                .onDeleteCommand { model.deleteSelectedTrack() }
-
-                if let id = draggingID,
-                   let frame = rowFrames[id],
-                   let song = songs.first(where: { $0.id == id }),
-                   let pointerY = dragPointerY,
-                   let grabOffset = dragGrabOffsetY {
-                    SongDragCard(song: song, artwork: draggedArtwork)
-                        .frame(width: frame.width, height: frame.height)
-                        .offset(y: SongReorder.dragCardTop(
-                            pointerY: pointerY,
-                            grabOffsetY: grabOffset,
-                            containerMinY: container.frame(in: .global).minY
-                        ))
-                        .allowsHitTesting(false)
-                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+    }
+
+    /// A visible counterpart to the row context menu and the Delete key, in the
+    /// spot Elysia puts its playlist actions: top-right of the content area.
+    ///
+    /// It stays red on purpose: a disabled button is dimmed to grey, which looks
+    /// like a broken feature. Without a selected row it opens the picker instead.
+    private var deleteBar: some View {
+        HStack(spacing: 8) {
+            Spacer(minLength: 0)
+
+            Button(action: model.requestDeleteFromToolbar) {
+                HStack(spacing: 6) {
+                    Text("common.deleteSong")
+                    Text(verbatim: "⌘D")
+                        .foregroundColor(Color.red.opacity(0.55))
+                }
+                .foregroundColor(.red)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.red, lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut("d", modifiers: .command)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
     }
 
     private func targetSlot(for translation: CGFloat, frame: CGRect, index: Int) -> Int {

@@ -6,6 +6,9 @@ struct ContentView: View {
     @ObservedObject var model: AppModel
     @ObservedObject private var imports: ImportController
     @State private var isDropTargeted = false
+    /// Filled by the song picker, transferred once the sheet has dismissed so
+    /// the two presentations do not collide in a single update.
+    @State private var pendingSongDeleteIDs: [UUID] = []
 
     init(model: AppModel) {
         self.model = model
@@ -21,7 +24,8 @@ struct ContentView: View {
                     set: { model.library.searchText = $0 }
                 ),
                 library: model.library,
-                onImport: imports.presentPanel
+                onImport: imports.presentPanel,
+                onRequestDeletePlaylist: { model.requestPlaylistDelete($0) }
             )
             .navigationSplitViewColumnWidth(min: 170, ideal: 195, max: 240)
         } detail: {
@@ -62,22 +66,97 @@ struct ContentView: View {
         .confirmationDialog(
             "common.remove.confirm.title",
             isPresented: Binding(
-                get: { model.deleteTarget != nil },
-                set: { if !$0 { model.deleteTarget = nil } }
+                get: { !model.deleteTargets.isEmpty },
+                set: { if !$0 { model.deleteTargets = [] } }
             ),
-            presenting: model.deleteTarget
+            presenting: model.deleteTargets.first
         ) { track in
             Button("common.remove.confirm.button", role: .destructive) {
                 model.confirmDelete()
             }
             Button("common.cancel", role: .cancel) {
-                model.deleteTarget = nil
+                model.deleteTargets = []
             }
         } message: { track in
-            Text(String(format: String(localized: "common.remove.confirm.message"), track.title))
+            if model.deleteTargets.count > 1 {
+                Text(
+                    String(
+                        format: String(localized: "common.remove.confirm.messageMany"),
+                        model.deleteTargets.count
+                    )
+                )
+            } else {
+                Text(
+                    String(
+                        format: String(localized: "common.remove.confirm.message"),
+                        track.title
+                    )
+                )
+            }
+        }
+        .sheet(isPresented: $model.isPickingSongsToDelete, onDismiss: {
+            guard !pendingSongDeleteIDs.isEmpty else { return }
+            let ids = Set(pendingSongDeleteIDs)
+            pendingSongDeleteIDs = []
+            model.requestDelete(model.library.tracks.filter { ids.contains($0.id) })
+        }) {
+            SelectionSheet(
+                title: "songs.delete.pick",
+                rows: songPickerRows,
+                confirmTitle: "common.deleteSong",
+                confirmTint: .red,
+                countFormat: String(localized: "picker.selectedSongs"),
+                emptyHint: "songs.delete.pickHint",
+                onConfirm: { _, ids in
+                    pendingSongDeleteIDs = ids
+                    model.isPickingSongsToDelete = false
+                },
+                onCancel: { model.isPickingSongsToDelete = false }
+            )
+        }
+        .sheet(isPresented: $model.isPickingPlaylistToDelete) {
+            SelectionSheet(
+                title: "sidebar.deletePlaylist.pick",
+                rows: model.library.playlists.map { playlist in
+                    SelectionRow(
+                        id: playlist.id,
+                        title: playlist.name,
+                        subtitle: String(
+                            format: String(localized: "playlist.songCount"),
+                            playlist.trackIDs.count
+                        ),
+                        coverFileName: nil,
+                        systemImage: "music.note.list"
+                    )
+                },
+                initialSelection: model.playlistDeleteSelection,
+                allowsMultiple: false,
+                confirmTitle: "sidebar.deletePlaylist.short",
+                confirmTint: .red,
+                emptyHint: "sidebar.deletePlaylist.pickHint",
+                onConfirm: { _, ids in
+                    model.isPickingPlaylistToDelete = false
+                    guard let id = ids.first,
+                          let playlist = model.library.playlist(id: id) else { return }
+                    model.deletePlaylist(playlist)
+                },
+                onCancel: { model.isPickingPlaylistToDelete = false }
+            )
         }
         .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
             handleDrop(providers)
+        }
+    }
+
+    private var songPickerRows: [SelectionRow] {
+        model.library.tracks.map { track in
+            SelectionRow(
+                id: track.id,
+                title: track.title,
+                subtitle: track.displayArtist,
+                coverFileName: track.coverFileName,
+                systemImage: "music.note"
+            )
         }
     }
 

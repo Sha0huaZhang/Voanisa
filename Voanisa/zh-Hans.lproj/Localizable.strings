@@ -13,6 +13,12 @@
 "sidebar.import"    = "导入音频";
 "sidebar.newPlaylist" = "新建歌单";
 "sidebar.playlistName" = "名称";
+"sidebar.playlistName.placeholder" = "输入歌单名称";
+"sidebar.duplicatePlaylist" = "已有同名歌单";
+"sidebar.nameRequired"    = "请输入歌单名称";
+"sidebar.deletePlaylist.short" = "删除歌单";
+"sidebar.deletePlaylist.pick" = "选择要删除的歌单";
+"sidebar.deletePlaylist.pickHint" = "请先在上面选中一个歌单。";
 "sidebar.deletePlaylist" = "删除歌单…";
 "sidebar.deletePlaylist.confirm.title" = "要删除这个歌单吗？";
 "sidebar.deletePlaylist.confirm.message" = "「%@」会被删除，歌曲仍保留在曲库中。";
@@ -26,6 +32,11 @@
 "songs.empty.hint"    = "点按「导入音频」添加文件，每个音频都会成为一首歌曲。";
 "songs.noMatch.title" = "没有找到匹配的歌曲";
 "songs.noMatch.hint"  = "换个关键词试试";
+
+/* 删除选歌 */
+"songs.delete.pick"     = "选择要删除的歌曲";
+"songs.delete.pickHint" = "请先在上面选中要删除的歌曲。";
+"picker.selectedSongs"  = "已选 %d 首";
 
 /* 播放器 */
 "player.notPlaying" = "未在播放";
@@ -163,6 +174,8 @@
 "common.remove.confirm.title"   = "要移除这首歌曲吗？";
 "common.remove.confirm.message" = "「%@」及其封面会被移到废纸篓。";
 "common.remove.confirm.button"  = "移到废纸篓";
+"common.remove.confirm.messageMany" = "这 %d 首歌曲及其封面会被移到废纸篓。";
+"common.deleteSong"             = "删除歌曲";
 
 /* 曲目 */
 "track.unknownArtist" = "未知歌手";

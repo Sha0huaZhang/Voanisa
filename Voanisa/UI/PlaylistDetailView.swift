@@ -9,7 +9,6 @@ struct PlaylistDetailView: View {
 
     @State private var isRenaming = false
     @State private var renameName = ""
-    @State private var isConfirmingDelete = false
 
     init(model: AppModel, playlist: Playlist) {
         self.model = model
@@ -84,22 +83,6 @@ struct PlaylistDetailView: View {
                 model.renamePlaylist(playlist, to: renameName)
             }
         }
-        .confirmationDialog(
-            "sidebar.deletePlaylist.confirm.title",
-            isPresented: $isConfirmingDelete
-        ) {
-            Button("sidebar.deletePlaylist", role: .destructive) {
-                model.deletePlaylist(playlist)
-            }
-            Button("common.cancel", role: .cancel) {}
-        } message: {
-            Text(
-                String(
-                    format: String(localized: "sidebar.deletePlaylist.confirm.message"),
-                    playlist.name
-                )
-            )
-        }
     }
 
     private func header(_ playlist: Playlist) -> some View {
@@ -131,13 +114,32 @@ struct PlaylistDetailView: View {
             }
             .disabled(tracks.isEmpty)
 
+            Button {
+                model.requestPlaylistDelete(playlist)
+            } label: {
+                HStack(spacing: 6) {
+                    Text("sidebar.deletePlaylist.short")
+                    Text(verbatim: "⌘D")
+                        .foregroundColor(Color.red.opacity(0.55))
+                }
+                .foregroundColor(.red)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.red, lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut("d", modifiers: .command)
+
             Menu {
                 Button("playlist.rename") {
                     renameName = playlist.name
                     isRenaming = true
                 }
-                Button("sidebar.deletePlaylist", role: .destructive) {
-                    isConfirmingDelete = true
+                Button("sidebar.deletePlaylist.short", role: .destructive) {
+                    model.requestPlaylistDelete(playlist)
                 }
             } label: {
                 Image(systemName: "ellipsis.circle")
