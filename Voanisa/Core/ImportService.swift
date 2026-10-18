@@ -195,6 +195,11 @@ enum ImportService {
             embedded.discNumber = embedded.discNumber ?? tags.discNumber
         }
 
+        // Artwork for those containers only exists in their own metadata block.
+        if embedded.artwork == nil {
+            embedded.artwork = rustArtwork(for: url)
+        }
+
         let fallbackTitle = url.deletingPathExtension().lastPathComponent
         var candidate = ImportCandidate(
             sourceURL: url,
@@ -407,6 +412,19 @@ enum ImportService {
     }
 
     // MARK: - Helpers
+
+    /// Pulls an attached picture out through the portable core.
+    ///
+    /// The bytes land in a temporary file because the FFI returns JSON, and a
+    /// base64 picture would bloat every message.
+    private static func rustArtwork(for url: URL) -> Data? {
+        let temporary = FileManager.default.temporaryDirectory
+            .appendingPathComponent("voanisa-artwork-\(UUID().uuidString).bin")
+        defer { try? FileManager.default.removeItem(at: temporary) }
+
+        guard RustCore.writeArtwork(url: url, to: temporary) else { return nil }
+        return try? Data(contentsOf: temporary)
+    }
 
     private static func preferredExtension(for candidate: ImportCandidate) -> String {
         switch candidate.probe.container {

@@ -61,10 +61,27 @@ enum RustCore {
         }
         return try? result.get().hash
     }
+
+    /// Writes the container's attached picture to `out`; false when the file
+    /// carries no artwork. Ogg/Opus/WavPack/APE have no AVFoundation metadata,
+    /// so their covers can only come from here.
+    static func writeArtwork(url: URL, to out: URL) -> Bool {
+        let result: Result<RustArtworkPayload, RustBridgeError> = out.path.withCString { outPointer in
+            url.path.withCString { pathPointer in
+                decodeEnvelope(voanisa_artwork_to_file_json(pathPointer, outPointer))
+            }
+        }
+        return (try? result.get().written) ?? false
+    }
 }
 
 struct RustHashPayload: Decodable {
     let hash: String
+}
+
+struct RustArtworkPayload: Decodable {
+    let written: Bool
+    let mime: String?
 }
 
 struct RustDecoderInfo: Decodable {

@@ -6,8 +6,8 @@ use std::os::raw::c_char;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 use voanisa_core::{
-    hash_file, inspect, read_tags, probe_path, AudioDecoder, NewTrack, ProbeResult, Store,
-    StoreError, TrackUpdate,
+    hash_file, inspect, read_tags, probe_path, write_artwork, AudioDecoder, NewTrack,
+    ProbeResult, Store, StoreError, TrackUpdate,
 };
 
 #[derive(Deserialize)]
@@ -234,6 +234,31 @@ pub extern "C" fn voanisa_hash_file_json(path: *const c_char) -> *mut c_char {
 
     guard(move || match hash_file(Path::new(&path)) {
         Ok(hash) => success_json(&json!({ "hash": hash })),
+        Err(error) => message_error_json(&error, "io"),
+    })
+}
+
+/// Writes the container's attached picture to `out`. JSON:
+///
+///     {"ok":true,"data":{"written":true,"mime":"image/png"}}
+///     {"ok":true,"data":{"written":false}}
+#[no_mangle]
+pub extern "C" fn voanisa_artwork_to_file_json(
+    path: *const c_char,
+    out: *const c_char,
+) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let out = match c_string_arg(out, "out") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || match write_artwork(Path::new(&path), Path::new(&out)) {
+        Ok(Some(mime)) => success_json(&json!({ "written": true, "mime": mime })),
+        Ok(None) => success_json(&json!({ "written": false })),
         Err(error) => message_error_json(&error, "io"),
     })
 }

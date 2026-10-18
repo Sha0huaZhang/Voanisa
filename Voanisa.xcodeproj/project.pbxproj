@@ -20,6 +20,7 @@
 		27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */; };
 		2F346090BC606BA297B5AD3C /* VoanisaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */; };
 		31711F51B574A490E0F29AEF /* ExtendedFormatTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1AFD86D1750598A6E1B4870 /* ExtendedFormatTests.swift */; };
+		33E3A97E7334583BA2FF99BB /* RustArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46FF4D3C3BC36B2456D7CBBD /* RustArtworkTests.swift */; };
 		362F92813E9277E36C76DE79 /* PlayerControlBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE37896B19738772798DF38F /* PlayerControlBar.swift */; };
 		3E9272BD23A962650666F496 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */; };
 		447EF9D1308FA8E5C4C7A58A /* SongAdvance.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DE578B9435A436D883845B /* SongAdvance.swift */; };
@@ -87,6 +88,7 @@
 		3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtworkTests.swift; sourceTree = "<group>"; };
 		3D55E7E82874A4E31108B27C /* SongAdvanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongAdvanceTests.swift; sourceTree = "<group>"; };
+		46FF4D3C3BC36B2456D7CBBD /* RustArtworkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustArtworkTests.swift; sourceTree = "<group>"; };
 		4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongSearchTests.swift; sourceTree = "<group>"; };
 		4D4CC0E75A8D823D1D352489 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		5211DD268E351DCEAC734CD5 /* VoanisaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoanisaApp.swift; sourceTree = "<group>"; };
@@ -228,6 +230,7 @@
 				00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */,
 				59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */,
 				65C659FC6C5F49169B95A4AB /* ProbeHardeningTests.swift */,
+				46FF4D3C3BC36B2456D7CBBD /* RustArtworkTests.swift */,
 				77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */,
 				3D55E7E82874A4E31108B27C /* SongAdvanceTests.swift */,
 				7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */,
@@ -387,6 +390,7 @@
 				5B01DE0010E67674FC3B3E8F /* ImportServiceTests.swift in Sources */,
 				F9C9F69EC190D4A65F1AB832 /* LibraryStoreTests.swift in Sources */,
 				85E18DD7191EF9064F162D37 /* ProbeHardeningTests.swift in Sources */,
+				33E3A97E7334583BA2FF99BB /* RustArtworkTests.swift in Sources */,
 				E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */,
 				62E0B35621FB351435B6FF3E /* SongAdvanceTests.swift in Sources */,
 				044255D4DDDB2BE5E1FFD9AA /* SongReorderTests.swift in Sources */,

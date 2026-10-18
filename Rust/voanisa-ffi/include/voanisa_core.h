@@ -55,6 +55,12 @@ char *voanisa_tags_json(const char *path);
 ///     {"ok":true,"data":{"hash":"e3b0c442..."}}
 char *voanisa_hash_file_json(const char *path);
 
+/// Writes the attached picture to `out`. JSON:
+///
+///     {"ok":true,"data":{"written":true,"mime":"image/png"}}
+///     {"ok":true,"data":{"written":false}}
+char *voanisa_artwork_to_file_json(const char *path, const char *out);
+
 /// SQLite library calls. Every function returns a heap-allocated JSON string:
 ///
 ///     {"ok":true,"data":...}

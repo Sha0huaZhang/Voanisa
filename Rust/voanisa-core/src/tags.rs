@@ -15,7 +15,7 @@ use serde::Serialize;
 use symphonia::core::formats::probe::Hint;
 use symphonia::core::formats::FormatOptions;
 use symphonia::core::io::{MediaSourceStream, MediaSourceStreamOptions};
-use symphonia::core::meta::{MetadataOptions, StandardTag};
+use symphonia::core::meta::{MetadataOptions, StandardTag, Visual};
 
 #[derive(Debug, Clone, Default, Serialize, PartialEq)]
 pub struct TrackTags {
@@ -43,6 +43,83 @@ pub fn read_tags(path: &Path) -> TrackTags {
         .map(|info| info.duration_seconds)
         .unwrap_or(0.0);
     tags
+}
+
+/// An attached picture, exactly as the container stores it.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Artwork {
+    pub mime: String,
+    pub data: Vec<u8>,
+}
+
+/// Returns the first non-empty attached picture, if the container has one.
+///
+/// Reading visuals needs a full probe with metadata enabled, so this stays a
+/// separate call from `read_tags`: a library scan never pays for artwork it will
+/// not show. APEv2 carries cover art as a binary item, which is not parsed yet.
+pub fn read_artwork(path: &Path) -> Option<Artwork> {
+    let visuals = symphonia_visuals(path)?;
+    visuals.into_iter().find_map(|visual| {
+        if visual.data.is_empty() {
+            return None;
+        }
+        let mime = visual
+            .media_type
+            .filter(|value| !value.trim().is_empty())
+            .unwrap_or_else(|| sniff_image_mime(&visual.data).to_string());
+        Some(Artwork {
+            mime,
+            data: visual.data.to_vec(),
+        })
+    })
+}
+
+/// Writes the artwork to `out` and reports the MIME type that was written.
+/// Returns `None` when the container has no picture.
+pub fn write_artwork(path: &Path, out: &Path) -> Result<Option<String>, String> {
+    let Some(artwork) = read_artwork(path) else {
+        return Ok(None);
+    };
+    std::fs::write(out, &artwork.data)
+        .map_err(|error| format!("{}: {error}", out.display()))?;
+    Ok(Some(artwork.mime))
+}
+
+fn symphonia_visuals(path: &Path) -> Option<Vec<Visual>> {
+    let file = File::open(path).ok()?;
+    let stream = MediaSourceStream::new(Box::new(file), MediaSourceStreamOptions::default());
+
+    let mut hint = Hint::new();
+    if let Some(extension) = path.extension().and_then(|value| value.to_str()) {
+        hint.with_extension(extension);
+    }
+
+    let mut format = symphonia::default::get_probe()
+        .probe(
+            &hint,
+            stream,
+            FormatOptions::default(),
+            MetadataOptions::default(),
+        )
+        .ok()?;
+
+    let metadata = format.metadata();
+    let revision = metadata.current()?;
+    Some(revision.media.visuals.clone())
+}
+
+fn sniff_image_mime(data: &[u8]) -> &'static str {
+    if data.starts_with(&[0xFF, 0xD8, 0xFF]) {
+        "image/jpeg"
+    } else if data.starts_with(b"\x89PNG") {
+        "image/png"
+    } else if data.starts_with(b"GIF8") {
+        "image/gif"
+    } else if data.len() > 12 && &data[8..12] == b"WEBP" {
+        "image/webp"
+    } else {
+        "application/octet-stream"
+    }
 }
 
 fn ape_tags(path: &Path) -> TrackTags {
@@ -309,6 +386,36 @@ mod tests {
             assert_eq!(tags.track_number, Some(1), "{name}");
             assert!(tags.duration_seconds > 0.2, "{name}");
         }
+    }
+
+    #[test]
+    fn reads_embedded_artwork() {
+        let path = fixture("tagged.m4a");
+        if !path.exists() {
+            return;
+        }
+        let artwork = read_artwork(&path).expect("tagged.m4a carries a cover");
+        assert!(artwork.data.len() > 100, "picture should not be empty");
+        assert!(artwork.mime.starts_with("image/"), "unexpected {}", artwork.mime);
+
+        let out = std::env::temp_dir().join(format!(
+            "voanisa-artwork-{}.bin",
+            std::process::id()
+        ));
+        let mime = write_artwork(&path, &out).unwrap();
+        assert_eq!(mime.as_deref(), Some(artwork.mime.as_str()));
+        assert_eq!(std::fs::read(&out).unwrap(), artwork.data);
+        std::fs::remove_file(&out).ok();
+    }
+
+    #[test]
+    fn files_without_artwork_report_none() {
+        let out = std::env::temp_dir().join(format!(
+            "voanisa-artwork-none-{}.bin",
+            std::process::id()
+        ));
+        assert_eq!(write_artwork(&fixture("tone.ogg"), &out).unwrap(), None);
+        assert!(!out.exists());
     }
 
     #[test]
