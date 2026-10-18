@@ -31,6 +31,7 @@ final class StreamingAudioPlayer {
     private(set) var duration: Double = 0
     private(set) var sampleRate: Double = 44100
     private(set) var channels: Int = 2
+    private(set) var codec: String = ""
 
     var isPlaying: Bool { playing }
 
@@ -63,6 +64,7 @@ final class StreamingAudioPlayer {
         duration = decoder.info.durationSeconds
         sampleRate = decoder.info.sampleRate
         channels = decoder.info.channels
+        codec = decoder.info.codec
         baseFrame = 0
         reachedEnd = false
         inFlight = 0

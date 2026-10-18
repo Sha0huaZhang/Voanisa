@@ -1,5 +1,3 @@
-import AppKit
-import AVFoundation
 import Foundation
 import MediaPlayer
 
@@ -9,12 +7,22 @@ enum RepeatMode: String, CaseIterable, Sendable {
     case one
 }
 
+enum PlaybackError: LocalizedError {
+    case decoderUnavailable(String)
+
+    var errorDescription: String? {
+        switch self {
+        case .decoderUnavailable(let file):
+            return String(format: String(localized: "error.decoder"), file)
+        }
+    }
+}
+
 /// Local playback for the macOS prototype.
 ///
 /// Decoding is owned by the portable Rust core, which streams PCM into
-/// AVAudioEngine for every container. AVAudioPlayer stays only as a fallback
-/// for files the core cannot open; the queue and repeat logic live in AppModel.
-final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
+/// AVAudioEngine for every container; the queue and repeat logic live in AppModel.
+final class PlaybackEngine: ObservableObject {
     @Published private(set) var currentTrackID: UUID?
     @Published private(set) var isPlaying = false
     @Published private(set) var position: Double = 0
@@ -23,9 +31,8 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     var onFinished: (() -> Void)?
 
-    private var player: AVAudioPlayer?
-    /// Used for containers AVFoundation cannot decode; the Rust core supplies
-    /// the PCM. Only one of `player` and `streamer` is alive at a time.
+    /// The single decoder for every container: the Rust core supplies PCM and
+    /// AVAudioEngine converts and outputs it.
     private var streamer: StreamingAudioPlayer?
     private var timer: Timer?
     private var currentTrack: Track?
@@ -38,43 +45,10 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
         // One decoder for every format: the portable core reads the file and
         // AVAudioEngine only converts and outputs it.
-        if startStreaming(track: track, url: url) { return }
-
-        // Fallback for a file the core cannot open; AVFoundation still decodes
-        // common containers, so playback degrades instead of failing.
-        let next: AVAudioPlayer
-        do {
-            next = try AVAudioPlayer(contentsOf: url)
-        } catch {
-            throw error
-        }
-
-        streamer?.stop()
-        streamer = nil
-        next.delegate = self
-        next.volume = Float(volume)
-        next.prepareToPlay()
-        next.play()
-
-        player?.stop()
-        player = next
-        currentTrack = track
-        currentTrackID = track.id
-        isPlaying = true
-        position = 0
-        duration = next.duration
-        startTimer()
-        updateNowPlaying(force: true)
-        Diagnostics.log("播放《\(track.title)》 \(url.lastPathComponent)（AVFoundation 兜底）")
-    }
-
-    /// Opens the portable decoder for any container. Returns false when the core
-    /// cannot decode the file, which leaves the AVFoundation fallback in charge.
-    private func startStreaming(track: Track, url: URL) -> Bool {
         let streaming = StreamingAudioPlayer()
         guard streaming.open(url: url) else {
-            Diagnostics.log("Rust 解码不可用，改用 AVFoundation：\(url.lastPathComponent)")
-            return false
+            Diagnostics.error("Rust 解码不可用：\(url.lastPathComponent)", context: "playback.stream")
+            throw PlaybackError.decoderUnavailable(url.lastPathComponent)
         }
 
         streaming.setVolume(volume)
@@ -87,8 +61,6 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
         streaming.play()
 
-        player?.stop()
-        player = nil
         streamer?.stop()
         streamer = streaming
 
@@ -99,48 +71,34 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         duration = streaming.duration
         startTimer()
         updateNowPlaying(force: true)
-        Diagnostics.log("播放《\(track.title)》 \(url.lastPathComponent)（Rust 解码）")
-        return true
+        Diagnostics.log(
+            "播放《\(track.title)》 \(url.lastPathComponent)（Rust 解码 · \(streaming.codec)）"
+        )
     }
 
     func togglePlayPause() {
-        if let player {
-            if player.isPlaying {
-                player.pause()
-                isPlaying = false
-            } else {
-                player.play()
-                isPlaying = true
-            }
-        } else if let streamer {
-            if streamer.isPlaying {
-                streamer.pause()
-                isPlaying = false
-            } else {
-                streamer.play()
-                isPlaying = true
-            }
+        guard let streamer else { return }
+        if streamer.isPlaying {
+            streamer.pause()
+            isPlaying = false
+        } else {
+            streamer.play()
+            isPlaying = true
         }
         updateNowPlaying(force: true)
     }
 
     func seek(to seconds: Double) {
-        if let player {
-            let value = min(max(0, seconds), max(0, player.duration))
-            player.currentTime = value
-            position = value
-        } else if let streamer {
-            let value = min(max(0, seconds), max(0, duration))
-            streamer.seek(to: value)
-            position = value
-        }
+        guard let streamer else { return }
+        let value = min(max(0, seconds), max(0, duration))
+        streamer.seek(to: value)
+        position = value
         updateNowPlaying(force: true)
     }
 
     func setVolume(_ value: Double) {
         let clamped = min(max(0, value), 1)
         volume = clamped
-        player?.volume = Float(clamped)
         streamer?.setVolume(clamped)
     }
 
@@ -154,8 +112,6 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     func stop() {
         timer?.invalidate()
         timer = nil
-        player?.stop()
-        player = nil
         streamer?.stop()
         streamer = nil
         currentTrack = nil
@@ -173,7 +129,9 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
 
     private func startTimer() {
         timer?.invalidate()
-        let timer = Timer(timeInterval: 0.2, repeats: true) { [weak self] _ in
+        // 10 Hz: the progress bar moves in 100 ms steps, which reads as smooth
+        // without waking the UI more often than the audio callback does.
+        let timer = Timer(timeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.tick()
         }
         RunLoop.main.add(timer, forMode: .common)
@@ -181,31 +139,13 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     }
 
     private func tick() {
-        if let player {
-            position = player.currentTime
-            duration = player.duration
-        } else if let streamer {
-            position = streamer.position
-            if streamer.duration > 0 {
-                duration = streamer.duration
-            }
-        } else {
-            return
+        guard let streamer else { return }
+        position = streamer.position
+        if streamer.duration > 0 {
+            duration = streamer.duration
         }
         if Date().timeIntervalSince(lastNowPlayingUpdate) > 1.0 {
             updateNowPlaying(force: true)
-        }
-    }
-
-    // MARK: - AVAudioPlayerDelegate
-
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.isPlaying = false
-            self.position = self.duration
-            self.updateNowPlaying(force: true)
-            self.onFinished?()
         }
     }
 

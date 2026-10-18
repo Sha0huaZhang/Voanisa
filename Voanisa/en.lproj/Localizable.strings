@@ -141,6 +141,7 @@
 /* Errors */
 "error.title"       = "Something Went Wrong";
 "error.play"        = "Could not play this file.";
+"error.decoder"      = "Could not decode %@.";
 "error.cover"       = "Could not read this image.";
 "error.noAudioTrack" = "The file has no audio track.";
 "error.staging"     = "Could not prepare the import.";

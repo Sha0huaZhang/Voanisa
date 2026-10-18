@@ -140,6 +140,7 @@
 /* 错误 */
 "error.title"        = "出错了";
 "error.play"         = "无法播放这个文件。";
+"error.decoder"      = "无法解码 %@。";
 "error.cover"        = "无法读取这张图片。";
 "error.noAudioTrack" = "该文件没有音频轨道。";
 "error.staging"      = "无法准备导入。";
