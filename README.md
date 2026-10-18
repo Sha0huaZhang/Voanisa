@@ -13,7 +13,8 @@ This repository contains the **0.1.0 prototype**. Every imported audio file
 becomes one song in a self-contained library. Audio is copied into the library,
 named by the user, given a square cover, and played locally — no Apple Music
 dependency and no files written outside the library.
-
+## Languages
+Swift, Rust, C, SQLite, Shell(auxiliary), Python3(auxiliary)
 ## Requirements
 
 - macOS 15 (Sequoia) or later
