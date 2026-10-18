@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="images/Voanisa-icon-512-rounded.png" alt="Logo" width="256" />
+    <img src="images/Voanisa-icon-512-rounded.png" alt="Logo" width="206" />
     <h1>Voanisa</h1>
 </div>
 
