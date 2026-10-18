@@ -74,6 +74,8 @@
 "import.cover"         = "Cover";
 "import.chooseCover"   = "Choose Cover…";
 "import.removeCover"   = "Remove Cover";
+"import.coverForAll"   = "Use One Cover for All…";
+"import.cover.hint"    = "Drag an image onto the cover to use it.";
 "import.confirm"       = "Import";
 "import.importing"     = "Importing…";
 "import.skipDuplicates" = "Skip duplicate files";
@@ -98,8 +100,11 @@
 "metadata.chooseCover"    = "Choose Cover…";
 "metadata.removeCover"    = "Remove Cover";
 "metadata.title.required" = "Title cannot be empty.";
+"metadata.cover.hint"     = "Drag an image onto the cover to use it.";
 
 /* Cover crop */
+"cover.title" = "Change Cover";
+"cover.hint"  = "Drag an image onto the cover, or choose one.";
 "crop.title"  = "Crop Cover";
 "crop.hint"   = "Drag to move, use the slider to zoom. The cover must be square.";
 "crop.cancel" = "Cancel";
@@ -171,6 +176,7 @@
 "common.done"     = "Done";
 "common.addToPlaylist" = "Add to Playlist";
 "common.editMetadata" = "Edit Metadata…";
+"common.changeCover" = "Change Cover…";
 "common.showInFinder" = "Show in Finder";
 "common.remove"   = "Remove from Library…";
 "common.remove.confirm.title"   = "Remove this song?";

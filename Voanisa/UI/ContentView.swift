@@ -58,6 +58,16 @@ struct ContentView: View {
                 onError: { model.presentError($0, context: "metadata") }
             )
         }
+        .sheet(item: $model.coverTarget) { track in
+            CoverChangeSheet(
+                track: track,
+                onSave: { cover in
+                    model.saveCover(track, cover: cover)
+                },
+                onCancel: { model.coverTarget = nil },
+                onError: { model.presentError($0, context: "metadata") }
+            )
+        }
         .alert("error.title", isPresented: $model.isShowingError) {
             Button("common.gotIt") {}
         } message: {

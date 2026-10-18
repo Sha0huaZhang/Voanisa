@@ -15,6 +15,9 @@ struct ImportSheet: View {
     @State private var isCropping = false
     @State private var cropImage: CGImage?
     @State private var cropTargetID: UUID?
+    /// The original JPEG when the crop is destined for every candidate.
+    @State private var pendingOriginalAll: Data?
+    @State private var isDropTargeted = false
 
     @State private var didAttempt = false
     @State private var result: ImportOutcome?
@@ -93,7 +96,11 @@ struct ImportSheet: View {
             if let cropImage {
                 CoverCropSheet(
                     image: cropImage,
-                    onCancel: { isCropping = false },
+                    onCancel: {
+                        isCropping = false
+                        pendingOriginalAll = nil
+                        cropTargetID = nil
+                    },
                     onConfirm: { cropped in
                         applyCrop(cropped)
                         isCropping = false
@@ -339,10 +346,21 @@ struct ImportSheet: View {
                 }
                 .frame(width: 150, height: 150)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                .coverDropTarget(isTargeted: $isDropTargeted) { image in
+                    beginCrop(image, for: candidate.id)
+                }
+                .help(Text("import.cover.hint"))
 
                 VStack(alignment: .leading, spacing: 10) {
                     Button("import.chooseCover") {
-                        chooseCover(for: candidate)
+                        chooseCover { image in
+                            beginCrop(image, for: candidate.id)
+                        }
+                    }
+                    Button("import.coverForAll") {
+                        chooseCover { image in
+                            beginCrop(image, for: nil)
+                        }
                     }
                     if candidate.coverJPEG != nil {
                         Button("import.removeCover") {
@@ -519,7 +537,7 @@ struct ImportSheet: View {
         )
     }
 
-    private func chooseCover(for candidate: ImportCandidate) {
+    private func chooseCover(then beginCrop: @escaping (CGImage) -> Void) {
         let panel = NSOpenPanel()
         panel.title = String(localized: "import.chooseCover")
         panel.allowedContentTypes = [.image]
@@ -532,26 +550,54 @@ struct ImportSheet: View {
             onError(String(localized: "error.cover"))
             return
         }
+        beginCrop(image)
+    }
 
+    /// Stages an image for cropping.
+    ///
+    /// A `nil` id means the result is meant for every candidate in this import,
+    /// which is the “one picture for the whole batch” path.
+    private func beginCrop(_ image: CGImage, for candidateID: UUID?) {
         let original = CoverRenderer.jpegData(image, quality: 0.95)
-        if let index = controller.candidates.firstIndex(where: { $0.id == candidate.id }) {
+
+        if let candidateID,
+           let index = controller.candidates.firstIndex(where: { $0.id == candidateID }) {
             controller.candidates[index].originalCoverData = original
             controller.candidates[index].originalCoverExtension = "jpg"
+            pendingOriginalAll = nil
+        } else {
+            pendingOriginalAll = original
         }
 
-        cropTargetID = candidate.id
+        cropTargetID = candidateID
         cropImage = image
         isCropping = true
     }
 
     private func applyCrop(_ cropped: CGImage) {
-        guard let target = cropTargetID,
-              let index = controller.candidates.firstIndex(where: { $0.id == target }) else {
+        let resized = CoverRenderer.resizedSquare(cropped, side: 1024) ?? cropped
+        guard let jpeg = CoverRenderer.jpegData(resized) else {
+            onError(String(localized: "error.cover"))
+            cropTargetID = nil
+            pendingOriginalAll = nil
             return
         }
-        let resized = CoverRenderer.resizedSquare(cropped, side: 1024) ?? cropped
-        controller.candidates[index].coverJPEG = CoverRenderer.jpegData(resized)
+
+        if let target = cropTargetID,
+           let index = controller.candidates.firstIndex(where: { $0.id == target }) {
+            controller.candidates[index].coverJPEG = jpeg
+        } else {
+            // One crop, every song in this batch.
+            for index in controller.candidates.indices {
+                controller.candidates[index].coverJPEG = jpeg
+                controller.candidates[index].originalCoverData = pendingOriginalAll
+                controller.candidates[index].originalCoverExtension = "jpg"
+            }
+            Diagnostics.log("统一设置封面：\(controller.candidates.count) 首")
+        }
+
         cropTargetID = nil
+        pendingOriginalAll = nil
         cropImage = nil
     }
 

@@ -56,6 +56,7 @@ struct PlaylistDetailView: View {
                             onSelect: { model.selectedTrackID = track.id },
                             onPlay: { model.play(track) },
                             onEdit: { model.requestMetadataEdit(track) },
+                            onChangeCover: { model.requestCoverChange(track) },
                             onShowInFinder: { library.showInFinder(track) },
                             onRemove: { model.requestDelete(track) },
                             playlists: [],

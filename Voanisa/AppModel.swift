@@ -10,6 +10,8 @@ final class AppModel: ObservableObject {
 
     @Published var deleteTargets: [Track] = []
     @Published var metadataTarget: Track?
+    /// The song whose cover is being replaced from the row's context menu.
+    @Published var coverTarget: Track?
     /// Shows the "choose songs to delete" picker when the toolbar button is
     /// pressed without a selected row (Elysia's behaviour).
     @Published var isPickingSongsToDelete = false
@@ -206,6 +208,22 @@ final class AppModel: ObservableObject {
 
     func requestMetadataEdit(_ track: Track) {
         metadataTarget = track
+    }
+
+    /// “更换封面” acts on the cover alone, so it skips the metadata sheet.
+    func requestCoverChange(_ track: Track) {
+        coverTarget = track
+    }
+
+    func saveCover(_ track: Track, cover: TrackCoverEdit) {
+        if let updated = library.updateMetadata(
+            track,
+            edit: TrackMetadataEdit(track: track),
+            cover: cover
+        ) {
+            player.refresh(track: updated)
+        }
+        coverTarget = nil
     }
 
     func saveMetadata(

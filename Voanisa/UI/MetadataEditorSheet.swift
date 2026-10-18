@@ -15,6 +15,7 @@ struct MetadataEditorSheet: View {
     @State private var cropImage: CGImage?
     @State private var pendingOriginal: Data?
     @State private var didAttempt = false
+    @State private var isDropTargeted = false
 
     init(
         track: Track,
@@ -111,6 +112,10 @@ struct MetadataEditorSheet: View {
                 }
                 .frame(width: 160, height: 160)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
+                .coverDropTarget(isTargeted: $isDropTargeted) { image in
+                    beginCrop(image)
+                }
+                .help(Text("metadata.cover.hint"))
 
                 VStack(alignment: .leading, spacing: 10) {
                     Button("metadata.chooseCover") {
@@ -212,7 +217,10 @@ struct MetadataEditorSheet: View {
             onError(String(localized: "error.cover"))
             return
         }
+        beginCrop(image)
+    }
 
+    private func beginCrop(_ image: CGImage) {
         pendingOriginal = CoverRenderer.jpegData(image, quality: 0.95)
         cropImage = image
         isCropping = true

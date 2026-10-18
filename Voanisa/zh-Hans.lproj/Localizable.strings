@@ -73,6 +73,8 @@
 "import.cover"         = "封面";
 "import.chooseCover"   = "选择封面…";
 "import.removeCover"   = "移除封面";
+"import.coverForAll"   = "统一设置封面…";
+"import.cover.hint"    = "把图片拖到封面上即可使用。";
 "import.confirm"       = "导入";
 "import.importing"     = "正在导入…";
 "import.skipDuplicates" = "跳过重复文件";
@@ -97,8 +99,11 @@
 "metadata.chooseCover"    = "选择封面…";
 "metadata.removeCover"    = "移除封面";
 "metadata.title.required" = "歌曲名不能为空。";
+"metadata.cover.hint"     = "把图片拖到封面上即可使用。";
 
 /* 封面裁剪 */
+"cover.title" = "更换封面";
+"cover.hint"  = "把图片拖到封面上，或点击选择一张。";
 "crop.title"  = "裁剪封面";
 "crop.hint"   = "拖动调整位置，使用滑杆缩放。封面必须是正方形。";
 "crop.cancel" = "取消";
@@ -170,6 +175,7 @@
 "common.done"        = "完成";
 "common.addToPlaylist" = "加入歌单";
 "common.editMetadata" = "编辑歌曲信息…";
+"common.changeCover" = "更换封面…";
 "common.showInFinder" = "在 Finder 中显示";
 "common.remove"      = "从曲库移除…";
 "common.remove.confirm.title"   = "要移除这首歌曲吗？";
