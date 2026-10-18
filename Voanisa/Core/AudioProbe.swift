@@ -87,7 +87,7 @@ enum AudioProbe {
            let container = AudioContainer(rawValue: payload.container) {
             return container
         }
-        return detectContainer(in: readHeader(url))
+        return .unknown
     }
 
     static func probe(url: URL, asset: AVURLAsset? = nil) async -> AudioProbeResult {
@@ -97,7 +97,19 @@ enum AudioProbe {
            let container = AudioContainer(rawValue: payload.container) {
             headerContainer = container
         } else {
-            headerContainer = detectContainer(in: readHeader(url))
+            // The Rust probe validates real frame chains, so an unrecognized
+            // signature means this is not audio at all. Letting AVFoundation
+            // guess here is how stray binaries once ended up in the library.
+            return AudioProbeResult(
+                container: .unknown,
+                codec: nil,
+                duration: 0,
+                hasVideo: false,
+                sampleRate: 0,
+                channelCount: 0,
+                isSupported: false,
+                failureReason: String(localized: "probe.unsupportedGeneric")
+            )
         }
 
         switch headerContainer {
@@ -208,105 +220,6 @@ enum AudioProbe {
                 failureReason: error.localizedDescription
             )
         }
-    }
-
-    // MARK: - Header parsing
-
-    // MP3 files often carry large embedded artwork, so the first frame can sit
-    // well past 64 KB. One megabyte still keeps probing cheap.
-    private static func readHeader(_ url: URL, maxBytes: Int = 1 << 20) -> Data {
-        guard let handle = try? FileHandle(forReadingFrom: url) else { return Data() }
-        defer { try? handle.close() }
-        return (try? handle.read(upToCount: maxBytes)) ?? Data()
-    }
-
-    private static func detectContainer(in data: Data) -> AudioContainer {
-        guard data.count >= 12 else { return .unknown }
-
-        if starts(with: data, offset: 0, ascii: "fLaC") { return .flac }
-        if starts(with: data, offset: 0, ascii: "OggS") {
-            if data.range(of: Data("OpusHead".utf8)) != nil { return .opus }
-            return .ogg
-        }
-        if starts(with: data, offset: 0, ascii: "RIFF") {
-            if starts(with: data, offset: 8, ascii: "WAVE") { return .wav }
-            if starts(with: data, offset: 8, ascii: "AVI ") { return .unknown }
-        }
-        if starts(with: data, offset: 0, ascii: "FORM") {
-            if starts(with: data, offset: 8, ascii: "AIFF") || starts(with: data, offset: 8, ascii: "AIFC") {
-                return .aiff
-            }
-        }
-        if starts(with: data, offset: 0, ascii: "caff") { return .caf }
-        if starts(with: data, offset: 4, ascii: "ftyp") {
-            let brand = asciiString(data, offset: 8, length: 4)
-            switch brand {
-            case "qt  ":
-                return .mov
-            case "M4A ", "M4B ", "M4P ", "M4R ":
-                return .m4a
-            default:
-                return .mp4
-            }
-        }
-        if starts(with: data, offset: 0, ascii: "MAC ") { return .ape }
-        if starts(with: data, offset: 0, ascii: "wvpk") { return .wavpack }
-        if starts(with: data, offset: 0, ascii: "DSD ") { return .dsf }
-        if starts(with: data, offset: 0, ascii: "FRM8") { return .dff }
-        if data.count >= 16, data[0] == 0x30, data[1] == 0x26, data[2] == 0xB2, data[3] == 0x75,
-           data[4] == 0x8E, data[5] == 0x66, data[6] == 0xCF, data[7] == 0x11 {
-            return .wma
-        }
-        if data.count >= 4, data[0] == 0x1A, data[1] == 0x45, data[2] == 0xDF, data[3] == 0xA3 {
-            if data.range(of: Data("webm".utf8)) != nil { return .webm }
-            if data.range(of: Data("matroska".utf8)) != nil { return .mkv }
-            return .mkv
-        }
-        if looksLikeADTS(data) { return .aac }
-        if looksLikeMP3(data) { return .mp3 }
-
-        return .unknown
-    }
-
-    private static func starts(with data: Data, offset: Int, ascii: String) -> Bool {
-        let bytes = Array(ascii.utf8)
-        guard offset >= 0, offset + bytes.count <= data.count else { return false }
-        for (index, byte) in bytes.enumerated() where data[offset + index] != byte {
-            return false
-        }
-        return true
-    }
-
-    private static func asciiString(_ data: Data, offset: Int, length: Int) -> String {
-        guard offset >= 0, offset + length <= data.count else { return "" }
-        return String(bytes: data[offset ..< offset + length], encoding: .ascii) ?? ""
-    }
-
-    private static func looksLikeADTS(_ data: Data) -> Bool {
-        guard data.count >= 2 else { return false }
-        return data[0] == 0xFF && (data[1] & 0xF6) == 0xF0
-    }
-
-    private static func looksLikeMP3(_ data: Data) -> Bool {
-        var offset = 0
-        if starts(with: data, offset: 0, ascii: "ID3"), data.count >= 10 {
-            let size = (Int(data[6] & 0x7F) << 21)
-                | (Int(data[7] & 0x7F) << 14)
-                | (Int(data[8] & 0x7F) << 7)
-                | Int(data[9] & 0x7F)
-            offset = 10 + size
-        }
-
-        var index = offset
-        while index + 1 < data.count {
-            if data[index] == 0xFF, (data[index + 1] & 0xE0) == 0xE0 {
-                let version = (data[index + 1] >> 3) & 0x03
-                let layer = (data[index + 1] >> 1) & 0x03
-                if version != 0x01, layer != 0x00 { return true }
-            }
-            index += 1
-        }
-        return false
     }
 
     private static func fourCC(_ code: FourCharCode) -> String {

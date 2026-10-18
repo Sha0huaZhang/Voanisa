@@ -83,6 +83,7 @@
 "import.selectFile"    = "请选择一个文件进行编辑。";
 "import.title.required" = "请输入歌曲名。";
 "import.noFiles"       = "没有找到支持的音频文件。";
+"error.exportTimeout"  = "提取音频超时。";
 
 /* 元数据编辑 */
 "metadata.title"          = "编辑歌曲信息";
@@ -124,6 +125,9 @@
 
 /* 格式 */
 "format.unknown"           = "未知";
+"import.selectedCount"     = "已选 %1$d / %2$d";
+"import.selectAll"         = "全选";
+"import.selectNone"        = "全不选";
 "probe.unsupported"        = "原型暂不支持解码 %@，后续将由 Rust 解码器加入。";
 "probe.unsupportedGeneric" = "原型暂不支持这种格式。";
 "probe.noAudioTrack"       = "没有找到音频轨道。";

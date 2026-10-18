@@ -138,10 +138,53 @@ fn find(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     haystack.windows(needle.len()).position(|window| window == needle)
 }
 
+/// A single sync word turns up in plenty of binaries, so AAC is only accepted
+/// when a short chain of consistent ADTS frames follows.
 fn looks_like_adts(data: &[u8]) -> bool {
-    data.len() >= 2 && data[0] == 0xFF && (data[1] & 0xF6) == 0xF0
+    let mut index = 0usize;
+    let mut frames = 0usize;
+    let mut sample_index: Option<u8> = None;
+
+    while index + 7 <= data.len() && frames < 3 {
+        let Some(length) = adts_frame_length(&data[index..]) else {
+            break;
+        };
+        if index + length > data.len() {
+            break;
+        }
+        let current = (data[index + 2] >> 2) & 0x0F;
+        match sample_index {
+            None => sample_index = Some(current),
+            Some(expected) if expected != current => return false,
+            _ => {}
+        }
+        frames += 1;
+        index += length;
+    }
+
+    frames >= 3
 }
 
+fn adts_frame_length(frame: &[u8]) -> Option<usize> {
+    if frame.len() < 7 || frame[0] != 0xFF || (frame[1] & 0xF6) != 0xF0 {
+        return None;
+    }
+    let sample_index = (frame[2] >> 2) & 0x0F;
+    if sample_index >= 13 {
+        return None;
+    }
+    let length = ((frame[3] as usize & 0x03) << 11)
+        | ((frame[4] as usize) << 3)
+        | ((frame[5] as usize) >> 5);
+    if length < 7 {
+        None
+    } else {
+        Some(length)
+    }
+}
+
+/// Requires consecutive, mutually consistent MPEG audio frames. Scanning for a
+/// lone `0xFF 0xEx` pair classifies XZ archives and other binaries as MP3.
 fn looks_like_mp3(data: &[u8]) -> bool {
     let mut offset = 0usize;
     if data.starts_with(b"ID3") && data.len() >= 10 {
@@ -153,17 +196,93 @@ fn looks_like_mp3(data: &[u8]) -> bool {
     }
 
     let mut index = offset;
-    while index + 1 < data.len() {
-        if data[index] == 0xFF && (data[index + 1] & 0xE0) == 0xE0 {
-            let version = (data[index + 1] >> 3) & 0x03;
-            let layer = (data[index + 1] >> 1) & 0x03;
-            if version != 0x01 && layer != 0x00 {
-                return true;
-            }
+    let mut frames = 0usize;
+    let mut signature: Option<(u8, u8, u8)> = None;
+
+    while index + 4 <= data.len() && frames < 3 {
+        let Some((length, version, layer, sample_index)) = mp3_frame(&data[index..]) else {
+            index += 1;
+            continue;
+        };
+        if index + length > data.len() {
+            break;
         }
-        index += 1;
+        match signature {
+            None => signature = Some((version, layer, sample_index)),
+            Some(expected) if expected != (version, layer, sample_index) => {
+                index += length;
+                continue;
+            }
+            _ => {}
+        }
+        frames += 1;
+        index += length;
     }
-    false
+
+    frames >= 3
+}
+
+/// Returns the frame length and the parameters that must stay stable between
+/// frames: MPEG version, layer and sample-rate index.
+fn mp3_frame(frame: &[u8]) -> Option<(usize, u8, u8, u8)> {
+    if frame.len() < 4 || frame[0] != 0xFF || (frame[1] & 0xE0) != 0xE0 {
+        return None;
+    }
+
+    let version = (frame[1] >> 3) & 0x03; // 0 = 2.5, 2 = 2, 3 = 1
+    let layer = (frame[1] >> 1) & 0x03; // 1 = III, 2 = II, 3 = I
+    if version == 0x01 || layer == 0x00 {
+        return None;
+    }
+
+    let bitrate_index = (frame[2] >> 4) & 0x0F;
+    let sample_index = (frame[2] >> 2) & 0x03;
+    let padding = ((frame[2] >> 1) & 0x01) as usize;
+    if bitrate_index == 0 || bitrate_index == 0x0F || sample_index == 0x03 {
+        return None;
+    }
+
+    let bitrate = mp3_bitrate(version, layer, bitrate_index)? as usize * 1000;
+    let sample_rate = mp3_sample_rate(version, sample_index)? as usize;
+
+    let length = if layer == 0b11 {
+        (12 * bitrate / sample_rate + padding) * 4
+    } else {
+        let coefficient = if layer == 0b01 && version != 0b11 { 72 } else { 144 };
+        coefficient * bitrate / sample_rate + padding
+    };
+    if length < 24 {
+        return None;
+    }
+
+    Some((length, version, layer, sample_index))
+}
+
+fn mp3_bitrate(version: u8, layer: u8, index: u8) -> Option<u32> {
+    const MPEG1: [[u32; 15]; 3] = [
+        [0, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448],
+        [0, 32, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320, 384],
+        [0, 32, 40, 48, 56, 64, 80, 96, 112, 128, 160, 192, 224, 256, 320],
+    ];
+    const MPEG2: [[u32; 15]; 3] = [
+        [0, 32, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 224, 256],
+        [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160],
+        [0, 8, 16, 24, 32, 40, 48, 56, 64, 80, 96, 112, 128, 144, 160],
+    ];
+
+    let table = if version == 0b11 { &MPEG1 } else { &MPEG2 };
+    // Layer bits: 3 = I, 2 = II, 1 = III, while the tables are ordered I, II, III.
+    let row = table.get(3 - layer as usize)?;
+    row.get(index as usize).copied()
+}
+
+fn mp3_sample_rate(version: u8, index: u8) -> Option<u32> {
+    match version {
+        0b11 => [44_100, 48_000, 32_000].get(index as usize).copied(),
+        0b10 => [22_050, 24_000, 16_000].get(index as usize).copied(),
+        0b00 => [11_025, 12_000, 8_000].get(index as usize).copied(),
+        _ => None,
+    }
 }
 
 fn detect_matroska_codec(data: &[u8]) -> Option<String> {
@@ -381,11 +500,52 @@ mod tests {
         assert_eq!(detect(b"\x1A\x45\xDF\xA3....matroska....A_FLAC").container, "mkv");
     }
 
+    fn mp3_frames(count: usize) -> Vec<u8> {
+        // MPEG1 Layer III, 128 kbps, 44.1 kHz, no padding: 417-byte frames.
+        let mut data = Vec::new();
+        for _ in 0..count {
+            let mut frame = vec![0u8; 417];
+            frame[0] = 0xFF;
+            frame[1] = 0xFB;
+            frame[2] = 0x90;
+            frame[3] = 0x00;
+            data.extend_from_slice(&frame);
+        }
+        data
+    }
+
+    fn adts_frames(count: usize) -> Vec<u8> {
+        // AAC-LC 44.1 kHz, 64-byte frames.
+        let mut data = Vec::new();
+        for _ in 0..count {
+            let mut frame = vec![0u8; 64];
+            frame[0] = 0xFF;
+            frame[1] = 0xF1;
+            frame[2] = 0x50;
+            frame[3] = 0x80;
+            frame[4] = 0x08;
+            frame[5] = 0x00;
+            frame[6] = 0xFC;
+            data.extend_from_slice(&frame);
+        }
+        data
+    }
+
     #[test]
     fn detects_mp3_and_adts() {
-        let mp3 = [b"ID3\0\0\0\0\0\0\0".as_slice(), &[0xFF, 0xFB, 0x90, 0x64]].concat();
-        assert_eq!(detect(&mp3).container, "mp3");
-        assert_eq!(detect(&[0xFF, 0xF1, 0x50, 0x80]).container, "aac");
+        assert_eq!(detect(&mp3_frames(3)).container, "mp3");
+        assert_eq!(detect(&adts_frames(3)).container, "aac");
+    }
+
+    #[test]
+    fn rejects_stray_sync_words_in_binaries() {
+        let mut data = vec![0u8; 64 * 1024];
+        data[100] = 0xFF;
+        data[101] = 0xFB;
+        data[102] = 0x90;
+        data[5000] = 0xFF;
+        data[5001] = 0xF3;
+        assert!(!detect(&data).recognized);
     }
 
     #[test]

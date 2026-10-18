@@ -11,6 +11,7 @@ struct ImportSheet: View {
     let onError: (String) -> Void
 
     @State private var selectedID: UUID?
+    @State private var selectedForImport: Set<UUID> = []
     @State private var isCropping = false
     @State private var cropImage: CGImage?
     @State private var cropTargetID: UUID?
@@ -31,11 +32,25 @@ struct ImportSheet: View {
         return candidates[index]
     }
 
-    private var importableCount: Int {
+    private var importableCandidates: [ImportCandidate] {
         candidates.filter { candidate in
             candidate.error == nil
                 && !candidate.title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-        }.count
+        }
+    }
+
+    private var importableCount: Int {
+        importableCandidates.count
+    }
+
+    private var pickedImportableCount: Int {
+        importableCandidates.reduce(0) { count, candidate in
+            selectedForImport.contains(candidate.id) ? count + 1 : count
+        }
+    }
+
+    private var allImportablePicked: Bool {
+        !importableCandidates.isEmpty && pickedImportableCount == importableCandidates.count
     }
 
     var body: some View {
@@ -68,6 +83,10 @@ struct ImportSheet: View {
             if selectedID == nil {
                 selectedID = candidates.first(where: { $0.error == nil })?.id ?? candidates.first?.id
             }
+            selectedForImport = Set(importableCandidates.map(\.id))
+        }
+        .onChange(of: controller.candidates.map(\.id)) { _, _ in
+            selectedForImport = Set(importableCandidates.map(\.id))
         }
         .sheet(isPresented: $isCropping) {
             if let cropImage {
@@ -195,11 +214,24 @@ struct ImportSheet: View {
     private var candidateList: some View {
         List(selection: $selectedID) {
             ForEach(candidates) { candidate in
-                CandidateRow(candidate: candidate)
-                    .tag(candidate.id)
+                CandidateRow(
+                    candidate: candidate,
+                    isPicked: selectedForImport.contains(candidate.id),
+                    onToggle: { toggleSelection(candidate) }
+                )
+                .tag(candidate.id)
             }
         }
         .listStyle(.plain)
+    }
+
+    private func toggleSelection(_ candidate: ImportCandidate) {
+        guard candidate.error == nil else { return }
+        if selectedForImport.contains(candidate.id) {
+            selectedForImport.remove(candidate.id)
+        } else {
+            selectedForImport.insert(candidate.id)
+        }
     }
 
     @ViewBuilder
@@ -328,9 +360,26 @@ struct ImportSheet: View {
                 .toggleStyle(.checkbox)
                 .disabled(controller.isImporting)
 
-            Text(String(format: String(localized: "import.count"), importableCount))
-                .font(.callout)
-                .foregroundStyle(.secondary)
+            Button(allImportablePicked ? "import.selectNone" : "import.selectAll") {
+                if allImportablePicked {
+                    selectedForImport.removeAll()
+                } else {
+                    selectedForImport = Set(importableCandidates.map(\.id))
+                }
+            }
+            .buttonStyle(.link)
+            .disabled(controller.isImporting || importableCandidates.isEmpty)
+
+            Text(
+                String(
+                    format: String(localized: "import.selectedCount"),
+                    pickedImportableCount,
+                    importableCount
+                )
+            )
+            .font(.callout)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
 
             if controller.isImporting {
                 ProgressView(
@@ -395,7 +444,7 @@ struct ImportSheet: View {
     }
 
     private var canImport: Bool {
-        !controller.isImporting && importableCount > 0
+        !controller.isImporting && pickedImportableCount > 0
     }
 
     private var cancelTitle: LocalizedStringKey {
@@ -479,6 +528,7 @@ struct ImportSheet: View {
 
         controller.startImport(
             existing: existingTracks + importedThisSession,
+            selection: selectedForImport,
             onOutcome: handleOutcome,
             onError: onError
         )
@@ -500,9 +550,23 @@ struct ImportSheet: View {
 
 private struct CandidateRow: View {
     let candidate: ImportCandidate
+    let isPicked: Bool
+    let onToggle: () -> Void
 
     var body: some View {
         HStack(spacing: 10) {
+            Button(action: onToggle) {
+                Image(systemName: isPicked ? "circle.fill" : "circle")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(
+                        candidate.error != nil
+                            ? Color.secondary.opacity(0.35)
+                            : (isPicked ? Color.red : Color.secondary.opacity(0.7))
+                    )
+            }
+            .buttonStyle(.plain)
+            .disabled(candidate.error != nil)
+
             Image(systemName: candidate.error == nil ? "music.note" : "exclamationmark.triangle")
                 .foregroundStyle(candidate.error == nil ? Color.secondary : Color.red)
                 .frame(width: 16)

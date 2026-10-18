@@ -471,7 +471,7 @@ enum ImportService {
             presetName: AVAssetExportPresetPassthrough
         ) {
             do {
-                try await session.export(to: output, as: .m4a)
+                try await runExport(session, to: output, timeout: 120)
                 return output
             } catch {
                 Diagnostics.log(
@@ -488,7 +488,37 @@ enum ImportService {
             throw ImportError.exportUnavailable
         }
 
-        try await session.export(to: output, as: .m4a)
+        try await runExport(session, to: output, timeout: 300)
         return output
+    }
+
+    /// Exports with a deadline and cancellation support.
+    ///
+    /// AVFoundation occasionally never resumes an export. Without this, the
+    /// sheet stayed disabled in its “importing” state forever, which looked
+    /// like a frozen app; a timeout turns it into a per-file failure instead.
+    private static func runExport(
+        _ session: AVAssetExportSession,
+        to output: URL,
+        timeout: TimeInterval
+    ) async throws {
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask {
+                try await withTaskCancellationHandler {
+                    try await session.export(to: output, as: .m4a)
+                } onCancel: {
+                    session.cancelExport()
+                }
+            }
+            group.addTask {
+                try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+                session.cancelExport()
+                throw ImportError.exportFailed(
+                    String(localized: "error.exportTimeout")
+                )
+            }
+            defer { group.cancelAll() }
+            _ = try await group.next()
+        }
     }
 }

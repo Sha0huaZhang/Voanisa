@@ -101,18 +101,23 @@ final class ImportController: ObservableObject {
 
     func startImport(
         existing: [Track],
+        selection: Set<UUID>? = nil,
         onOutcome: @escaping (ImportOutcome) -> Void,
         onError: @escaping (String) -> Void
     ) {
         guard !isImporting else { return }
 
+        let snapshot = selection.map { ids in
+            candidates.filter { ids.contains($0.id) }
+        } ?? candidates
+        guard !snapshot.isEmpty else { return }
+
         isImporting = true
         isCancelling = false
         phase = .processing
         importedCount = 0
-        totalCount = candidates.count
+        totalCount = snapshot.count
 
-        let snapshot = candidates
         let shouldSkipDuplicates = skipDuplicates
 
         importTask = Task { [weak self] in
