@@ -27,6 +27,41 @@ final class ImportController: ObservableObject {
     var onError: ((String) -> Void)?
 
     func presentPanel() {
+        let panel = makeImportPanel()
+
+        // The panel is presented as a sheet on the main window. `runModal()`
+        // starts its own nested run loop, and when the window is not key the
+        // panel can open *behind* it: the button then looks dead even though the
+        // app is waiting. A window sheet is always in front of its parent.
+        guard let window = NSApp.keyWindow
+            ?? NSApp.mainWindow
+            ?? NSApp.windows.first(where: { $0.isVisible && $0.canBecomeKey })
+        else {
+            Diagnostics.log("导入面板：找不到窗口，退回模态面板")
+            if panel.runModal() == .OK {
+                Diagnostics.log("导入面板：确认 \(panel.urls.count) 个文件/文件夹")
+                importURLs(panel.urls)
+            } else {
+                Diagnostics.log("导入面板：已取消")
+            }
+            return
+        }
+
+        Diagnostics.log("导入面板：以窗口浮层打开")
+        panel.beginSheetModal(for: window) { [weak self] response in
+            Task { @MainActor [weak self] in
+                guard let self else { return }
+                if response == .OK {
+                    Diagnostics.log("导入面板：确认 \(panel.urls.count) 个文件/文件夹")
+                    self.importURLs(panel.urls)
+                } else {
+                    Diagnostics.log("导入面板：已取消")
+                }
+            }
+        }
+    }
+
+    private func makeImportPanel() -> NSOpenPanel {
         let panel = NSOpenPanel()
         panel.title = String(localized: "import.panel.title")
         panel.message = String(localized: "import.panel.message")
@@ -43,14 +78,12 @@ final class ImportController: ObservableObject {
             }
         }
         panel.allowedContentTypes = types
-
-        if panel.runModal() == .OK {
-            importURLs(panel.urls)
-        }
+        return panel
     }
 
     func importURLs(_ urls: [URL]) {
         guard !urls.isEmpty else { return }
+        Diagnostics.log("开始准备 \(urls.count) 个文件")
         isPreparing = true
         preparingCount = 0
         preparingTotal = 0
@@ -71,9 +104,11 @@ final class ImportController: ObservableObject {
             preparingCount = 0
             preparingTotal = 0
             guard !candidates.isEmpty else {
+                Diagnostics.log("准备完成：没有可导入的文件，弹出错误提示")
                 onError?(String(localized: "import.noFiles"))
                 return
             }
+            Diagnostics.log("准备完成：\(candidates.count) 条候选，打开导入窗口")
             self.candidates = candidates
             isShowing = true
         }
@@ -90,6 +125,7 @@ final class ImportController: ObservableObject {
     func finish() {
         importTask?.cancel()
         importTask = nil
+        Diagnostics.log("导入窗口关闭")
         isShowing = false
         isImporting = false
         isCancelling = false

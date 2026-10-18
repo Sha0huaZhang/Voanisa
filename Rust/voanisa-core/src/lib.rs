@@ -1,4 +1,5 @@
 pub mod decode;
+pub mod hash;
 pub mod library;
 pub mod playlist;
 pub mod probe;
@@ -6,6 +7,7 @@ pub mod store;
 pub mod tags;
 
 pub use decode::{inspect, AudioDecoder, DecoderInfo};
+pub use hash::{hash_bytes, hash_file};
 pub use library::{NewTrack, TrackRecord, TrackUpdate};
 pub use playlist::PlaylistRecord;
 pub use probe::{detect, probe_path, quick_container, ProbeResult};

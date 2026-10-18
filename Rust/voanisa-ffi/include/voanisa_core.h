@@ -50,6 +50,11 @@ void voanisa_decoder_close(VoanisaDecoder *decoder);
 ///      "duration_seconds":...}}
 char *voanisa_tags_json(const char *path);
 
+/// SHA-256 of the file contents, lowercase hex. JSON:
+///
+///     {"ok":true,"data":{"hash":"e3b0c442..."}}
+char *voanisa_hash_file_json(const char *path);
+
 /// SQLite library calls. Every function returns a heap-allocated JSON string:
 ///
 ///     {"ok":true,"data":...}

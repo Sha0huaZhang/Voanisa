@@ -80,6 +80,7 @@ struct ImportSheet: View {
         }
         .frame(width: 760, height: 560)
         .onAppear {
+            Diagnostics.log("导入窗口已显示：\(candidates.count) 条候选")
             if selectedID == nil {
                 selectedID = candidates.first(where: { $0.error == nil })?.id ?? candidates.first?.id
             }
@@ -525,6 +526,7 @@ struct ImportSheet: View {
     private func performImport() {
         didAttempt = true
         guard canImport else { return }
+        Diagnostics.log("确认导入：\(pickedImportableCount) 首，共 \(importableCount) 首可选")
 
         controller.startImport(
             existing: existingTracks + importedThisSession,
@@ -535,6 +537,9 @@ struct ImportSheet: View {
     }
 
     private func handleOutcome(_ outcome: ImportOutcome) {
+        Diagnostics.log(
+            "导入结果：新增 \(outcome.tracks.count)，跳过 \(outcome.skippedDuplicates)，失败 \(outcome.failures.count)，取消 \(outcome.cancelled)"
+        )
         importedThisSession.append(contentsOf: outcome.tracks)
         onApply(outcome)
 

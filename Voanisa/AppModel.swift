@@ -42,6 +42,24 @@ final class AppModel: ObservableObject {
             onNext: { [weak self] in self?.playOffset(1) },
             onTogglePlayPause: { [weak self] in self?.togglePlayPause() }
         )
+
+        runDebugImportIfRequested()
+    }
+
+    /// `open -a Voanisa --args --import-test <path>` opens the import sheet for
+    /// that file without going through the open panel. Used to check sheet
+    /// presentation while developing; it prepares candidates only and never
+    /// writes to the library.
+    private func runDebugImportIfRequested() {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard let flag = arguments.firstIndex(of: "--import-test"),
+              arguments.count > flag + 1 else { return }
+        let path = arguments[flag + 1]
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            Diagnostics.log("调试：触发导入 \(path)")
+            self?.imports.importURLs([URL(fileURLWithPath: path)])
+        }
     }
 
     var currentTrack: Track? {

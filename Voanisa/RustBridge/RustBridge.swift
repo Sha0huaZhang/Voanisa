@@ -44,8 +44,7 @@ enum RustCore {
     }
 
     /// Why `voanisa_decoder_open` would fail for this file.
-    static func decoderOpenError(url: URL) -> String? {
-        let result: Result<RustEmpty, RustBridgeError> = url.path.withCString { pointer in
+    static func decoderOpenError(url: URL) -> String? {        let result: Result<RustEmpty, RustBridgeError> = url.path.withCString { pointer in
             decodeEnvelope(voanisa_decoder_open_error_json(pointer))
         }
         if case .failure(let error) = result {
@@ -53,6 +52,19 @@ enum RustCore {
         }
         return nil
     }
+
+    /// SHA-256 of the file contents, computed by the portable core so imports
+    /// deduplicate identically on every platform.
+    static func hashFile(url: URL) -> String? {
+        let result: Result<RustHashPayload, RustBridgeError> = url.path.withCString { pointer in
+            decodeEnvelope(voanisa_hash_file_json(pointer))
+        }
+        return try? result.get().hash
+    }
+}
+
+struct RustHashPayload: Decodable {
+    let hash: String
 }
 
 struct RustDecoderInfo: Decodable {

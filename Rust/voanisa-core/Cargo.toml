@@ -9,5 +9,6 @@ ape-decoder = "0.3"
 opus-pure = "0.2"
 rusqlite = { version = "0.40.2", features = ["bundled"] }
 serde = { version = "1", features = ["derive"] }
+sha2 = "0.10"
 symphonia = { version = "0.6", default-features = false, features = ["ogg", "vorbis", "flac", "pcm", "wav", "aiff", "caf", "mp3", "aac", "alac", "isomp4", "mkv", "ape"] }
 wavicle = "0.1"

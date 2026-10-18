@@ -424,6 +424,12 @@ enum ImportService {
     }
 
     private static func sha256(of url: URL) throws -> String {
+        // The Rust core hashes in 1 MiB chunks; CryptoKit stays as a fallback so
+        // a missing or failed FFI call can never block an import.
+        if let hash = RustCore.hashFile(url: url) {
+            return hash
+        }
+
         let handle = try FileHandle(forReadingFrom: url)
         defer { try? handle.close() }
 

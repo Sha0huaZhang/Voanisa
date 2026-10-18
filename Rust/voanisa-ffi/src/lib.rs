@@ -6,8 +6,8 @@ use std::os::raw::c_char;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 use voanisa_core::{
-    inspect, read_tags, probe_path, AudioDecoder, NewTrack, ProbeResult, Store, StoreError,
-    TrackUpdate,
+    hash_file, inspect, read_tags, probe_path, AudioDecoder, NewTrack, ProbeResult, Store,
+    StoreError, TrackUpdate,
 };
 
 #[derive(Deserialize)]
@@ -222,6 +222,20 @@ pub extern "C" fn voanisa_tags_json(path: *const c_char) -> *mut c_char {
     };
 
     guard(move || success_json(&read_tags(Path::new(&path))))
+}
+
+/// SHA-256 of the file contents as lowercase hex, used for import deduplication.
+#[no_mangle]
+pub extern "C" fn voanisa_hash_file_json(path: *const c_char) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || match hash_file(Path::new(&path)) {
+        Ok(hash) => success_json(&json!({ "hash": hash })),
+        Err(error) => message_error_json(&error, "io"),
+    })
 }
 
 // MARK: - SQLite library
