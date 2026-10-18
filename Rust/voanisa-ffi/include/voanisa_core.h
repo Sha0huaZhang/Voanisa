@@ -55,6 +55,13 @@ char *voanisa_tags_json(const char *path);
 ///     {"ok":true,"data":{"hash":"e3b0c442..."}}
 char *voanisa_hash_file_json(const char *path);
 
+/// Renders a centred square JPEG cover (`side` x `side`) from any picture the
+/// core can decode. JSON:
+///
+///     {"ok":true,"data":{"source_width":400,"source_height":200,"side":1024}}
+char *voanisa_cover_to_file_json(const char *src, const char *out,
+                                 uint32_t side, uint32_t quality);
+
 /// Writes the editor's metadata into the audio file. The payload is JSON with
 /// optional title/artist/album/album_artist/track_number/disc_number keys;
 /// missing or empty values remove those tags.

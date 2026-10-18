@@ -225,8 +225,7 @@ enum ImportService {
         candidate.discNumber = embedded.discNumber
 
         if let artwork = embedded.artwork,
-           let image = CoverRenderer.loadOrientedImage(data: artwork),
-           let rendered = CoverRenderer.centeredSquareCoverJPEG(from: image) {
+           let rendered = CoverRenderer.centeredSquareCoverJPEG(from: artwork) {
             candidate.coverJPEG = rendered
             candidate.originalCoverData = artwork
             candidate.originalCoverExtension = CoverRenderer.imageFileExtension(

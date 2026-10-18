@@ -6,8 +6,8 @@ use std::os::raw::c_char;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 use voanisa_core::{
-    hash_file, inspect, read_tags, probe_path, write_artwork, write_tags, AudioDecoder,
-    NewTrack, ProbeResult, Store, StoreError, TagWrite, TrackUpdate,
+    hash_file, inspect, read_tags, probe_path, write_artwork, write_square_cover, write_tags,
+    AudioDecoder, NewTrack, ProbeResult, Store, StoreError, TagWrite, TrackUpdate,
 };
 
 #[derive(Deserialize)]
@@ -235,6 +235,41 @@ pub extern "C" fn voanisa_hash_file_json(path: *const c_char) -> *mut c_char {
     guard(move || match hash_file(Path::new(&path)) {
         Ok(hash) => success_json(&json!({ "hash": hash })),
         Err(error) => message_error_json(&error, "io"),
+    })
+}
+
+/// Renders a square JPEG cover from any picture the core can decode. JSON:
+///
+///     {"ok":true,"data":{"source_width":400,"source_height":200,"side":1024}}
+///
+/// HEIC and other formats `image` does not support return an error; Swift falls
+/// back to ImageIO for those.
+#[no_mangle]
+pub extern "C" fn voanisa_cover_to_file_json(
+    src: *const c_char,
+    out: *const c_char,
+    side: u32,
+    quality: u32,
+) -> *mut c_char {
+    let src = match c_string_arg(src, "src") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let out = match c_string_arg(out, "out") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || {
+        match write_square_cover(
+            Path::new(&src),
+            Path::new(&out),
+            side,
+            quality.min(100) as u8,
+        ) {
+            Ok(result) => success_json(&result),
+            Err(error) => message_error_json(&error, "image"),
+        }
     })
 }
 

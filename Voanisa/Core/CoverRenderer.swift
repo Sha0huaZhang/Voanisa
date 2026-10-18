@@ -94,6 +94,35 @@ enum CoverRenderer {
         return squareCoverJPEG(from: image, cropRect: rect, side: side)
     }
 
+    /// The same centre-square crop, decoded and encoded by the Rust core.
+    ///
+    /// ImageIO stays as the fallback because `image` does not decode HEIC, which
+    /// is what photos and some artwork use.
+    static func centeredSquareCoverJPEG(from data: Data, side: Int = 1024) -> Data? {
+        let directory = FileManager.default.temporaryDirectory
+        let identifier = UUID().uuidString
+        let source = directory.appendingPathComponent("voanisa-cover-\(identifier).img")
+        let out = directory.appendingPathComponent("voanisa-cover-\(identifier).jpg")
+        defer {
+            try? FileManager.default.removeItem(at: source)
+            try? FileManager.default.removeItem(at: out)
+        }
+
+        do {
+            try data.write(to: source, options: .atomic)
+        } catch {
+            return nil
+        }
+
+        if RustCore.writeSquareCover(source: source, to: out, side: side),
+           let jpeg = try? Data(contentsOf: out) {
+            return jpeg
+        }
+
+        guard let image = loadOrientedImage(data: data) else { return nil }
+        return centeredSquareCoverJPEG(from: image, side: side)
+    }
+
     static func imageFileExtension(for data: Data) -> String? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil),
               let type = CGImageSourceGetType(source) else {

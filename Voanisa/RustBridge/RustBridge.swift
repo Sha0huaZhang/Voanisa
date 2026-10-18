@@ -74,6 +74,28 @@ enum RustCore {
         return (try? result.get().written) ?? false
     }
 
+    /// Renders a centred square JPEG cover through the portable core. False for
+    /// formats `image` cannot decode (HEIC and friends), where the caller should
+    /// fall back to ImageIO.
+    static func writeSquareCover(source: URL, to out: URL, side: Int, quality: Int = 90) -> Bool {
+        let status: RustStatus? = out.path.withCString { outPointer in
+            source.path.withCString { srcPointer in
+                guard let raw = voanisa_cover_to_file_json(
+                    srcPointer,
+                    outPointer,
+                    UInt32(side),
+                    UInt32(quality)
+                ) else { return nil }
+                defer { voanisa_string_free(raw) }
+                return try? JSONDecoder().decode(
+                    RustStatus.self,
+                    from: Data(String(cString: raw).utf8)
+                )
+            }
+        }
+        return status?.ok ?? false
+    }
+
     /// Mirrors the metadata editor into the audio file itself, so other players
     /// see the same title/artist/album. Missing fields remove those tags.
     static func writeTags(url: URL, tags: RustTagWrite) -> Bool {
