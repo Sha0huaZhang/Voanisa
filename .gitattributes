@@ -1,0 +1,12 @@
+# GitHub language statistics
+#
+# The product is the Swift app plus the portable Rust core; the build and
+# packaging scripts are tooling. They stay in the repository and keep their
+# syntax highlighting, but they should not take space in the language bar.
+*.py linguist-detectable=false
+*.sh linguist-detectable=false
+
+# The two headers are the C ABI between Swift and the Rust core. Linguist
+# defaults `.h` to C; stating it here keeps that true even if a C++ file is
+# added later (Linguist then starts guessing C++ for headers).
+*.h linguist-language=C
