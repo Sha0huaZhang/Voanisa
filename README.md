@@ -27,7 +27,8 @@ dependency and no files written outside the library.
   embedded tags when the file provides them
 - Give every song a title, artist, album, album artist, track/disc number and a
   square cover with pan/zoom crop
-- Edit metadata and replace or remove the cover at any time from the row menu
+- Edit metadata and replace or remove the cover at any time from the row menu;
+  title, artist, album and track numbers are written back into the audio file
 - Create playlists, add or remove songs, rename and delete them
 - Move a song to the Trash from the row menu, with Delete or with ⌘⌫
 - Previous/next follows the list currently on screen — the library or a

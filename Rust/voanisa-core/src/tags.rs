@@ -11,8 +11,10 @@ use std::io::BufReader;
 use std::path::Path;
 
 use ape_decoder::ApeDecoder;
-use lofty::file::TaggedFileExt;
+use lofty::config::WriteOptions;
+use lofty::file::{AudioFile, TaggedFileExt};
 use lofty::prelude::{Accessor, ItemKey};
+use lofty::tag::Tag;
 use serde::Serialize;
 use symphonia::core::formats::probe::Hint;
 use symphonia::core::formats::FormatOptions;
@@ -62,6 +64,67 @@ pub fn read_tags(path: &Path) -> TrackTags {
         .map(|info| info.duration_seconds)
         .unwrap_or(0.0);
     tags
+}
+
+/// The textual fields the editor writes back into the file.
+///
+/// `None` and an empty string both mean "remove this field": the editor always
+/// sends the complete state, so there is no case where a missing value should
+/// keep the old one.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct TagWrite {
+    pub title: Option<String>,
+    pub artist: Option<String>,
+    pub album: Option<String>,
+    pub album_artist: Option<String>,
+    pub track_number: Option<u32>,
+    pub disc_number: Option<u32>,
+}
+
+/// Writes the metadata editor's values into the audio file itself.
+///
+/// The library keeps its own copy of the metadata, but a file that is dragged
+/// into another player should carry the same information, so edits are mirrored
+/// into ID3v2 / MP4 ilst / Vorbis comments / APEv2 through `lofty`.
+pub fn write_tags(path: &Path, update: &TagWrite) -> Result<(), String> {
+    let mut tagged =
+        lofty::read_from_path(path).map_err(|error| format!("{}: {error}", path.display()))?;
+
+    if tagged.primary_tag().is_none() {
+        let tag_type = tagged.file_type().primary_tag_type();
+        tagged.insert_tag(Tag::new(tag_type));
+    }
+
+    let tag = tagged
+        .primary_tag_mut()
+        .ok_or_else(|| format!("{}: no writable tag", path.display()))?;
+
+    set_text(tag, ItemKey::TrackTitle, update.title.as_deref());
+    set_text(tag, ItemKey::TrackArtist, update.artist.as_deref());
+    set_text(tag, ItemKey::AlbumTitle, update.album.as_deref());
+    set_text(tag, ItemKey::AlbumArtist, update.album_artist.as_deref());
+
+    match update.track_number.filter(|number| *number > 0) {
+        Some(number) => tag.set_track(number),
+        None => tag.remove_key(&ItemKey::TrackNumber),
+    }
+    match update.disc_number.filter(|number| *number > 0) {
+        Some(number) => tag.set_disk(number),
+        None => tag.remove_key(&ItemKey::DiscNumber),
+    }
+
+    tagged
+        .save_to_path(path, WriteOptions::default())
+        .map_err(|error| format!("{}: {error}", path.display()))
+}
+
+fn set_text(tag: &mut Tag, key: ItemKey, value: Option<&str>) {
+    match value.map(str::trim).filter(|text| !text.is_empty()) {
+        Some(text) => {
+            tag.insert_text(key, text.to_string());
+        }
+        None => tag.remove_key(&key),
+    }
 }
 
 /// An attached picture, exactly as the container stores it.
@@ -545,6 +608,80 @@ mod tests {
         assert_eq!(tags.artist.as_deref(), Some("ID3 Artist"));
         assert_eq!(tags.album.as_deref(), Some("ID3 Album"));
         assert_eq!(tags.track_number, Some(7));
+    }
+
+    #[test]
+    fn writes_tags_back_into_the_file() {
+        let source = fixture("tagged.m4a");
+        if !source.exists() {
+            return;
+        }
+        let path = std::env::temp_dir().join(format!(
+            "voanisa-write-{}.m4a",
+            std::process::id()
+        ));
+        std::fs::copy(&source, &path).unwrap();
+
+        let update = TagWrite {
+            title: Some("New Title".into()),
+            artist: Some("New Artist".into()),
+            album: Some("New Album".into()),
+            album_artist: Some("New Album Artist".into()),
+            track_number: Some(9),
+            disc_number: Some(2),
+        };
+        write_tags(&path, &update).unwrap();
+
+        let tags = read_tags(&path);
+        assert_eq!(tags.title.as_deref(), Some("New Title"));
+        assert_eq!(tags.artist.as_deref(), Some("New Artist"));
+        assert_eq!(tags.album.as_deref(), Some("New Album"));
+        assert_eq!(tags.album_artist.as_deref(), Some("New Album Artist"));
+        assert_eq!(tags.track_number, Some(9));
+        assert_eq!(tags.disc_number, Some(2));
+
+        // An empty value clears the field: the editor always sends the whole
+        // state, so a missing title means "delete the title".
+        let cleared = TagWrite {
+            title: Some(String::new()),
+            ..TagWrite::default()
+        };
+        write_tags(&path, &cleared).unwrap();
+        let tags = read_tags(&path);
+        assert_eq!(tags.title, None);
+        assert_eq!(tags.album, None);
+
+        std::fs::remove_file(&path).ok();
+    }
+
+    #[test]
+    fn creates_a_tag_for_an_untagged_mp3() {
+        let path = std::env::temp_dir().join(format!(
+            "voanisa-write-bare-{}.mp3",
+            std::process::id()
+        ));
+        let mut bytes = Vec::new();
+        for _ in 0..4 {
+            let mut frame = vec![0u8; 417];
+            frame[0] = 0xFF;
+            frame[1] = 0xFB;
+            frame[2] = 0x90;
+            bytes.extend_from_slice(&frame);
+        }
+        std::fs::write(&path, &bytes).unwrap();
+
+        let update = TagWrite {
+            title: Some("Added Later".into()),
+            artist: Some("Someone".into()),
+            ..TagWrite::default()
+        };
+        write_tags(&path, &update).unwrap();
+
+        let tags = read_tags(&path);
+        std::fs::remove_file(&path).ok();
+
+        assert_eq!(tags.title.as_deref(), Some("Added Later"));
+        assert_eq!(tags.artist.as_deref(), Some("Someone"));
     }
 
     #[test]

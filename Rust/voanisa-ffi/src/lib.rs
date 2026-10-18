@@ -6,8 +6,8 @@ use std::os::raw::c_char;
 use std::panic::{catch_unwind, AssertUnwindSafe};
 use std::path::Path;
 use voanisa_core::{
-    hash_file, inspect, read_tags, probe_path, write_artwork, AudioDecoder, NewTrack,
-    ProbeResult, Store, StoreError, TrackUpdate,
+    hash_file, inspect, read_tags, probe_path, write_artwork, write_tags, AudioDecoder,
+    NewTrack, ProbeResult, Store, StoreError, TagWrite, TrackUpdate,
 };
 
 #[derive(Deserialize)]
@@ -235,6 +235,52 @@ pub extern "C" fn voanisa_hash_file_json(path: *const c_char) -> *mut c_char {
     guard(move || match hash_file(Path::new(&path)) {
         Ok(hash) => success_json(&json!({ "hash": hash })),
         Err(error) => message_error_json(&error, "io"),
+    })
+}
+
+#[derive(Deserialize)]
+struct WriteTagsPayload {
+    title: Option<String>,
+    artist: Option<String>,
+    album: Option<String>,
+    album_artist: Option<String>,
+    track_number: Option<u32>,
+    disc_number: Option<u32>,
+}
+
+/// Writes the editor's metadata into the audio file. Missing or empty fields
+/// remove the corresponding tag. Returns `{"ok":true,"data":null}`.
+#[no_mangle]
+pub extern "C" fn voanisa_write_tags_json(
+    path: *const c_char,
+    payload: *const c_char,
+) -> *mut c_char {
+    let path = match c_string_arg(path, "path") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+    let payload = match c_string_arg(payload, "payload") {
+        Ok(value) => value,
+        Err(error) => return to_c_string(message_error_json(&error, "invalid_argument")),
+    };
+
+    guard(move || {
+        let values: WriteTagsPayload = match serde_json::from_str(&payload) {
+            Ok(values) => values,
+            Err(error) => return message_error_json(&error.to_string(), "invalid_argument"),
+        };
+        let update = TagWrite {
+            title: values.title,
+            artist: values.artist,
+            album: values.album,
+            album_artist: values.album_artist,
+            track_number: values.track_number,
+            disc_number: values.disc_number,
+        };
+        match write_tags(Path::new(&path), &update) {
+            Ok(()) => ok_json(),
+            Err(error) => message_error_json(&error, "io"),
+        }
     })
 }
 

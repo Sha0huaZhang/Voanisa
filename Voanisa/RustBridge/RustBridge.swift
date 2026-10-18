@@ -73,6 +73,60 @@ enum RustCore {
         }
         return (try? result.get().written) ?? false
     }
+
+    /// Mirrors the metadata editor into the audio file itself, so other players
+    /// see the same title/artist/album. Missing fields remove those tags.
+    static func writeTags(url: URL, tags: RustTagWrite) -> Bool {
+        guard let data = try? JSONEncoder().encode(tags),
+              let payload = String(data: data, encoding: .utf8) else {
+            return false
+        }
+
+        let status: RustStatus? = url.path.withCString { pathPointer in
+            payload.withCString { payloadPointer in
+                guard let raw = voanisa_write_tags_json(pathPointer, payloadPointer)
+                else { return nil }
+                defer { voanisa_string_free(raw) }
+                return try? JSONDecoder().decode(
+                    RustStatus.self,
+                    from: Data(String(cString: raw).utf8)
+                )
+            }
+        }
+        return status?.ok ?? false
+    }
+}
+
+/// Tag values the editor sends back into the file.
+struct RustTagWrite: Encodable {
+    var title: String?
+    var artist: String?
+    var album: String?
+    var albumArtist: String?
+    var trackNumber: Int?
+    var discNumber: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case title, artist, album
+        case albumArtist = "album_artist"
+        case trackNumber = "track_number"
+        case discNumber = "disc_number"
+    }
+
+    init(track: Track) {
+        title = track.title
+        artist = track.artist
+        album = track.album
+        albumArtist = track.albumArtist
+        trackNumber = track.trackNumber
+        discNumber = track.discNumber
+    }
+}
+
+/// Minimal envelope reader for calls that only report success.
+struct RustStatus: Decodable {
+    let ok: Bool
+    let error: String?
 }
 
 struct RustHashPayload: Decodable {

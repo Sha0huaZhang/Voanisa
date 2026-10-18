@@ -55,6 +55,11 @@ char *voanisa_tags_json(const char *path);
 ///     {"ok":true,"data":{"hash":"e3b0c442..."}}
 char *voanisa_hash_file_json(const char *path);
 
+/// Writes the editor's metadata into the audio file. The payload is JSON with
+/// optional title/artist/album/album_artist/track_number/disc_number keys;
+/// missing or empty values remove those tags.
+char *voanisa_write_tags_json(const char *path, const char *payload_json);
+
 /// Writes the attached picture to `out`. JSON:
 ///
 ///     {"ok":true,"data":{"written":true,"mime":"image/png"}}

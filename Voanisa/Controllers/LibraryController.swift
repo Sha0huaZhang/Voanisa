@@ -129,6 +129,19 @@ final class LibraryController: ObservableObject {
             tracks[index] = updated
             artworkCache.removeObject(forKey: track.id.uuidString as NSString)
             save()
+
+            // Mirror the edit into the file as well: the library stays the
+            // source of truth, so a failed write is logged, never fatal.
+            if !RustCore.writeTags(
+                url: LibraryLocation.mediaURL(for: updated.fileName),
+                tags: RustTagWrite(track: updated)
+            ) {
+                Diagnostics.error(
+                    "标签写回失败：\(updated.fileName)",
+                    context: "library.tags.write"
+                )
+            }
+
             Diagnostics.log("更新《\(updated.title)》的元数据")
             return updated
         } catch {
