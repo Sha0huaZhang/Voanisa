@@ -7,5 +7,4 @@ import Foundation
 enum PlaybackScope: Equatable, Sendable {
     case library
     case playlist(UUID)
-    case album(String)
 }

@@ -102,8 +102,6 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-        case .albums:
-            AlbumsView(model: model)
         }
     }
 

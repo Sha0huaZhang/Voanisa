@@ -2,15 +2,7 @@ import Foundation
 
 @MainActor
 final class AppModel: ObservableObject {
-    @Published var selection: SidebarItem? = .songs {
-        didSet {
-            if case .albums = selection ?? .songs {
-                return
-            }
-            selectedAlbumID = nil
-        }
-    }
-    @Published var selectedAlbumID: String?
+    @Published var selection: SidebarItem? = .songs
     @Published var repeatMode: RepeatMode = .off
 
     @Published var errorMessage: String?
@@ -60,11 +52,6 @@ final class AppModel: ObservableObject {
         switch selection ?? .songs {
         case .playlist(let id):
             return .playlist(id)
-        case .albums:
-            if let selectedAlbumID {
-                return .album(selectedAlbumID)
-            }
-            return .library
         default:
             return .library
         }
@@ -77,10 +64,6 @@ final class AppModel: ObservableObject {
         case .playlist(let id):
             guard let playlist = library.playlist(id: id) else { return [] }
             return library.tracks(in: playlist)
-        case .album(let id):
-            return AlbumGrouping.groups(from: library.tracks)
-                .first { $0.id == id }?
-                .tracks ?? []
         }
     }
 

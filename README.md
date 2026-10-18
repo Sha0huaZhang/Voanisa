@@ -29,9 +29,9 @@ dependency and no files written outside the library.
   square cover with pan/zoom crop
 - Edit metadata and replace or remove the cover at any time from the row menu
 - Create playlists, add or remove songs, rename and delete them
-- Browse albums grouped automatically from album and album-artist tags
-- Previous/next follows the list currently on screen — the library, a playlist
-  or an album — never an unrelated queue
+- Move a song to the Trash from the row menu, with Delete or with ⌘⌫
+- Previous/next follows the list currently on screen — the library or a
+  playlist — never an unrelated queue
 - Songs without a cover use a gray music-note placeholder everywhere
 - Copy audio into `~/Music/Voanisa`, leaving the originals untouched
 - Local playback with play/pause, previous/next, seek, volume, repeat and media keys
@@ -135,7 +135,7 @@ python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
 
 1. Rust portable core: header probing, SQLite library, tag reading and
    Symphonia/`opus-pure`/`wavicle`/`ape-decoder` decoding.
-2. Playlists and albums.
+2. Playlists; album browsing is parked for now and may return later.
 3. Optional Apple Music integration: merge the Music library into Voanisa,
    with explicit import/remove actions.
 4. WMA and DSD stay unsupported until a pure-Rust decoder fits; Voanisa

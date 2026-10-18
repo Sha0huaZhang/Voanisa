@@ -8,7 +8,6 @@
 "sidebar.library"   = "资料库";
 "sidebar.songs"     = "歌曲";
 "sidebar.playlists" = "歌单";
-"sidebar.albums"    = "专辑";
 "sidebar.about"     = "关于";
 "sidebar.settings"  = "设置";
 "sidebar.import"    = "导入音频";
@@ -38,11 +37,6 @@
 /* 即将推出 */
 "playlists.comingSoon.title" = "歌单功能即将推出";
 "playlists.comingSoon.hint"  = "原型阶段专注于导入、命名与播放本地音频。";
-"albums.comingSoon.title"    = "专辑功能即将推出";
-"albums.comingSoon.hint"     = "专辑将根据导入歌曲的元数据自动整理。";
-"albums.unknown"             = "未知专辑";
-"albums.empty.title"         = "还没有专辑";
-"albums.empty.hint"          = "当歌曲包含专辑信息后，专辑会自动出现在这里。";
 
 /* 歌单 */
 "playlist.playAll"     = "播放";

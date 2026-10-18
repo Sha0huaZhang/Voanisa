@@ -9,7 +9,6 @@
 "sidebar.library"   = "Library";
 "sidebar.songs"     = "Songs";
 "sidebar.playlists" = "Playlists";
-"sidebar.albums"    = "Albums";
 "sidebar.about"     = "About";
 "sidebar.settings"  = "Settings";
 "sidebar.import"    = "Import Audio";
@@ -39,11 +38,6 @@
 /* Coming soon */
 "playlists.comingSoon.title" = "Playlists are coming soon";
 "playlists.comingSoon.hint"  = "The prototype focuses on importing, naming and playing local audio.";
-"albums.comingSoon.title"    = "Albums are coming soon";
-"albums.comingSoon.hint"     = "Albums will be built from the metadata of imported songs.";
-"albums.unknown"             = "Unknown Album";
-"albums.empty.title"         = "No albums yet";
-"albums.empty.hint"          = "Albums appear automatically when songs have album metadata.";
 
 /* Playlists */
 "playlist.playAll"     = "Play";

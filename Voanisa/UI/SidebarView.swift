@@ -16,7 +16,7 @@ struct SidebarView: View {
             importButton
             List(selection: $selection) {
                 Section("sidebar.library") {
-                    ForEach([SidebarItem.songs, .albums]) { item in
+                    ForEach([SidebarItem.songs]) { item in
                         Label(item.title, systemImage: item.systemImage)
                             .tag(item)
                     }
