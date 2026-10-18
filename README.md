@@ -35,7 +35,8 @@ dependency and no files written outside the library.
   playlist — never an unrelated queue
 - Songs without a cover use a gray music-note placeholder everywhere
 - Copy audio into `~/Music/Voanisa`, leaving the originals untouched
-- Local playback with play/pause, previous/next, seek, volume, repeat and media keys
+- Local playback with play/pause, previous/next, seek, volume, repeat and media keys;
+  the Rust core decodes every supported format
 - Search, drag-to-reorder, hover play button and double-click to play
 - Elysia-style clean list: artwork on the left, title over artist, red now-playing state
 - English and Simplified Chinese interface

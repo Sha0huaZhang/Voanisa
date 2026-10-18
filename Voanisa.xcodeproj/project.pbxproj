@@ -46,6 +46,7 @@
 		9AB7F51575D32E478DA53823 /* ImportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F94669C61DCDA67D3B501A /* ImportSheet.swift */; };
 		9DFC50F1F1E94FB38F4964ED /* MetadataEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD517CDEE85E8AAA65252CE /* MetadataEditorSheet.swift */; };
 		A235AB71F7EB16567095709B /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */; };
+		AD2216D931B95FFA608C67EB /* NativeDecodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ACDB237E139509FA45198A1 /* NativeDecodeTests.swift */; };
 		B4119FFAF43E184A375FE671 /* LibraryController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D86991DAB39661E74351BA35 /* LibraryController.swift */; };
 		B55BB634DB665201C7CB499C /* AudioMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5243083786B57A543F799144 /* AudioMetadata.swift */; };
 		B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF6A0D8A6BC6D1249699E8B /* ImportService.swift */; };
@@ -100,6 +101,7 @@
 		5AAD62D67EE8C5C73F2A709D /* AudioMetadataTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMetadataTests.swift; sourceTree = "<group>"; };
 		65C659FC6C5F49169B95A4AB /* ProbeHardeningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeHardeningTests.swift; sourceTree = "<group>"; };
 		6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioContainerTests.swift; sourceTree = "<group>"; };
+		6ACDB237E139509FA45198A1 /* NativeDecodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeDecodeTests.swift; sourceTree = "<group>"; };
 		77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustStoreTests.swift; sourceTree = "<group>"; };
 		7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongReorderTests.swift; sourceTree = "<group>"; };
 		8475B6C244B64B0FAA9C4ECD /* TrackMetadataEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMetadataEditTests.swift; sourceTree = "<group>"; };
@@ -233,6 +235,7 @@
 				BBFD7F9B49CEDF5D5CAB6466 /* HashParityTests.swift */,
 				00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */,
 				59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */,
+				6ACDB237E139509FA45198A1 /* NativeDecodeTests.swift */,
 				65C659FC6C5F49169B95A4AB /* ProbeHardeningTests.swift */,
 				46FF4D3C3BC36B2456D7CBBD /* RustArtworkTests.swift */,
 				8776C7F2905E2468123F03B8 /* RustCoverTests.swift */,
@@ -395,6 +398,7 @@
 				963396C8FFFCF21146BF02DE /* HashParityTests.swift in Sources */,
 				5B01DE0010E67674FC3B3E8F /* ImportServiceTests.swift in Sources */,
 				F9C9F69EC190D4A65F1AB832 /* LibraryStoreTests.swift in Sources */,
+				AD2216D931B95FFA608C67EB /* NativeDecodeTests.swift in Sources */,
 				85E18DD7191EF9064F162D37 /* ProbeHardeningTests.swift in Sources */,
 				33E3A97E7334583BA2FF99BB /* RustArtworkTests.swift in Sources */,
 				6F7AB090C18C63FC8EFF19DD /* RustCoverTests.swift in Sources */,

@@ -11,9 +11,9 @@ enum RepeatMode: String, CaseIterable, Sendable {
 
 /// Local playback for the macOS prototype.
 ///
-/// This is the platform layer: AVFoundation owns decoding and output, while the
-/// queue and repeat logic live in AppModel. The portable Rust core can later
-/// feed PCM into the same AVAudioEngine without changing the UI.
+/// Decoding is owned by the portable Rust core, which streams PCM into
+/// AVAudioEngine for every container. AVAudioPlayer stays only as a fallback
+/// for files the core cannot open; the queue and repeat logic live in AppModel.
 final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     @Published private(set) var currentTrackID: UUID?
     @Published private(set) var isPlaying = false
@@ -36,12 +36,17 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
     func play(track: Track) throws {
         let url = LibraryLocation.mediaURL(for: track.fileName)
 
+        // One decoder for every format: the portable core reads the file and
+        // AVAudioEngine only converts and outputs it.
+        if startStreaming(track: track, url: url) { return }
+
+        // Fallback for a file the core cannot open; AVFoundation still decodes
+        // common containers, so playback degrades instead of failing.
         let next: AVAudioPlayer
         do {
             next = try AVAudioPlayer(contentsOf: url)
         } catch {
-            guard startStreaming(track: track, url: url) else { throw error }
-            return
+            throw error
         }
 
         streamer?.stop()
@@ -60,14 +65,15 @@ final class PlaybackEngine: NSObject, ObservableObject, AVAudioPlayerDelegate {
         duration = next.duration
         startTimer()
         updateNowPlaying(force: true)
-        Diagnostics.log("播放《\(track.title)》 \(url.lastPathComponent)")
+        Diagnostics.log("播放《\(track.title)》 \(url.lastPathComponent)（AVFoundation 兜底）")
     }
 
-    /// Fallback for Ogg, Opus and other containers AVFoundation rejects.
+    /// Opens the portable decoder for any container. Returns false when the core
+    /// cannot decode the file, which leaves the AVFoundation fallback in charge.
     private func startStreaming(track: Track, url: URL) -> Bool {
         let streaming = StreamingAudioPlayer()
         guard streaming.open(url: url) else {
-            Diagnostics.error("Rust 解码不可用", context: "playback.stream")
+            Diagnostics.log("Rust 解码不可用，改用 AVFoundation：\(url.lastPathComponent)")
             return false
         }
 
