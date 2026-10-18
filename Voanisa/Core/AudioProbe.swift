@@ -90,7 +90,7 @@ enum AudioProbe {
         return detectContainer(in: readHeader(url))
     }
 
-    static func probe(url: URL) async -> AudioProbeResult {
+    static func probe(url: URL, asset: AVURLAsset? = nil) async -> AudioProbeResult {
         let rust = RustCore.probe(url: url)
         let headerContainer: AudioContainer
         if let payload = rust, payload.recognized,
@@ -149,7 +149,7 @@ enum AudioProbe {
             break
         }
 
-        let asset = AVURLAsset(url: url)
+        let asset = asset ?? AVURLAsset(url: url)
         do {
             let audioTracks = try await asset.loadTracks(withMediaType: .audio)
             let videoTracks = try await asset.loadTracks(withMediaType: .video)

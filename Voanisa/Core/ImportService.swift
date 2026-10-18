@@ -60,6 +60,17 @@ enum ImportError: LocalizedError {
     }
 }
 
+/// What the importer is doing, so the sheet can say it out loud.
+///
+/// Copying files can take minutes on a large selection; writing the finished
+/// tracks into SQLite and the JSON snapshot is a separate, usually shorter
+/// step that has no per-file progress of its own.
+enum ImportPhase: Sendable, Equatable {
+    case processing
+    case saving
+}
+
+/// Copies selected files into the library and records them.
 enum ImportService {
     /// Expands selected files and folders. Header sniffing filters out images,
     /// text files and other non-audio documents without trusting extensions.
@@ -100,56 +111,98 @@ enum ImportService {
         return result
     }
 
-    static func prepare(urls: [URL]) async -> [ImportCandidate] {
+    /// Probes files and reads their tags, a few at a time.
+    ///
+    /// AVFoundation spends tens of milliseconds per asset just opening it, so
+    /// a serial pass over a large folder looks frozen. The work is I/O bound,
+    /// which is why a small task group beats any single-threaded rewrite.
+    static func prepare(
+        urls: [URL],
+        onProgress: ((Int, Int) -> Void)? = nil
+    ) async -> [ImportCandidate] {
         let files = expand(urls: urls)
-        var candidates: [ImportCandidate] = []
-        candidates.reserveCapacity(files.count)
+        guard !files.isEmpty else { return [] }
 
-        for url in files {
-            let probe = await AudioProbe.probe(url: url)
-            var embedded = probe.isSupported
-                ? await AudioMetadataReader.read(url: url)
-                : EmbeddedMetadata()
+        var candidates = [ImportCandidate?](repeating: nil, count: files.count)
+        let reportEvery = max(1, files.count / 200)
+        var processed = 0
 
-            // Ogg, Opus and the other portable formats have no AVFoundation
-            // metadata, so the Rust core supplies the basics.
-            if !probe.container.isNative, let tags = RustCore.tags(url: url) {
-                embedded.title = embedded.title ?? tags.title
-                embedded.artist = embedded.artist ?? tags.artist
-                embedded.album = embedded.album ?? tags.album
-                embedded.albumArtist = embedded.albumArtist ?? tags.albumArtist
-                embedded.trackNumber = embedded.trackNumber ?? tags.trackNumber
-                embedded.discNumber = embedded.discNumber ?? tags.discNumber
+        await withTaskGroup(of: (Int, ImportCandidate).self) { group in
+            var next = 0
+            let limit = min(8, files.count)
+
+            while next < limit {
+                let index = next
+                let url = files[index]
+                next += 1
+                group.addTask { (index, await makeCandidate(for: url)) }
             }
 
-            let fallbackTitle = url.deletingPathExtension().lastPathComponent
-            var candidate = ImportCandidate(
-                sourceURL: url,
-                probe: probe,
-                title: embedded.title ?? fallbackTitle
-            )
-            candidate.artist = embedded.artist ?? ""
-            candidate.album = embedded.album ?? ""
-            candidate.albumArtist = embedded.albumArtist ?? ""
-            candidate.trackNumber = embedded.trackNumber
-            candidate.discNumber = embedded.discNumber
+            for await (index, candidate) in group {
+                candidates[index] = candidate
+                processed += 1
+                if processed == files.count || processed % reportEvery == 0 {
+                    onProgress?(processed, files.count)
+                }
 
-            if let artwork = embedded.artwork,
-               let image = CoverRenderer.loadOrientedImage(data: artwork),
-               let rendered = CoverRenderer.centeredSquareCoverJPEG(from: image) {
-                candidate.coverJPEG = rendered
-                candidate.originalCoverData = artwork
-                candidate.originalCoverExtension = CoverRenderer.imageFileExtension(
-                    for: artwork
-                )
+                if next < files.count {
+                    let index = next
+                    let url = files[index]
+                    next += 1
+                    group.addTask { (index, await makeCandidate(for: url)) }
+                }
             }
-
-            if embedded.title != nil || embedded.artist != nil || embedded.album != nil {
-                Diagnostics.log("读取内嵌标签 \(url.lastPathComponent)")
-            }
-            candidates.append(candidate)
         }
-        return candidates
+
+        onProgress?(files.count, files.count)
+        return candidates.compactMap { $0 }
+    }
+
+    private static func makeCandidate(for url: URL) async -> ImportCandidate {
+        // One asset per file: probing and tag reading share the same parse.
+        let asset = AVURLAsset(url: url)
+        let probe = await AudioProbe.probe(url: url, asset: asset)
+        var embedded = probe.isSupported
+            ? await AudioMetadataReader.read(url: url, asset: asset)
+            : EmbeddedMetadata()
+
+        // Ogg, Opus and the other portable formats have no AVFoundation
+        // metadata, so the Rust core supplies the basics.
+        if !probe.container.isNative, let tags = RustCore.tags(url: url) {
+            embedded.title = embedded.title ?? tags.title
+            embedded.artist = embedded.artist ?? tags.artist
+            embedded.album = embedded.album ?? tags.album
+            embedded.albumArtist = embedded.albumArtist ?? tags.albumArtist
+            embedded.trackNumber = embedded.trackNumber ?? tags.trackNumber
+            embedded.discNumber = embedded.discNumber ?? tags.discNumber
+        }
+
+        let fallbackTitle = url.deletingPathExtension().lastPathComponent
+        var candidate = ImportCandidate(
+            sourceURL: url,
+            probe: probe,
+            title: embedded.title ?? fallbackTitle
+        )
+        candidate.artist = embedded.artist ?? ""
+        candidate.album = embedded.album ?? ""
+        candidate.albumArtist = embedded.albumArtist ?? ""
+        candidate.trackNumber = embedded.trackNumber
+        candidate.discNumber = embedded.discNumber
+
+        if let artwork = embedded.artwork,
+           let image = CoverRenderer.loadOrientedImage(data: artwork),
+           let rendered = CoverRenderer.centeredSquareCoverJPEG(from: image) {
+            candidate.coverJPEG = rendered
+            candidate.originalCoverData = artwork
+            candidate.originalCoverExtension = CoverRenderer.imageFileExtension(
+                for: artwork
+            )
+        }
+
+        if embedded.title != nil || embedded.artist != nil || embedded.album != nil {
+            Diagnostics.log("读取内嵌标签 \(url.lastPathComponent)")
+        }
+        return candidate
     }
 
     static func commit(
@@ -157,6 +210,7 @@ enum ImportService {
         existing: [Track],
         skipDuplicates: Bool = true,
         rootURL: URL = LibraryLocation.rootURL,
+        onPhase: ((ImportPhase) -> Void)? = nil,
         onProgress: ((Int, Int) -> Void)? = nil
     ) async throws -> ImportOutcome {
         try LibraryLocation.ensureDirectories(rootURL: rootURL)
@@ -184,12 +238,24 @@ enum ImportService {
         var cancelled = false
         let total = candidates.count
 
+        onPhase?(.processing)
+
+        // One callback per file would mean one main-actor hop and one SwiftUI
+        // update per file; roughly 200 updates keep large imports responsive.
+        let reportEvery = max(1, total / 200)
+        var processed = 0
+
         for (index, candidate) in candidates.enumerated() {
             if Task.isCancelled {
                 cancelled = true
                 break
             }
-            defer { onProgress?(index + 1, total) }
+            processed = index + 1
+            defer {
+                if processed == total || processed % reportEvery == 0 {
+                    onProgress?(processed, total)
+                }
+            }
 
             if let error = candidate.error {
                 failures.append("\(candidate.sourceURL.lastPathComponent)：\(error)")
@@ -296,7 +362,11 @@ enum ImportService {
             }
         }
 
+        // Report the real stopping point even when the loop ended early.
+        onProgress?(processed, total)
+
         if !newTracks.isEmpty {
+            onPhase?(.saving)
             try LibraryStore.save(
                 existing + newTracks,
                 databaseURL: databaseURL,
@@ -374,6 +444,25 @@ enum ImportService {
 
         let output = stagingURL
             .appendingPathComponent("\(UUID().uuidString).m4a")
+
+        // Copy the existing audio track when the codec is already MP4
+        // compatible (the usual case for camera videos). Re-encoding is only a
+        // fallback: it turns a copy into minutes of AAC encoding.
+        if let session = AVAssetExportSession(
+            asset: composition,
+            presetName: AVAssetExportPresetPassthrough
+        ) {
+            do {
+                try await session.export(to: output, as: .m4a)
+                return output
+            } catch {
+                Diagnostics.log(
+                    "直通导出失败，改用 AAC 重编码：\(error.localizedDescription)"
+                )
+                try? FileManager.default.removeItem(at: output)
+            }
+        }
+
         guard let session = AVAssetExportSession(
             asset: composition,
             presetName: AVAssetExportPresetAppleM4A

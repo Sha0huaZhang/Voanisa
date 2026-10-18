@@ -72,6 +72,7 @@
 "import.importing"     = "正在导入…";
 "import.skipDuplicates" = "跳过重复文件";
 "import.progress"      = "%d / %d";
+"import.saving"        = "正在写入曲库…";
 "import.cancelImport"  = "取消导入";
 "import.cancelling"    = "正在取消…";
 "import.result.title"  = "导入完成";
@@ -141,6 +142,7 @@
 
 /* 进度 */
 "progress.preparing" = "正在读取文件…";
+"progress.preparingCount" = "正在读取文件信息… %d / %d";
 
 /* 菜单 */
 "menu.import" = "导入音频…";

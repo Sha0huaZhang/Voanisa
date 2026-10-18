@@ -74,6 +74,41 @@ final class ImportServiceTests: XCTestCase {
         XCTAssertEqual(imported.tracks.count, 1)
     }
 
+    func testPrepareReportsProgressAndKeepsSelectionOrder() async {
+        var progress: [(Int, Int)] = []
+        let candidates = await ImportService.prepare(
+            urls: [
+                audioDirectory.appendingPathComponent("tone-a.wav"),
+                audioDirectory.appendingPathComponent("tone-b.wav")
+            ]
+        ) { done, total in
+            progress.append((done, total))
+        }
+
+        XCTAssertEqual(
+            candidates.map(\.sourceURL.lastPathComponent),
+            ["tone-a.wav", "tone-b.wav"]
+        )
+        XCTAssertEqual(progress.last?.0, 2)
+        XCTAssertEqual(progress.last?.1, 2)
+    }
+
+    func testCommitReportsProcessingThenSaving() async throws {
+        let first = try await candidate(named: "tone-a.wav")
+        let second = try await candidate(named: "tone-b.wav")
+        var phases: [ImportPhase] = []
+
+        _ = try await ImportService.commit(
+            candidates: [first, second],
+            existing: [],
+            rootURL: root,
+            onPhase: { phases.append($0) },
+            onProgress: nil
+        )
+
+        XCTAssertEqual(phases, [.processing, .saving])
+    }
+
     func testEmptyTitleReportsFailedCandidateAndProgress() async throws {
         var candidate = try await candidate(named: "tone-a.wav")
         candidate.title = "   "

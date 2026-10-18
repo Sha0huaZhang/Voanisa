@@ -213,9 +213,7 @@ final class AppModel: ObservableObject {
             library.append(outcome.tracks)
         }
 
-        if player.currentTrackID == nil, let first = outcome.tracks.first {
-            play(first)
-        }
+        // Importing never starts playback: the user picks what to hear.
         if outcome.cancelled {
             Diagnostics.log("导入已取消：新增 \(outcome.tracks.count) 首")
         }

@@ -340,16 +340,22 @@ struct ImportSheet: View {
                 .controlSize(.small)
                 .frame(width: 120)
 
-                Text(
-                    String(
-                        format: String(localized: "import.progress"),
-                        controller.importedCount,
-                        controller.totalCount
+                if controller.isSaving {
+                    Text("import.saving")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(
+                        String(
+                            format: String(localized: "import.progress"),
+                            controller.importedCount,
+                            controller.totalCount
+                        )
                     )
-                )
-                .font(.callout)
-                .foregroundStyle(.secondary)
-                .monospacedDigit()
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                }
             }
 
             Spacer()
@@ -366,7 +372,7 @@ struct ImportSheet: View {
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.cancelAction)
-            .disabled(controller.isCancelling)
+            .disabled(controller.isCancelling || controller.isSaving)
 
             Button(action: performImport) {
                 Text(importButtonTitle)

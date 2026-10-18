@@ -10,11 +10,17 @@ final class ImportController: ObservableObject {
     @Published var candidates: [ImportCandidate] = []
     @Published var isShowing = false
     @Published var isPreparing = false
+    @Published private(set) var preparingCount = 0
+    @Published private(set) var preparingTotal = 0
     @Published var skipDuplicates = true
     @Published private(set) var isImporting = false
+    @Published private(set) var phase: ImportPhase?
     @Published private(set) var importedCount = 0
     @Published private(set) var totalCount = 0
     @Published private(set) var isCancelling = false
+
+    /// True while the copied files are being written into the library.
+    var isSaving: Bool { phase == .saving }
 
     private var importTask: Task<Void, Never>?
 
@@ -46,12 +52,24 @@ final class ImportController: ObservableObject {
     func importURLs(_ urls: [URL]) {
         guard !urls.isEmpty else { return }
         isPreparing = true
+        preparingCount = 0
+        preparingTotal = 0
+
+        let report: @Sendable (Int, Int) -> Void = { [weak self] done, total in
+            Task { @MainActor in
+                self?.preparingCount = done
+                self?.preparingTotal = total
+            }
+        }
+
         Task {
             let candidates = await Task.detached(priority: .userInitiated) {
-                await ImportService.prepare(urls: urls)
+                await ImportService.prepare(urls: urls, onProgress: report)
             }.value
 
             isPreparing = false
+            preparingCount = 0
+            preparingTotal = 0
             guard !candidates.isEmpty else {
                 onError?(String(localized: "import.noFiles"))
                 return
@@ -75,6 +93,7 @@ final class ImportController: ObservableObject {
         isShowing = false
         isImporting = false
         isCancelling = false
+        phase = nil
         importedCount = 0
         totalCount = 0
         candidates = []
@@ -89,6 +108,7 @@ final class ImportController: ObservableObject {
 
         isImporting = true
         isCancelling = false
+        phase = .processing
         importedCount = 0
         totalCount = candidates.count
 
@@ -100,13 +120,19 @@ final class ImportController: ObservableObject {
                 let outcome = try await ImportService.commit(
                     candidates: snapshot,
                     existing: existing,
-                    skipDuplicates: shouldSkipDuplicates
-                ) { done, total in
-                    Task { @MainActor [weak self] in
-                        self?.importedCount = done
-                        self?.totalCount = total
+                    skipDuplicates: shouldSkipDuplicates,
+                    onPhase: { phase in
+                        Task { @MainActor [weak self] in
+                            self?.phase = phase
+                        }
+                    },
+                    onProgress: { done, total in
+                        Task { @MainActor [weak self] in
+                            self?.importedCount = done
+                            self?.totalCount = total
+                        }
                     }
-                }
+                )
 
                 await MainActor.run {
                     self?.finishImport()
@@ -131,5 +157,6 @@ final class ImportController: ObservableObject {
         importTask = nil
         isImporting = false
         isCancelling = false
+        phase = nil
     }
 }

@@ -18,8 +18,8 @@ struct EmbeddedMetadata: Sendable {
 /// the file name and the default artwork, so a malformed tag never blocks an
 /// import.
 enum AudioMetadataReader {
-    static func read(url: URL) async -> EmbeddedMetadata {
-        let asset = AVURLAsset(url: url)
+    static func read(url: URL, asset: AVURLAsset? = nil) async -> EmbeddedMetadata {
+        let asset = asset ?? AVURLAsset(url: url)
         do {
             let items = try await asset.load(.metadata)
             return await parse(items)

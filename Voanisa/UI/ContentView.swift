@@ -112,8 +112,20 @@ struct ContentView: View {
         if imports.isPreparing {
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text("progress.preparing")
+                if imports.preparingTotal > 0 {
+                    Text(
+                        String(
+                            format: String(localized: "progress.preparingCount"),
+                            imports.preparingCount,
+                            imports.preparingTotal
+                        )
+                    )
                     .font(.callout)
+                    .monospacedDigit()
+                } else {
+                    Text("progress.preparing")
+                        .font(.callout)
+                }
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)

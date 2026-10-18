@@ -73,6 +73,7 @@
 "import.importing"     = "Importing…";
 "import.skipDuplicates" = "Skip duplicate files";
 "import.progress"      = "%d of %d";
+"import.saving"        = "Saving to library…";
 "import.cancelImport"  = "Cancel Import";
 "import.cancelling"    = "Cancelling…";
 "import.result.title"  = "Import finished";
@@ -142,6 +143,7 @@
 
 /* Progress */
 "progress.preparing" = "Reading files…";
+"progress.preparingCount" = "Reading file info… %d of %d";
 
 /* Menu */
 "menu.import" = "Import Audio…";
