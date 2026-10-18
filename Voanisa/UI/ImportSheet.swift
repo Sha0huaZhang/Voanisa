@@ -411,37 +411,69 @@ struct ImportSheet: View {
             Spacer()
 
             Button(action: cancelAction) {
-                Text(cancelTitle)
-                    .foregroundColor(.red)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 3)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(Color.red, lineWidth: 1)
-                    )
+                HStack(spacing: 4) {
+                    Text(cancelTitle)
+                        .foregroundColor(.red)
+                    if showsShortcutHints {
+                        Text(verbatim: "Esc")
+                            .foregroundColor(Color.red.opacity(0.55))
+                        Text(verbatim: "或")
+                            .foregroundColor(Color.red.opacity(0.55))
+                        Text(verbatim: "⌘.")
+                            .foregroundColor(Color.red.opacity(0.55))
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.red, lineWidth: 1)
+                )
             }
             .buttonStyle(.plain)
             .keyboardShortcut(.cancelAction)
             .disabled(controller.isCancelling || controller.isSaving)
 
             Button(action: performImport) {
-                Text(importButtonTitle)
-                    .foregroundColor(canImport ? .blue : .secondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 3)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 6)
-                            .stroke(
-                                canImport ? Color.blue : Color.secondary.opacity(0.4),
-                                lineWidth: 1
-                            )
-                    )
+                HStack(spacing: 4) {
+                    Text(importButtonTitle)
+                        .foregroundColor(canImport ? .blue : .secondary)
+                    if showsShortcutHints {
+                        Text(verbatim: "⌘Enter")
+                            .foregroundColor(Color.blue.opacity(canImport ? 0.55 : 0.3))
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(
+                            canImport ? Color.blue : Color.secondary.opacity(0.4),
+                            lineWidth: 1
+                        )
+                )
             }
             .buttonStyle(.plain)
-            .keyboardShortcut(.defaultAction)
+            .keyboardShortcut(.return, modifiers: .command)
             .disabled(!canImport)
         }
         .padding(16)
+        // Esc and ⌘. are equivalent on macOS; one button can only carry one
+        // shortcut, so this invisible button holds the second one. It must not
+        // take part in layout or hit testing.
+        .background(
+            Button(action: cancelAction) { EmptyView() }
+                .keyboardShortcut(".", modifiers: .command)
+                .opacity(0)
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
+        )
+    }
+
+    /// Elysia only shows the key hints while the plain cancel/import buttons are
+    /// on screen; during an import the labels carry state instead.
+    private var showsShortcutHints: Bool {
+        !controller.isImporting && !controller.isCancelling
     }
 
     private var canImport: Bool {
