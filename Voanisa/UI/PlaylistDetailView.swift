@@ -50,7 +50,6 @@ struct PlaylistDetailView: View {
                         SongRowView(
                             song: track,
                             isPlaying: track.id == player.currentTrackID && player.isPlaying,
-                            isSelected: model.selectedTrackID == track.id,
                             isDragging: false,
                             isReorderEnabled: false,
                             onSelect: { model.selectedTrackID = track.id },

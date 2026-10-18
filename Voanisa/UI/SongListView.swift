@@ -52,7 +52,6 @@ struct SongListView: View {
                             SongRowView(
                                 song: song,
                                 isPlaying: song.id == player.currentTrackID && player.isPlaying,
-                                isSelected: model.selectedTrackID == song.id,
                                 isDragging: draggingID == song.id,
                                 isReorderEnabled: !isSearching,
                                 onSelect: { model.selectedTrackID = song.id },
@@ -252,7 +251,6 @@ private struct ReorderDragModifier: ViewModifier {
 struct SongRowView: View {
     let song: Track
     let isPlaying: Bool
-    var isSelected: Bool = false
     let isDragging: Bool
     let isReorderEnabled: Bool
     var onSelect: () -> Void = {}
@@ -316,12 +314,6 @@ struct SongRowView: View {
             }
         }
         .padding(.vertical, 4)
-        .background(
-            // A neutral tint instead of the accent blue: the row still marks
-            // what ⌘D / Delete will act on, without washing the list blue.
-            RoundedRectangle(cornerRadius: 6)
-                .fill(isSelected ? Color.primary.opacity(0.07) : Color.clear)
-        )
         .contentShape(Rectangle())
         .background(
             GeometryReader { geo in
