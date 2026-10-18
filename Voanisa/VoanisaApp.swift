@@ -31,6 +31,16 @@ struct VoanisaApp: App {
                 }
                 .keyboardShortcut("o", modifiers: .command)
             }
+            // Delete lives in the Edit menu as well as on the Delete key, so it
+            // can be found without knowing about the context menu.
+            CommandGroup(after: .pasteboard) {
+                Divider()
+                Button("common.remove") {
+                    model.deleteSelectedTrack()
+                }
+                .keyboardShortcut(.delete, modifiers: .command)
+                .disabled(model.selectedTrackID == nil)
+            }
         }
         .windowToolbarStyle(.unifiedCompact)
     }

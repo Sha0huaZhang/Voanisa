@@ -137,8 +137,10 @@ struct AlbumDetailView: View {
                     SongRowView(
                         song: track,
                         isPlaying: track.id == player.currentTrackID && player.isPlaying,
+                        isSelected: model.selectedTrackID == track.id,
                         isDragging: false,
                         isReorderEnabled: false,
+                        onSelect: { model.selectedTrackID = track.id },
                         onPlay: { model.play(track) },
                         onEdit: { model.requestMetadataEdit(track) },
                         onShowInFinder: { library.showInFinder(track) },
@@ -156,6 +158,7 @@ struct AlbumDetailView: View {
                 }
             }
             .listStyle(.plain)
+            .onDeleteCommand { model.deleteSelectedTrack() }
         }
         .task(id: album.representativeTrack?.coverFileName) {
             let coverName = album.representativeTrack?.coverFileName

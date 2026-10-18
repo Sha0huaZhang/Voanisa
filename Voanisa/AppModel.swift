@@ -18,6 +18,8 @@ final class AppModel: ObservableObject {
 
     @Published var deleteTarget: Track?
     @Published var metadataTarget: Track?
+    /// The row the user clicked most recently; Delete and the Edit menu act on it.
+    @Published var selectedTrackID: UUID?
 
     let player = PlaybackEngine()
     let imports = ImportController()
@@ -46,6 +48,10 @@ final class AppModel: ObservableObject {
 
     var currentTrack: Track? {
         library.track(id: player.currentTrackID)
+    }
+
+    var selectedTrack: Track? {
+        library.track(id: selectedTrackID)
     }
 
     /// The list currently on screen. This is the source of truth for next/previous,
@@ -156,12 +162,21 @@ final class AppModel: ObservableObject {
         deleteTarget = track
     }
 
+    /// Menu and keyboard entry point: acts on the row the user selected.
+    func deleteSelectedTrack() {
+        guard let track = selectedTrack else { return }
+        requestDelete(track)
+    }
+
     func confirmDelete() {
         guard let track = deleteTarget else { return }
         if player.currentTrackID == track.id {
             player.stop()
         }
         library.remove(track)
+        if selectedTrackID == track.id {
+            selectedTrackID = nil
+        }
         deleteTarget = nil
     }
 

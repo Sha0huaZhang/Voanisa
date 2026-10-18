@@ -49,8 +49,10 @@ struct SongListView: View {
                         SongRowView(
                             song: song,
                             isPlaying: song.id == player.currentTrackID && player.isPlaying,
+                            isSelected: model.selectedTrackID == song.id,
                             isDragging: draggingID == song.id,
                             isReorderEnabled: !isSearching,
+                            onSelect: { model.selectedTrackID = song.id },
                             onPlay: { model.play(song) },
                             onEdit: { model.requestMetadataEdit(song) },
                             onShowInFinder: { library.showInFinder(song) },
@@ -79,6 +81,7 @@ struct SongListView: View {
                 }
                 .listStyle(.plain)
                 .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
+                .onDeleteCommand { model.deleteSelectedTrack() }
 
                 if let id = draggingID,
                    let frame = rowFrames[id],
@@ -208,8 +211,10 @@ private struct ReorderDragModifier: ViewModifier {
 struct SongRowView: View {
     let song: Track
     let isPlaying: Bool
+    var isSelected: Bool = false
     let isDragging: Bool
     let isReorderEnabled: Bool
+    var onSelect: () -> Void = {}
     let onPlay: () -> Void
     let onEdit: () -> Void
     let onShowInFinder: () -> Void
@@ -269,6 +274,10 @@ struct SongRowView: View {
             }
         }
         .padding(.vertical, 4)
+        .background(
+            RoundedRectangle(cornerRadius: 6)
+                .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.clear)
+        )
         .contentShape(Rectangle())
         .background(
             GeometryReader { geo in
@@ -287,6 +296,7 @@ struct SongRowView: View {
         .onTapGesture(count: 2) {
             onPlay()
         }
+        .onTapGesture(perform: onSelect)
         .contextMenu {
             Button("common.play", action: onPlay)
             Button("common.editMetadata", action: onEdit)

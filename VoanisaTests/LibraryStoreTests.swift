@@ -205,6 +205,46 @@ final class LibraryStoreTests: XCTestCase {
         XCTAssertEqual(snapshot.playlists, [playlist])
     }
 
+    func testSavingWithoutATrackRemovesItEverywhere() throws {
+        let kept = makeTrack(title: "Kept")
+        let removed = makeTrack(title: "Removed")
+
+        try LibraryStore.save(
+            [kept, removed],
+            databaseURL: databaseURL,
+            jsonURL: jsonURL
+        )
+
+        let playlistID = UUID()
+        _ = try RustStore.createPlaylist(
+            path: databaseURL,
+            id: playlistID.uuidString,
+            name: "Mix"
+        ).get()
+        try RustStore.setPlaylistTracks(
+            path: databaseURL,
+            id: playlistID.uuidString,
+            trackIDs: [kept.id.uuidString, removed.id.uuidString]
+        ).get()
+
+        // Deleting a track is just a save without it: the row disappears from
+        // SQLite and the foreign key cascade drops the playlist membership.
+        try LibraryStore.save([kept], databaseURL: databaseURL, jsonURL: jsonURL)
+
+        XCTAssertEqual(
+            try RustStore.tracks(path: databaseURL).get().map(\.id),
+            [kept.id.uuidString]
+        )
+        XCTAssertEqual(
+            try RustStore.playlists(path: databaseURL).get().first?.trackIDs,
+            [kept.id.uuidString]
+        )
+        XCTAssertEqual(
+            LibraryStore.load(databaseURL: databaseURL, jsonURL: jsonURL).map(\.id),
+            [kept.id]
+        )
+    }
+
     func testFullMetadataRoundTripsThroughSQLite() throws {
         var track = makeTrack(title: "Full")
         track.albumArtist = "Album Artist"

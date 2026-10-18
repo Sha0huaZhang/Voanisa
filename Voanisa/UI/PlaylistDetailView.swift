@@ -51,12 +51,14 @@ struct PlaylistDetailView: View {
                         SongRowView(
                             song: track,
                             isPlaying: track.id == player.currentTrackID && player.isPlaying,
+                            isSelected: model.selectedTrackID == track.id,
                             isDragging: false,
                             isReorderEnabled: false,
+                            onSelect: { model.selectedTrackID = track.id },
                             onPlay: { model.play(track) },
                             onEdit: { model.requestMetadataEdit(track) },
                             onShowInFinder: { library.showInFinder(track) },
-                            onRemove: nil,
+                            onRemove: { model.requestDelete(track) },
                             playlists: [],
                             onAddToPlaylist: { _ in },
                             onRemoveFromPlaylist: {
@@ -72,6 +74,7 @@ struct PlaylistDetailView: View {
                     }
                 }
                 .listStyle(.plain)
+                .onDeleteCommand { model.deleteSelectedTrack() }
             }
         }
         .alert("playlist.rename", isPresented: $isRenaming) {
