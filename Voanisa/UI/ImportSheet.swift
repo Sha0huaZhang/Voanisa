@@ -326,6 +326,29 @@ struct ImportSheet: View {
         }
     }
 
+    /// Both cover actions share one width so they read as a pair, and the text
+    /// sits in the middle rather than hugging the leading edge.
+    private func coverButton(
+        _ title: LocalizedStringKey,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Text(title)
+                .foregroundColor(.blue)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .contentShape(Rectangle())
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.blue, lineWidth: 1)
+                )
+        }
+        .buttonStyle(.plain)
+        .frame(width: 150)
+    }
+
     private func coverEditor(index: Int, candidate: ImportCandidate) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("import.cover")
@@ -352,12 +375,12 @@ struct ImportSheet: View {
                 .help(Text("import.cover.hint"))
 
                 VStack(alignment: .leading, spacing: 10) {
-                    Button("import.chooseCover") {
+                    coverButton("import.chooseCover") {
                         chooseCover { image in
                             beginCrop(image, for: candidate.id)
                         }
                     }
-                    Button("import.coverForAll") {
+                    coverButton("import.coverForAll") {
                         chooseCover { image in
                             beginCrop(image, for: nil)
                         }
