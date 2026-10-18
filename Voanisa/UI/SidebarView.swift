@@ -124,9 +124,13 @@ struct SidebarView: View {
             .foregroundStyle(.blue)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 6)
+            // The frame alone does not make the blank part of the strip
+            // clickable: a plain button only reacts inside its content shape.
+            .contentShape(Rectangle())
             .overlay(
                 RoundedRectangle(cornerRadius: 7)
                     .stroke(Color.blue, lineWidth: 1)
+                    .allowsHitTesting(false)
             )
         }
         .buttonStyle(.plain)
