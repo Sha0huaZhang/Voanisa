@@ -1,2 +1,2 @@
-# Elysia
-The missing graphical interface of Apple Music.
+# Voanisa
+A local-first music library for macOS, built on a portable Rust core.
