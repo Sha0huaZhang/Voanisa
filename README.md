@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="images/Voanisa-icon-1024.png" alt="Logo" width="256" />
+    <img src="images/Voanisa-icon-512-rounded.png" alt="Logo" width="256" />
     <h1>Voanisa</h1>
 </div>
 
@@ -131,6 +131,14 @@ The checked-in icon is temporary artwork. Replace
 
 ```sh
 python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
+```
+
+The README logo is `images/Voanisa-icon-512-rounded.png`: artwork for docs and
+the website is always rounded first, with the macOS icon mask ratio:
+
+```sh
+swift Scripts/make-rounded-icon.swift ~/Downloads/artwork.heic \
+    images/Voanisa-icon-512-rounded.png 512
 ```
 
 ## Roadmap
