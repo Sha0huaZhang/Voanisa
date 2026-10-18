@@ -317,8 +317,10 @@ struct SongRowView: View {
         }
         .padding(.vertical, 4)
         .background(
+            // A neutral tint instead of the accent blue: the row still marks
+            // what ⌘D / Delete will act on, without washing the list blue.
             RoundedRectangle(cornerRadius: 6)
-                .fill(isSelected ? Color.accentColor.opacity(0.16) : Color.clear)
+                .fill(isSelected ? Color.primary.opacity(0.07) : Color.clear)
         )
         .contentShape(Rectangle())
         .background(

@@ -57,6 +57,31 @@ struct ImportSheet: View {
     }
 
     var body: some View {
+        Group {
+            if isCropping, let cropImage {
+                // Shown in place of the sheet content: stacking a crop sheet on
+                // top of this one is what made the picker look frozen.
+                CoverCropSheet(
+                    image: cropImage,
+                    onCancel: {
+                        isCropping = false
+                        pendingOriginalAll = nil
+                        cropTargetID = nil
+                    },
+                    onConfirm: { cropped in
+                        applyCrop(cropped)
+                        isCropping = false
+                    }
+                )
+                .padding(20)
+            } else {
+                content
+            }
+        }
+        .frame(width: 760, height: 560)
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             header
             Divider()
@@ -81,7 +106,6 @@ struct ImportSheet: View {
                 footer
             }
         }
-        .frame(width: 760, height: 560)
         .onAppear {
             Diagnostics.log("导入窗口已显示：\(candidates.count) 条候选")
             if selectedID == nil {
@@ -91,22 +115,6 @@ struct ImportSheet: View {
         }
         .onChange(of: controller.candidates.map(\.id)) { _, _ in
             selectedForImport = Set(importableCandidates.map(\.id))
-        }
-        .sheet(isPresented: $isCropping) {
-            if let cropImage {
-                CoverCropSheet(
-                    image: cropImage,
-                    onCancel: {
-                        isCropping = false
-                        pendingOriginalAll = nil
-                        cropTargetID = nil
-                    },
-                    onConfirm: { cropped in
-                        applyCrop(cropped)
-                        isCropping = false
-                    }
-                )
-            }
         }
     }
 
@@ -346,7 +354,21 @@ struct ImportSheet: View {
                 )
         }
         .buttonStyle(.plain)
-        .frame(width: 150)
+        .frame(width: coverButtonWidth)
+    }
+
+    /// The wider of the two labels decides the width, so “统一设置封面…” keeps the
+    /// size it had as a system button and the shorter one simply grows to match.
+    private var coverButtonWidth: CGFloat {
+        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+        let labels = [
+            String(localized: "import.chooseCover"),
+            String(localized: "import.coverForAll")
+        ]
+        let longest = labels
+            .map { ($0 as NSString).size(withAttributes: [.font: font]).width }
+            .max() ?? 150
+        return ceil(longest) + 28
     }
 
     private func coverEditor(index: Int, candidate: ImportCandidate) -> some View {
@@ -376,14 +398,16 @@ struct ImportSheet: View {
 
                 VStack(alignment: .leading, spacing: 10) {
                     coverButton("import.chooseCover") {
-                        chooseCover { image in
-                            beginCrop(image, for: candidate.id)
-                        }
+                        CoverPicker.present(
+                            onPick: { image in beginCrop(image, for: candidate.id) },
+                            onError: { message in onError(message) }
+                        )
                     }
                     coverButton("import.coverForAll") {
-                        chooseCover { image in
-                            beginCrop(image, for: nil)
-                        }
+                        CoverPicker.present(
+                            onPick: { image in beginCrop(image, for: nil) },
+                            onError: { message in onError(message) }
+                        )
                     }
                     if candidate.coverJPEG != nil {
                         Button("import.removeCover") {
@@ -558,22 +582,6 @@ struct ImportSheet: View {
                 controller.candidates[index][keyPath: keyPath] = newValue
             }
         )
-    }
-
-    private func chooseCover(then beginCrop: @escaping (CGImage) -> Void) {
-        let panel = NSOpenPanel()
-        panel.title = String(localized: "import.chooseCover")
-        panel.allowedContentTypes = [.image]
-        panel.allowsMultipleSelection = false
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        guard let image = CoverRenderer.loadOrientedImage(url: url) else {
-            onError(String(localized: "error.cover"))
-            return
-        }
-        beginCrop(image)
     }
 
     /// Stages an image for cropping.

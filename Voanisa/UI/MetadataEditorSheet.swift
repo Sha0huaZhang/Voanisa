@@ -32,6 +32,28 @@ struct MetadataEditorSheet: View {
     }
 
     var body: some View {
+        Group {
+            if isCropping, let cropImage {
+                CoverCropSheet(
+                    image: cropImage,
+                    onCancel: {
+                        isCropping = false
+                        pendingOriginal = nil
+                    },
+                    onConfirm: { cropped in
+                        applyCrop(cropped)
+                        isCropping = false
+                    }
+                )
+                .padding(20)
+            } else {
+                content
+            }
+        }
+        .frame(width: 520, height: 640)
+    }
+
+    private var content: some View {
         VStack(spacing: 0) {
             header
             Divider()
@@ -59,22 +81,6 @@ struct MetadataEditorSheet: View {
             }
             Divider()
             footer
-        }
-        .frame(width: 520, height: 640)
-        .sheet(isPresented: $isCropping) {
-            if let cropImage {
-                CoverCropSheet(
-                    image: cropImage,
-                    onCancel: {
-                        isCropping = false
-                        pendingOriginal = nil
-                    },
-                    onConfirm: { cropped in
-                        applyCrop(cropped)
-                        isCropping = false
-                    }
-                )
-            }
         }
     }
 
@@ -205,19 +211,10 @@ struct MetadataEditorSheet: View {
     }
 
     private func chooseCover() {
-        let panel = NSOpenPanel()
-        panel.title = String(localized: "metadata.chooseCover")
-        panel.allowedContentTypes = [.image]
-        panel.allowsMultipleSelection = false
-        panel.canChooseFiles = true
-        panel.canChooseDirectories = false
-
-        guard panel.runModal() == .OK, let url = panel.url else { return }
-        guard let image = CoverRenderer.loadOrientedImage(url: url) else {
-            onError(String(localized: "error.cover"))
-            return
-        }
-        beginCrop(image)
+        CoverPicker.present(
+            onPick: { image in beginCrop(image) },
+            onError: { message in onError(message) }
+        )
     }
 
     private func beginCrop(_ image: CGImage) {
