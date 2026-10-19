@@ -189,8 +189,8 @@ private struct PlaylistHeaderArtwork: View {
                     .background(Color.gray.opacity(0.15))
             }
         }
-        .frame(width: 64, height: 64)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .frame(width: 48, height: 48)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
         .task(id: coverFileName) {
             guard let coverFileName else {
                 image = nil
