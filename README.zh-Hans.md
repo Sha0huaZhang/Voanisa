@@ -9,6 +9,14 @@
 
 [English](./README.md) · **简体中文**
 
+## 官网
+
+[voanisa.macwave.org](https://voanisa.macwave.org)
+
+## 下载
+
+[点击前往下载页面](https://voanisa.macwave.org/Downloads/)
+
 本仓库包含 **Voanisa 1.0.1**。每个导入的音频文件都会成为曲库中的一首歌曲。
 音频会被复制进自包含的曲库，由用户命名、配上正方形封面，并在本机播放——
 不依赖 Apple Music，也不会在曲库之外写入任何文件。
