@@ -670,7 +670,7 @@ private struct CandidateRow: View {
     var body: some View {
         HStack(spacing: 10) {
             Button(action: onToggle) {
-                Image(systemName: isPicked ? "circle.fill" : "circle")
+                Image(systemName: isPicked ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(
                         candidate.error != nil

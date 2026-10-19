@@ -11,6 +11,8 @@ struct SongListView: View {
     @State private var dragPointerY: CGFloat?
     @State private var draggedArtwork: NSImage?
     @State private var rowFrames: [UUID: CGRect] = [:]
+    /// Drives the automatic scrolling while a row is dragged near an edge.
+    @State private var scroller = ListAutoScroller()
 
     private var songs: [Track] { library.visibleTracks }
     private var isSearching: Bool { SongSearch.isActive(library.searchText) }
@@ -61,7 +63,7 @@ struct SongListView: View {
                                 onShowInFinder: { library.showInFinder(song) },
                                 onRemove: { model.requestDelete(song) },
                                 playlists: library.playlists,
-                                onAddToPlaylist: { model.add(song, to: $0) },
+                                onTogglePlaylist: { model.toggle(song, in: $0) },
                                 onRemoveFromPlaylist: nil,
                                 onDragChanged: { pointerY, startY, artwork in
                                     if draggingID != song.id {
@@ -73,8 +75,13 @@ struct SongListView: View {
                                         )
                                     }
                                     dragPointerY = pointerY
+                                    scroller.update(
+                                        pointerY: pointerY,
+                                        visible: container.frame(in: .global)
+                                    )
                                 },
                                 onDragEnded: { pointerY, startY in
+                                    scroller.stop()
                                     finishDrag(
                                         of: song,
                                         index: index,
@@ -86,6 +93,11 @@ struct SongListView: View {
                                 EdgeInsets(top: 0, leading: 10, bottom: 0, trailing: 10)
                             )
                             .listRowSeparator(.hidden)
+                            // Rows live inside the list's NSScrollView, so this is
+                            // where the scroller can find it.
+                            .background(ScrollViewFinder { scrollView in
+                                scroller.attach(scrollView)
+                            })
                         }
                     }
                     .listStyle(.plain)
@@ -112,8 +124,9 @@ struct SongListView: View {
         }
     }
 
-    /// A visible counterpart to the row context menu and the Delete key, in the
-    /// spot Elysia puts its playlist actions: top-right of the content area.
+    /// Visible counterpart to the row context menu and the Delete key. Elysia can
+    /// live without one because it only reads the Apple Music library, while
+    /// Voanisa owns the files and has to make removing them findable.
     ///
     /// It stays red on purpose: a disabled button is dimmed to grey, which looks
     /// like a broken feature. Without a selected row it opens the picker instead.
@@ -185,6 +198,95 @@ private struct RowFrameKey: PreferenceKey {
     static var defaultValue: [UUID: CGRect] = [:]
     static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
         value.merge(nextValue()) { _, new in new }
+    }
+}
+
+/// Scrolls the song list while a row is dragged into the top or bottom edge.
+///
+/// `DragGesture` only reports mouse movement, so holding a row against the edge
+/// would otherwise never reach songs further away — the user had to drop, scroll
+/// and drag again. A timer nudges the list's clip view instead.
+final class ListAutoScroller {
+    /// Height of the hot zone at each end, in points.
+    private let edgeZone: CGFloat = 56
+    /// Points per second at the very edge, scaled by how deep the pointer is.
+    private let maxSpeed: CGFloat = 900
+
+    private weak var scrollView: NSScrollView?
+    private var timer: Timer?
+    private var speed: CGFloat = 0
+
+    func attach(_ scrollView: NSScrollView?) {
+        self.scrollView = scrollView
+    }
+
+    /// `pointerY` and `visible` are in the global coordinate space.
+    func update(pointerY: CGFloat, visible: CGRect) {
+        guard visible.height > edgeZone * 2 else {
+            stop()
+            return
+        }
+
+        let topDepth = (visible.minY + edgeZone - pointerY) / edgeZone
+        let bottomDepth = (pointerY - (visible.maxY - edgeZone)) / edgeZone
+
+        if topDepth > 0 {
+            speed = -maxSpeed * min(1, topDepth)
+        } else if bottomDepth > 0 {
+            speed = maxSpeed * min(1, bottomDepth)
+        } else {
+            stop()
+            return
+        }
+
+        startIfNeeded()
+    }
+
+    func stop() {
+        timer?.invalidate()
+        timer = nil
+        speed = 0
+    }
+
+    private func startIfNeeded() {
+        guard timer == nil else { return }
+        let timer = Timer(timeInterval: 1.0 / 60.0, repeats: true) { [weak self] _ in
+            self?.step()
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        self.timer = timer
+    }
+
+    private func step() {
+        guard let scrollView, speed != 0 else {
+            stop()
+            return
+        }
+
+        let clip = scrollView.contentView
+        let documentHeight = scrollView.documentView?.frame.height ?? 0
+        let maxOrigin = max(0, documentHeight - clip.bounds.height)
+        var origin = clip.bounds.origin
+        origin.y = min(max(0, origin.y + speed / 60), maxOrigin)
+
+        guard origin.y != clip.bounds.origin.y else { return }
+        clip.scroll(to: origin)
+        scrollView.reflectScrolledClipView(clip)
+    }
+}
+
+/// Reports the `NSScrollView` a SwiftUI view ended up inside.
+private struct ScrollViewFinder: NSViewRepresentable {
+    let onResolve: (NSScrollView?) -> Void
+
+    func makeNSView(context: Context) -> NSView {
+        let view = NSView(frame: .zero)
+        DispatchQueue.main.async { onResolve(view.enclosingScrollView) }
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        DispatchQueue.main.async { onResolve(nsView.enclosingScrollView) }
     }
 }
 
@@ -260,7 +362,7 @@ struct SongRowView: View {
     let onShowInFinder: () -> Void
     let onRemove: (() -> Void)?
     let playlists: [Playlist]
-    let onAddToPlaylist: (Playlist) -> Void
+    let onTogglePlaylist: (Playlist) -> Void
     let onRemoveFromPlaylist: (() -> Void)?
     let onDragChanged: (CGFloat, CGFloat, NSImage?) -> Void
     let onDragEnded: (CGFloat, CGFloat) -> Void
@@ -340,10 +442,16 @@ struct SongRowView: View {
 
             if !playlists.isEmpty {
                 Menu("common.addToPlaylist") {
+                    // Toggles keep the menu open while the user ticks more than
+                    // one playlist; each tick adds or removes this song.
                     ForEach(playlists) { playlist in
-                        Button(playlist.name) {
-                            onAddToPlaylist(playlist)
-                        }
+                        Toggle(
+                            playlist.name,
+                            isOn: Binding(
+                                get: { playlist.trackIDs.contains(song.id) },
+                                set: { _ in onTogglePlaylist(playlist) }
+                            )
+                        )
                     }
                 }
             }

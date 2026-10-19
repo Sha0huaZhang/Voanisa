@@ -311,7 +311,7 @@ private struct SelectionPickRow: View {
 
             Spacer(minLength: 0)
 
-            Image(systemName: isSelected ? "circle.fill" : "circle")
+            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                 .font(.system(size: 13))
                 .foregroundColor(isSelected ? .red : .secondary)
         }

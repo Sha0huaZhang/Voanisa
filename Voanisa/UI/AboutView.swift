@@ -2,6 +2,7 @@ import AppKit
 import SwiftUI
 
 struct AboutView: View {
+    private static let websiteURL = URL(string: "https://voanisa.macwave.org")!
     private static let githubURL = URL(string: "https://github.com/Sha0huaZhang/Voanisa")!
     private static let licenseURL = URL(string: "https://github.com/Sha0huaZhang/Voanisa/blob/main/LICENSE")!
 
@@ -43,6 +44,7 @@ struct AboutView: View {
                 }
 
                 HStack(spacing: 14) {
+                    Link("settings.about.website", destination: Self.websiteURL)
                     Link("settings.about.github", destination: Self.githubURL)
                     Link("settings.about.license", destination: Self.licenseURL)
                     Button("settings.about.openLog") {

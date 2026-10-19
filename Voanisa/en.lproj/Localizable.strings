@@ -76,6 +76,10 @@
 "import.removeCover"   = "Remove Cover";
 "import.coverForAll"   = "Use One Cover for All…";
 "import.cover.hint"    = "Drag an image onto the cover to use it.";
+
+/* WMA notice */
+"wma.notice.title"   = "WMA is not supported";
+"wma.notice.message" = "WMA (Windows Media Audio) is a proprietary Microsoft format, and neither macOS nor Voanisa's portable core can decode it — those files are marked unsupported when you import them. Convert them to FLAC or MP3 first; Scripts/convert-wma.sh in the repository converts a whole folder in one go with ffmpeg.";
 "import.confirm"       = "Import";
 "import.importing"     = "Importing…";
 "import.skipDuplicates" = "Skip duplicate files";
@@ -126,9 +130,18 @@
 "settings.library.export.hint" = "Save a portable copy of the library snapshot.";
 "settings.about"           = "About";
 "settings.version"         = "Version";
+"settings.version.current" = "Current version";
+"settings.version.check"   = "Check for Updates";
+"settings.version.checking" = "Checking…";
+"settings.version.upToDate" = "You are on the latest version.";
+"settings.version.available" = "Version %@ is available.";
+"settings.version.guide"   = "Open the download page for the new .dmg, quit Voanisa, then open the DMG and drag Voanisa onto Applications, replacing the old copy.";
+"settings.version.download" = "Open Download Page";
+"settings.version.failed"  = "Could not reach GitHub. Check your connection and try again.";
 "settings.about.tagline"   = "A local music library for macOS";
 "settings.about.description" = "Import audio, name it, design a square cover, and play it locally — no Apple Music required.";
 "settings.about.rustCore"  = "Rust core";
+"settings.about.website"   = "Website";
 "settings.about.github"    = "GitHub";
 "settings.about.license"   = "MIT License";
 "settings.about.openLog"   = "Open Log";
@@ -166,8 +179,7 @@
 
 /* Shared */
 "common.cancel"   = "Cancel";
-"common.gotIt"    = "Got it";
-"common.later"    = "Later";
+"common.gotIt"    = "Got it";"common.later"    = "Later";
 "common.restart"  = "Restart Now";
 "common.play"     = "Play";
 "common.create"   = "Create";

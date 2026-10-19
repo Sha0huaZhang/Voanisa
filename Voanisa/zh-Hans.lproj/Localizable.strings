@@ -75,6 +75,10 @@
 "import.removeCover"   = "移除封面";
 "import.coverForAll"   = "统一设置封面…";
 "import.cover.hint"    = "把图片拖到封面上即可使用。";
+
+/* WMA 提示 */
+"wma.notice.title"   = "Voanisa 暂不支持 WMA";
+"wma.notice.message" = "WMA（Windows Media Audio）是微软的私有格式，macOS 与 Voanisa 的核心都无法直接解码，导入时这些文件会被标为不受支持。请先转成 FLAC 或 MP3 再导入——仓库里的 Scripts/convert-wma.sh 可以用 ffmpeg 一次转完整个文件夹。";
 "import.confirm"       = "导入";
 "import.importing"     = "正在导入…";
 "import.skipDuplicates" = "跳过重复文件";
@@ -125,9 +129,18 @@
 "settings.library.export.hint" = "把曲库快照保存为可移植文件。";
 "settings.about"           = "关于";
 "settings.version"         = "版本";
+"settings.version.current" = "当前版本";
+"settings.version.check"   = "查询最新版本";
+"settings.version.checking" = "查询中…";
+"settings.version.upToDate" = "已是最新版本。";
+"settings.version.available" = "有新版本 %@。";
+"settings.version.guide"   = "前往下载页获取新版 .dmg，退出 Voanisa 后打开 DMG，把 Voanisa 拖到「应用程序」并替换旧版本。";
+"settings.version.download" = "前往下载页";
+"settings.version.failed"  = "无法连接 GitHub，请检查网络后重试。";
 "settings.about.tagline"   = "为 macOS 打造的本地音乐库";
 "settings.about.description" = "导入音频，为它命名、设计正方形封面，然后在本地播放——无需 Apple Music。";
 "settings.about.rustCore"  = "Rust 核心";
+"settings.about.website"   = "官网";
 "settings.about.github"    = "GitHub";
 "settings.about.license"   = "MIT 许可证";
 "settings.about.openLog"   = "打开日志";
@@ -165,8 +178,7 @@
 
 /* 通用 */
 "common.cancel"      = "取消";
-"common.gotIt"       = "知道了";
-"common.later"       = "稍后";
+"common.gotIt"       = "知道了";"common.later"       = "稍后";
 "common.restart"     = "立即重启";
 "common.play"        = "播放";
 "common.create"      = "创建";

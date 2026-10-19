@@ -7,6 +7,9 @@ final class AppModel: ObservableObject {
 
     @Published var errorMessage: String?
     @Published var isShowingError = false
+    /// Shown once per version: WMA cannot be decoded, and users find that out by
+    /// importing a folder full of it and seeing every row rejected.
+    @Published var isShowingWMANotice = false
 
     @Published var deleteTargets: [Track] = []
     @Published var metadataTarget: Track?
@@ -46,6 +49,20 @@ final class AppModel: ObservableObject {
         )
 
         runDebugImportIfRequested()
+        presentWMANoticeIfNeeded()
+    }
+
+    /// WMA is out of scope: macOS cannot decode it and the portable core has no
+    /// ASF demuxer. Say so once per version — first install and every update —
+    /// instead of letting an entire album arrive as “unsupported”.
+    private func presentWMANoticeIfNeeded() {
+        let key = "wmaNotice.version"
+        let seen = UserDefaults.standard.string(forKey: key)
+        guard seen != AppVersion.current else { return }
+
+        UserDefaults.standard.set(AppVersion.current, forKey: key)
+        isShowingWMANotice = true
+        Diagnostics.log("提示 WMA 不受支持（版本 \(AppVersion.current)）")
     }
 
     /// `open -a Voanisa --args --import-test <path>` opens the import sheet for
@@ -263,6 +280,15 @@ final class AppModel: ObservableObject {
 
     func add(_ track: Track, to playlist: Playlist) {
         library.add(track, to: playlist.id)
+    }
+
+    /// The row menu ticks playlists on and off instead of adding to one.
+    func toggle(_ track: Track, in playlist: Playlist) {
+        if playlist.trackIDs.contains(track.id) {
+            remove(track, from: playlist)
+        } else {
+            add(track, to: playlist)
+        }
     }
 
     func remove(_ track: Track, from playlist: Playlist) {

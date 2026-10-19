@@ -58,8 +58,8 @@ struct PlaylistDetailView: View {
                             onChangeCover: { model.requestCoverChange(track) },
                             onShowInFinder: { library.showInFinder(track) },
                             onRemove: { model.requestDelete(track) },
-                            playlists: [],
-                            onAddToPlaylist: { _ in },
+                            playlists: library.playlists,
+                            onTogglePlaylist: { model.toggle(track, in: $0) },
                             onRemoveFromPlaylist: {
                                 model.remove(track, from: playlist)
                             },
