@@ -27,7 +27,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: org.macwave.Voanisa
         PRODUCT_NAME: Voanisa
-        MARKETING_VERSION: "1.0.2"
+        MARKETING_VERSION: "1.0.3"
         CURRENT_PROJECT_VERSION: "1"
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
