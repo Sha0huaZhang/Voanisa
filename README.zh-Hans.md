@@ -11,7 +11,7 @@
 
 ## 官网
 
-[voanisa.macwave.org](https://voanisa.macwave.org)
+[voanisa.macwave.org](https://voanisa.macwave.org)（短链接：[v.macwave.org](https://v.macwave.org)）
 
 ## 下载
 

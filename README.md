@@ -11,7 +11,7 @@ A local music library for macOS, in the visual spirit of Elysia.
 
 ## Official Website
 
-[voanisa.macwave.org](https://voanisa.macwave.org)
+[voanisa.macwave.org](https://voanisa.macwave.org)  (Short link: [v.macwave.org](https://v.macwave.org))
 
 ## Download
 
