@@ -88,9 +88,7 @@ struct PlaylistDetailView: View {
 
     private func header(_ playlist: Playlist) -> some View {
         HStack(spacing: 14) {
-            Image(systemName: "music.note.list")
-                .font(.system(size: 34))
-                .foregroundStyle(.red)
+            PlaylistHeaderArtwork(coverFileName: tracks.first?.coverFileName)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(playlist.name)
@@ -165,5 +163,42 @@ struct PlaylistDetailView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(40)
+    }
+}
+
+/// The playlist's own artwork: its first song's cover, as Elysia does.
+///
+/// Falling back to the list icon while the cover loads (or when the playlist is
+/// empty) keeps the header from resizing as songs come and go.
+private struct PlaylistHeaderArtwork: View {
+    let coverFileName: String?
+
+    @State private var image: NSImage?
+
+    var body: some View {
+        Group {
+            if let image {
+                Image(nsImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+            } else {
+                Image(systemName: "music.note.list")
+                    .font(.system(size: 30))
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.gray.opacity(0.15))
+            }
+        }
+        .frame(width: 64, height: 64)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .task(id: coverFileName) {
+            guard let coverFileName else {
+                image = nil
+                return
+            }
+            image = await Task.detached(priority: .utility) {
+                Artwork.image(for: coverFileName)
+            }.value
+        }
     }
 }
