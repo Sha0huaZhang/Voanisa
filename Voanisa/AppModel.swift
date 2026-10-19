@@ -13,6 +13,8 @@ final class AppModel: ObservableObject {
 
     @Published var deleteTargets: [Track] = []
     @Published var metadataTarget: Track?
+    /// The song whose title is being renamed from the row's context menu.
+    @Published var renameTarget: Track?
     /// The song whose cover is being replaced from the row's context menu.
     @Published var coverTarget: Track?
     /// Shows the "choose songs to delete" picker when the toolbar button is
@@ -230,6 +232,36 @@ final class AppModel: ObservableObject {
     /// “更换封面” acts on the cover alone, so it skips the metadata sheet.
     func requestCoverChange(_ track: Track) {
         coverTarget = track
+    }
+
+    func requestRename(_ track: Track) {
+        renameTarget = track
+    }
+
+    /// Renames only the title. The file name and hash never change, so two songs
+    /// may share a name; the dialog warns, this does not refuse.
+    func rename(_ track: Track, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+
+        var edit = TrackMetadataEdit(track: track)
+        edit.title = trimmed
+        if let updated = library.updateMetadata(track, edit: edit, cover: .keep) {
+            player.refresh(track: updated)
+        }
+        renameTarget = nil
+    }
+
+    /// Same title and artist, ignoring case: what the rename dialog warns about.
+    func hasDuplicateTitle(_ title: String, artist: String, excluding id: UUID) -> Bool {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return false }
+
+        return library.tracks.contains { other in
+            other.id != id
+                && other.title.compare(trimmed, options: .caseInsensitive) == .orderedSame
+                && other.displayArtist.compare(artist, options: .caseInsensitive) == .orderedSame
+        }
     }
 
     func saveCover(_ track: Track, cover: TrackCoverEdit) {

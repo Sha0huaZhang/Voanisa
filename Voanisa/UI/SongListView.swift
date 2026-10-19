@@ -59,6 +59,7 @@ struct SongListView: View {
                                 onSelect: { model.selectedTrackID = song.id },
                                 onPlay: { model.play(song) },
                                 onEdit: { model.requestMetadataEdit(song) },
+                                onRename: { model.requestRename(song) },
                                 onChangeCover: { model.requestCoverChange(song) },
                                 onShowInFinder: { library.showInFinder(song) },
                                 onRemove: { model.requestDelete(song) },
@@ -358,6 +359,7 @@ struct SongRowView: View {
     var onSelect: () -> Void = {}
     let onPlay: () -> Void
     let onEdit: () -> Void
+    let onRename: () -> Void
     let onChangeCover: () -> Void
     let onShowInFinder: () -> Void
     let onRemove: (() -> Void)?
@@ -437,6 +439,7 @@ struct SongRowView: View {
         .onTapGesture(perform: onSelect)
         .contextMenu {
             Button("common.play", action: onPlay)
+            Button("common.rename", action: onRename)
             Button("common.editMetadata", action: onEdit)
             Button("common.changeCover", action: onChangeCover)
 

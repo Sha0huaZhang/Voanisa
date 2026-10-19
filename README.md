@@ -9,7 +9,7 @@ A local music library for macOS, in the visual spirit of Elysia.
 
 **English** · [简体中文](./README.zh-Hans.md)
 
-This repository contains the **0.1.0 prototype**. Every imported audio file
+This repository contains **Voanisa 1.0.1**. Every imported audio file
 becomes one song in a self-contained library. Audio is copied into the library,
 named by the user, given a square cover, and played locally — no Apple Music
 dependency and no files written outside the library.
@@ -26,7 +26,7 @@ GitHub's language bar so it reflects the two languages the project is written in
 - macOS 15 (Sequoia) or later
 - Xcode 16.4 or later for building
 
-## What the prototype does
+## What Voanisa does
 
 - Import audio files or whole folders from the sidebar, by drag and drop, or ⌘O
 - Detect the container from the **file header**, not the extension
@@ -48,7 +48,7 @@ GitHub's language bar so it reflects the two languages the project is written in
 - Elysia-style clean list: artwork on the left, title over artist, red now-playing state
 - English and Simplified Chinese interface
 
-### Supported in this prototype
+### Supported formats
 
 MP3, AAC/ADTS, M4A, ALAC, FLAC, WAV, AIFF, CAF.
 
@@ -67,7 +67,8 @@ is involved, and nothing has to be installed next to the app.
 MP4/MOV files are imported as audio-only M4A; the video track is discarded.
 
 WMA, DSD (DSF/DFF) and Matroska/WebM are detected by signature but not decoded
-yet.
+yet. WMA cannot be decoded on macOS at all, so convert those files to FLAC or
+MP3 first — `Scripts/convert-wma.sh` converts a whole folder with ffmpeg.
 
 ## Library
 

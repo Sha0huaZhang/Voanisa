@@ -56,6 +56,7 @@
 		B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACF6A0D8A6BC6D1249699E8B /* ImportService.swift */; };
 		BA223FA89D5660552FB0F3DB /* ArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */; };
 		BD7ABC152AA49BAB92B68A57 /* TrackMetadataEdit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB02D996D7332B60F92031 /* TrackMetadataEdit.swift */; };
+		C1ABB29E9011785B79F24690 /* RenameSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94949CF997C1AD381F0853B /* RenameSheet.swift */; };
 		C8F838C9C340AB437506D06D /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2222A9DDD37C204CD0159F7 /* Playlist.swift */; };
 		C93C3F27C8455138A08BC54C /* VersionCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D1334001C48D8388C163BE /* VersionCheckTests.swift */; };
 		D3374B61054BEC513B41897B /* CoverPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8CC67ECD8EB92952702426 /* CoverPicker.swift */; };
@@ -142,6 +143,7 @@
 		DFDF6E0C9C37083BC9C1BD87 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E1AFD86D1750598A6E1B4870 /* ExtendedFormatTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExtendedFormatTests.swift; sourceTree = "<group>"; };
 		E8DE578B9435A436D883845B /* SongAdvance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongAdvance.swift; sourceTree = "<group>"; };
+		E94949CF997C1AD381F0853B /* RenameSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameSheet.swift; sourceTree = "<group>"; };
 		E94D53DE54028716072D24A5 /* RustBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBridge.swift; sourceTree = "<group>"; };
 		E9C7B03E0CA8E22F019C8649 /* AudioProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProbe.swift; sourceTree = "<group>"; };
 		F4CCEAF9274FB5109B27A03C /* VoanisaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoanisaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -180,6 +182,7 @@
 				3AD517CDEE85E8AAA65252CE /* MetadataEditorSheet.swift */,
 				DE37896B19738772798DF38F /* PlayerControlBar.swift */,
 				B049E4E1AD58F5F74D2823E3 /* PlaylistDetailView.swift */,
+				E94949CF997C1AD381F0853B /* RenameSheet.swift */,
 				01548D92F295956CE7E4B8C1 /* SelectionSheet.swift */,
 				C0B3C0C450A883CEDC15B816 /* SettingsView.swift */,
 				A85883D1DD1E9B9FE24B4537 /* SidebarView.swift */,
@@ -462,6 +465,7 @@
 				362F92813E9277E36C76DE79 /* PlayerControlBar.swift in Sources */,
 				C8F838C9C340AB437506D06D /* Playlist.swift in Sources */,
 				7AABCAE3D79957E0D7E057DF /* PlaylistDetailView.swift in Sources */,
+				C1ABB29E9011785B79F24690 /* RenameSheet.swift in Sources */,
 				FA3A1BD08CB442BD70BEB990 /* RustBridge.swift in Sources */,
 				6F5316E468C243BAF4B8DA55 /* SelectionSheet.swift in Sources */,
 				F1F8C9F3B90E585760425C7C /* SettingsView.swift in Sources */,
@@ -528,7 +532,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/Rust/build",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lvoanisa_ffi",
@@ -652,7 +656,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/Rust/build",
 				);
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 1.0.1;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lvoanisa_ffi",

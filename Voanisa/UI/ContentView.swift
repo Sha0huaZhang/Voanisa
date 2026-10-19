@@ -68,6 +68,20 @@ struct ContentView: View {
                 onError: { model.presentError($0, context: "metadata") }
             )
         }
+        .sheet(item: $model.renameTarget) { track in
+            RenameSheet(
+                track: track,
+                isDuplicate: { title in
+                    model.hasDuplicateTitle(
+                        title,
+                        artist: track.displayArtist,
+                        excluding: track.id
+                    )
+                },
+                onSave: { model.rename(track, to: $0) },
+                onCancel: { model.renameTarget = nil }
+            )
+        }
         .alert("error.title", isPresented: $model.isShowingError) {
             Button("common.gotIt") {}
         } message: {

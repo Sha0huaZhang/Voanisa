@@ -106,6 +106,12 @@
 "metadata.title.required" = "Title cannot be empty.";
 "metadata.cover.hint"     = "Drag an image onto the cover to use it.";
 
+/* Rename */
+"rename.title"       = "Rename";
+"rename.placeholder" = "Song name";
+"rename.empty"       = "The name cannot be empty.";
+"rename.duplicate"   = "Another song by this artist already has that name. You can still save it.";
+
 /* Cover crop */
 "cover.title" = "Change Cover";
 "cover.hint"  = "Drag an image onto the cover, or choose one.";

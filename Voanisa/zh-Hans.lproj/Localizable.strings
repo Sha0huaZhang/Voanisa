@@ -105,6 +105,12 @@
 "metadata.title.required" = "歌曲名不能为空。";
 "metadata.cover.hint"     = "把图片拖到封面上即可使用。";
 
+/* 重命名 */
+"rename.title"       = "重命名";
+"rename.placeholder" = "歌曲名";
+"rename.empty"       = "名字不能为空。";
+"rename.duplicate"   = "该艺术家已有一首同名歌曲，仍可保存。";
+
 /* 封面裁剪 */
 "cover.title" = "更换封面";
 "cover.hint"  = "把图片拖到封面上，或点击选择一张。";

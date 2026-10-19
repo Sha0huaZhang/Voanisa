@@ -9,7 +9,7 @@
 
 [English](./README.md) · **简体中文**
 
-本仓库包含 **0.1.0 原型**。每个导入的音频文件都会成为曲库中的一首歌曲。
+本仓库包含 **Voanisa 1.0.1**。每个导入的音频文件都会成为曲库中的一首歌曲。
 音频会被复制进自包含的曲库，由用户命名、配上正方形封面，并在本机播放——
 不依赖 Apple Music，也不会在曲库之外写入任何文件。
 
@@ -39,7 +39,7 @@
 - Elysia 风格的简洁列表：左侧封面，歌名在上、歌手在下，正在播放时显示红色
 - 英文与简体中文界面
 
-### 原型支持的格式
+### 支持的格式
 
 MP3、AAC/ADTS、M4A、ALAC、FLAC、WAV、AIFF、CAF。
 
@@ -55,7 +55,9 @@ MP3、AAC/ADTS、M4A、ALAC、FLAC、WAV、AIFF、CAF。
 
 MP4/MOV 会作为纯音频 M4A 导入，视频轨道会被丢弃。
 
-WMA、DSD（DSF/DFF）、Matroska/WebM 可以被文件头识别，但暂不支持解码。
+WMA、DSD（DSF/DFF）、Matroska/WebM 可以被文件头识别，但暂不支持解码。WMA 在
+macOS 上完全无法解码，请先转成 FLAC 或 MP3 —— 仓库里的 `Scripts/convert-wma.sh`
+可以用 ffmpeg 一次转完整个文件夹。
 
 ## 曲库
 
