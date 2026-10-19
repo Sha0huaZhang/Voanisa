@@ -479,12 +479,12 @@
 
     <div class="version-block" style="color: #105268; font-size: 0.95rem; margin-top: -10px; margin-bottom: 30px;">
         <div data-lang="en">
-            <span class="v-line">Latest Version : 0.1.0</span>
-            <span class="v-line">Released on 2026-10-18</span>
+            <span class="v-line">Latest Version : 1.0.1</span>
+            <span class="v-line">Released on 2026-10-19</span>
         </div>
         <div data-lang="zh">
-            <span class="v-line">最新版本：0.1.0</span>
-            <span class="v-line">发布于 2026-10-18</span>
+            <span class="v-line">最新版本：1.0.1</span>
+            <span class="v-line">发布于 2026-10-19</span>
         </div>
     </div>
 
@@ -525,11 +525,13 @@
             <li><strong>Your files, your library.</strong> Import single files or whole folders; each one is copied into the library, tagged, hashed and deduplicated. Nothing is uploaded and nothing is locked into an account.</li>
             <li><strong>One decoder for everything.</strong> MP3, AAC, ALAC, FLAC, WAV, AIFF, CAF, Ogg Vorbis, Opus, WavPack and Monkey's Audio all decode through the same Rust path, so every format behaves the same.</li>
             <li><strong>Built to be portable.</strong> Probing, tags, cover rendering, the SQLite library and the JSON snapshot are platform-independent Rust with tests, which keeps the macOS layer thin.</li>
+            <li><strong>Covers that keep up.</strong> Give a whole import one cover, change a single song's cover from its context menu, or drag an image straight onto the cover box.</li>
         </ul>
         <ul style="font-size: 1.1rem; line-height: 1.8; opacity: 0.9; padding-left: 1.2em;" data-lang="zh">
             <li><strong>文件属于你。</strong>可以导入单个文件或整个文件夹；每个文件都会被复制进曲库、读取标签、计算哈希并去重。不上传，也不锁定在任何账号里。</li>
             <li><strong>一种解码路径。</strong>MP3、AAC、ALAC、FLAC、WAV、AIFF、CAF、Ogg Vorbis、Opus、WavPack 与 Monkey's Audio 都走同一套 Rust 解码，行为一致。</li>
             <li><strong>为可移植而写。</strong>探测、标签、封面渲染、SQLite 曲库与 JSON 快照都是带测试的跨平台 Rust，macOS 那一层因此很薄。</li>
+            <li><strong>封面跟得上操作。</strong>整批导入可以统一用一张封面，右键即可更换单曲封面，也可以把图片直接拖到封面框上。</li>
         </ul>
 
         <h2 style="font-size: 1.8rem; border-bottom: 2px solid #E63B7A; padding-bottom: 10px; margin-top: 40px;" data-lang="en">Screenshots</h2>
@@ -547,12 +549,12 @@
         <h2 style="font-size: 1.8rem; border-bottom: 2px solid #E63B7A; padding-bottom: 10px; margin-top: 40px;" data-lang="zh">安装</h2>
 
         <ol style="font-size: 1.1rem; line-height: 1.8; opacity: 0.9; padding-left: 1.2em;" data-lang="en">
-            <li>Download <code style="background-color: #99244F; color: #ffffff; padding: 2px 6px; border-radius: 4px;">Voanisa-0.1.0.dmg</code> from the <a href="Downloads/" style="color: #105268;"><strong>Download Page</strong>(Click to open)</a> or the <a href="https://github.com/Sha0huaZhang/Voanisa/releases" style="color: #105268;">releases page</a>.</li>
+            <li>Download <code style="background-color: #99244F; color: #ffffff; padding: 2px 6px; border-radius: 4px;">Voanisa-1.0.1.dmg</code> from the <a href="Downloads/" style="color: #105268;"><strong>Download Page</strong>(Click to open)</a> or the <a href="https://github.com/Sha0huaZhang/Voanisa/releases" style="color: #105268;">releases page</a>.</li>
             <li>Open the DMG and drag <strong>Voanisa</strong> onto the <strong>Applications</strong> shortcut.</li>
             <li>Launch Voanisa and press <strong>Import Audio</strong> (⌘O) to add your first files.</li>
         </ol>
         <ol style="font-size: 1.1rem; line-height: 1.8; opacity: 0.9; padding-left: 1.2em;" data-lang="zh">
-            <li>从<a href="Downloads/" style="color: #105268;"><strong>下载页面</strong>（点击跳转）</a>或 <a href="https://github.com/Sha0huaZhang/Voanisa/releases" style="color: #105268;">Releases 页面</a>下载 <code style="background-color: #99244F; color: #ffffff; padding: 2px 6px; border-radius: 4px;">Voanisa-0.1.0.dmg</code>。</li>
+            <li>从<a href="Downloads/" style="color: #105268;"><strong>下载页面</strong>（点击跳转）</a>或 <a href="https://github.com/Sha0huaZhang/Voanisa/releases" style="color: #105268;">Releases 页面</a>下载 <code style="background-color: #99244F; color: #ffffff; padding: 2px 6px; border-radius: 4px;">Voanisa-1.0.1.dmg</code>。</li>
             <li>打开 DMG，把 <strong>Voanisa</strong> 拖到 <strong>Applications</strong> 快捷方式上。</li>
             <li>启动 Voanisa，点「导入音频」（⌘O）添加第一批文件。</li>
         </ol>
@@ -581,16 +583,24 @@
             <li><strong>Play / pause</strong> — double-click a song or use the play/pause button.</li>
             <li><strong>Reorder songs</strong> — drag a song between the two songs you want it to sit between.</li>
             <li><strong>Delete a song</strong> — select it and press <strong>⌘D</strong> or <strong>Delete</strong>; the file moves to the Trash.</li>
+            <li><strong>Rename a song</strong> — right-click it and choose <strong>Rename</strong>; the new name is written into the file's tags too. Two songs may share a name, so the dialog only warns.</li>
             <li><strong>Playlists</strong> — create one in the sidebar; the sheet searches your library and remembers the order you pick.</li>
             <li><strong>Repeat mode and language</strong> — the playback-mode button at the top, and <strong>Settings</strong> in the sidebar.</li>
+            <li><strong>One song, many playlists</strong> — the <strong>Add to Playlist</strong> submenu ticks playlists on and off, so one pass covers all of them.</li>
+            <li><strong>Long drags</strong> — dragging a song into the top or bottom edge scrolls the list, so a distant drop needs a single gesture.</li>
+            <li><strong>Updates</strong> — <strong>Settings → Check for Updates</strong> asks GitHub for the newest release.</li>
         </ul>
         <ul style="font-size: 1.1rem; line-height: 1.8; opacity: 0.9; padding-left: 1.2em;" data-lang="zh">
             <li><strong>导入</strong> —— 点「导入音频」、按 ⌘O，或把文件拖到窗口上；用红点决定哪些要导入，然后按 <strong>⌘Enter</strong>。</li>
             <li><strong>播放 / 暂停</strong> —— 双击歌曲，或点击播放/暂停按钮。</li>
             <li><strong>调整歌曲顺序</strong> —— 拖动歌曲到你想插入的两首歌之间。</li>
             <li><strong>删除歌曲</strong> —— 选中后按 <strong>⌘D</strong> 或 <strong>Delete</strong>，文件会被移到废纸篓。</li>
+            <li><strong>重命名歌曲</strong> —— 右键选<strong>重命名</strong>，新名字也会写进文件标签；允许同名歌曲，弹窗只会提示。</li>
             <li><strong>歌单</strong> —— 在侧栏新建；选择器可以搜索曲库，并按你选中的顺序保存。</li>
             <li><strong>循环模式与语言</strong> —— 顶部的播放模式按钮，以及侧栏的<strong>设置</strong>。</li>
+            <li><strong>一首歌加入多个歌单</strong> —— 「加入歌单」子菜单是勾选式的，一次可以勾上多个。</li>
+            <li><strong>远距离拖动</strong> —— 把歌曲拖到列表上下边缘会自动滚动，一次就能拖到位置。</li>
+            <li><strong>更新</strong> —— 在<strong>设置 → 查询最新版本</strong>里向 GitHub 查询最新版本。</li>
         </ul>
 
         <h2 style="font-size: 1.8rem; border-bottom: 2px solid #E63B7A; padding-bottom: 10px; margin-top: 40px;" data-lang="en">Requirements</h2>
@@ -599,6 +609,17 @@
         <p style="font-size: 1.1rem; line-height: 1.6; font-weight: bold;" data-lang="zh">macOS Sequoia (15) 或更高版本</p>
         <p style="font-size: 1.1rem; line-height: 1.6; opacity: 0.9;" data-lang="en">Audio files on disk. Voanisa keeps its library in ~/Music/Voanisa and needs no Apple Music library.</p>
         <p style="font-size: 1.1rem; line-height: 1.6; opacity: 0.9;" data-lang="zh">本地磁盘上的音频文件。Voanisa 把曲库放在 ~/Music/Voanisa，不需要 Apple Music 资料库。</p>
+        <p style="font-size: 1.1rem; line-height: 1.6; opacity: 0.9;" data-lang="en">
+            WMA is not supported: macOS cannot decode it and the portable core has no
+            ASF demuxer, so those files are marked unsupported when importing. Convert
+            them to FLAC or MP3 first; <code style="background-color: #99244F; color: #ffffff; padding: 2px 6px; border-radius: 4px;">Scripts/convert-wma.sh</code>
+            converts a whole folder in one go.
+        </p>
+        <p style="font-size: 1.1rem; line-height: 1.6; opacity: 0.9;" data-lang="zh">
+            WMA 暂不支持：macOS 无法解码，核心也没有 ASF 解析器，导入时会被标为不受支持。请先转成 FLAC 或 MP3——仓库里的
+            <code style="background-color: #99244F; color: #ffffff; padding: 2px 6px; border-radius: 4px;">Scripts/convert-wma.sh</code>
+            可以一次转完整个文件夹。
+        </p>
 
         <h2 style="font-size: 1.8rem; border-bottom: 2px solid #E63B7A; padding-bottom: 10px; margin-top: 40px;" data-lang="en">Build From Source</h2>
         <h2 style="font-size: 1.8rem; border-bottom: 2px solid #E63B7A; padding-bottom: 10px; margin-top: 40px;" data-lang="zh">从源码构建</h2>
