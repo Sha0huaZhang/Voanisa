@@ -38,6 +38,13 @@ struct SelectionSheet: View {
     @State private var query = ""
     @State private var selected: Set<UUID> = []
     @State private var didAttempt = false
+    /// Where each row sits on screen, used to map a drag to row indices.
+    @State private var rowFrames: [UUID: CGRect] = [:]
+    /// The selection as it was when the drag started: every update recomputes the
+    /// range from this, so dragging back shrinks it again.
+    @State private var selectionBeforeDrag: Set<UUID>?
+    /// The row the drag started on, fixed for the whole gesture.
+    @State private var dragAnchorIndex: Int?
 
     private var trimmedName: String {
         name.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -162,10 +169,15 @@ struct SelectionSheet: View {
                 SelectionPickRow(
                     row: row,
                     isSelected: selected.contains(row.id),
-                    onToggle: { toggle(row.id) }
+                    onToggle: { toggle(row.id) },
+                    onDragAcross: { startY, currentY in
+                        extendSelection(startY: startY, currentY: currentY)
+                    },
+                    onDragEnded: endRangeSelection
                 )
             }
             .listStyle(.plain)
+            .onPreferenceChange(SelectionRowFramesKey.self) { rowFrames = $0 }
         }
     }
 
@@ -247,6 +259,35 @@ struct SelectionSheet: View {
         }
     }
 
+    /// Selects every row between the drag's starting row and the pointer.
+    ///
+    /// Each update recomputes the range from the selection captured when the drag
+    /// began, instead of adding to the current one, so dragging back narrows the
+    /// range rather than piling rows up.
+    private func extendSelection(startY: CGFloat, currentY: CGFloat) {
+        guard allowsMultiple else { return }
+
+        let frames = visibleRows.map { rowFrames[$0.id] }
+        guard let current = RowRangeSelect.index(atY: currentY, frames: frames) else { return }
+
+        if selectionBeforeDrag == nil {
+            selectionBeforeDrag = selected
+            dragAnchorIndex = RowRangeSelect.index(atY: startY, frames: frames)
+        }
+        guard let anchor = dragAnchorIndex else { return }
+
+        var next = selectionBeforeDrag ?? []
+        for index in RowRangeSelect.span(anchor, current) {
+            next.insert(visibleRows[index].id)
+        }
+        if next != selected { selected = next }
+    }
+
+    private func endRangeSelection() {
+        selectionBeforeDrag = nil
+        dragAnchorIndex = nil
+    }
+
     private func confirm() {
         didAttempt = true
         if namePlaceholder != nil, trimmedName.isEmpty || isDuplicate {
@@ -264,6 +305,9 @@ private struct SelectionPickRow: View {
     let row: SelectionRow
     let isSelected: Bool
     let onToggle: () -> Void
+    /// Reports the drag's start and current Y (global coordinates).
+    let onDragAcross: (CGFloat, CGFloat) -> Void
+    let onDragEnded: () -> Void
 
     @State private var artworkImage: NSImage?
 
@@ -317,6 +361,31 @@ private struct SelectionPickRow: View {
         }
         .padding(.vertical, 4)
         .contentShape(Rectangle())
+        .background(
+            GeometryReader { geo in
+                Color.clear.preference(
+                    key: SelectionRowFramesKey.self,
+                    value: [row.id: geo.frame(in: .global)]
+                )
+            }
+        )
         .onTapGesture { onToggle() }
+        // Coexists with the tap: only a move of 3pt or more counts as a drag,
+        // so a plain click still toggles a single row.
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 3, coordinateSpace: .global)
+                .onChanged { value in
+                    onDragAcross(value.startLocation.y, value.location.y)
+                }
+                .onEnded { _ in onDragEnded() }
+        )
+    }
+}
+
+/// Where each picker row sits on screen, for turning a drag into a range.
+private struct SelectionRowFramesKey: PreferenceKey {
+    static var defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue()) { _, new in new }
     }
 }

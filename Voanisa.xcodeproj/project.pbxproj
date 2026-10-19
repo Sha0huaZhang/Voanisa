@@ -26,6 +26,7 @@
 		39F9C8E0B4B89C0892BBBB4B /* StreamClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3A3F65E4B3F8AC28338822B /* StreamClockTests.swift */; };
 		3E9272BD23A962650666F496 /* LibraryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FF1FE269E2475CBFDF1AD1 /* LibraryStore.swift */; };
 		3FFB4BD316F3D585547EE052 /* VersionCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F36281ED4E39C94A01A547F /* VersionCheck.swift */; };
+		4113C3E88610086FFB97D37A /* RowRangeSelect.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5AF29893469F9B99C0D70AA /* RowRangeSelect.swift */; };
 		447EF9D1308FA8E5C4C7A58A /* SongAdvance.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8DE578B9435A436D883845B /* SongAdvance.swift */; };
 		449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC88943A2A6285354A683454 /* FixtureTests.swift */; };
 		4C855FE2A16CC8FA05A33987 /* ImportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC642489D09BF2D1EBC578 /* ImportController.swift */; };
@@ -47,6 +48,7 @@
 		93D2C65E2B9CD377CB9B557D /* RustTagWriteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C11ABFD77E168F730642E8D /* RustTagWriteTests.swift */; };
 		963396C8FFFCF21146BF02DE /* HashParityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBFD7F9B49CEDF5D5CAB6466 /* HashParityTests.swift */; };
 		96B8E02808149239AD202C2E /* AudioMetadataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AAD62D67EE8C5C73F2A709D /* AudioMetadataTests.swift */; };
+		9772688BFBF793A83CC1A160 /* RowRangeSelectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F00A7055D3EE590729A43D46 /* RowRangeSelectTests.swift */; };
 		9AB7F51575D32E478DA53823 /* ImportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9F94669C61DCDA67D3B501A /* ImportSheet.swift */; };
 		9DFC50F1F1E94FB38F4964ED /* MetadataEditorSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AD517CDEE85E8AAA65252CE /* MetadataEditorSheet.swift */; };
 		A235AB71F7EB16567095709B /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BFC25A144A6FBA65D7C3FDD /* AppModel.swift */; };
@@ -146,7 +148,9 @@
 		E94949CF997C1AD381F0853B /* RenameSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenameSheet.swift; sourceTree = "<group>"; };
 		E94D53DE54028716072D24A5 /* RustBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustBridge.swift; sourceTree = "<group>"; };
 		E9C7B03E0CA8E22F019C8649 /* AudioProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioProbe.swift; sourceTree = "<group>"; };
+		F00A7055D3EE590729A43D46 /* RowRangeSelectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowRangeSelectTests.swift; sourceTree = "<group>"; };
 		F4CCEAF9274FB5109B27A03C /* VoanisaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VoanisaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5AF29893469F9B99C0D70AA /* RowRangeSelect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RowRangeSelect.swift; sourceTree = "<group>"; };
 		FC88943A2A6285354A683454 /* FixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixtureTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -183,6 +187,7 @@
 				DE37896B19738772798DF38F /* PlayerControlBar.swift */,
 				B049E4E1AD58F5F74D2823E3 /* PlaylistDetailView.swift */,
 				E94949CF997C1AD381F0853B /* RenameSheet.swift */,
+				F5AF29893469F9B99C0D70AA /* RowRangeSelect.swift */,
 				01548D92F295956CE7E4B8C1 /* SelectionSheet.swift */,
 				C0B3C0C450A883CEDC15B816 /* SettingsView.swift */,
 				A85883D1DD1E9B9FE24B4537 /* SidebarView.swift */,
@@ -255,6 +260,7 @@
 				59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */,
 				6ACDB237E139509FA45198A1 /* NativeDecodeTests.swift */,
 				65C659FC6C5F49169B95A4AB /* ProbeHardeningTests.swift */,
+				F00A7055D3EE590729A43D46 /* RowRangeSelectTests.swift */,
 				46FF4D3C3BC36B2456D7CBBD /* RustArtworkTests.swift */,
 				8776C7F2905E2468123F03B8 /* RustCoverTests.swift */,
 				77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */,
@@ -421,6 +427,7 @@
 				F9C9F69EC190D4A65F1AB832 /* LibraryStoreTests.swift in Sources */,
 				AD2216D931B95FFA608C67EB /* NativeDecodeTests.swift in Sources */,
 				85E18DD7191EF9064F162D37 /* ProbeHardeningTests.swift in Sources */,
+				9772688BFBF793A83CC1A160 /* RowRangeSelectTests.swift in Sources */,
 				33E3A97E7334583BA2FF99BB /* RustArtworkTests.swift in Sources */,
 				6F7AB090C18C63FC8EFF19DD /* RustCoverTests.swift in Sources */,
 				E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */,
@@ -466,6 +473,7 @@
 				C8F838C9C340AB437506D06D /* Playlist.swift in Sources */,
 				7AABCAE3D79957E0D7E057DF /* PlaylistDetailView.swift in Sources */,
 				C1ABB29E9011785B79F24690 /* RenameSheet.swift in Sources */,
+				4113C3E88610086FFB97D37A /* RowRangeSelect.swift in Sources */,
 				FA3A1BD08CB442BD70BEB990 /* RustBridge.swift in Sources */,
 				6F5316E468C243BAF4B8DA55 /* SelectionSheet.swift in Sources */,
 				F1F8C9F3B90E585760425C7C /* SettingsView.swift in Sources */,
@@ -532,7 +540,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/Rust/build",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lvoanisa_ffi",
@@ -656,7 +664,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/Rust/build",
 				);
-				MARKETING_VERSION = 1.0.1;
+				MARKETING_VERSION = 1.0.2;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lvoanisa_ffi",
