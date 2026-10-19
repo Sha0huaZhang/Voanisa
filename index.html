@@ -44,11 +44,11 @@
 
         /* 相比原来扩大 50%：高度 50px -> 75px（width: auto 保持长宽同比） */
         .logo-img {
-            height: 75px;
+            height: 69px;
             width: auto;
             display: block;
             /* 圆角方形（此前试过胶囊形，现改回） */
-            border-radius: 18px;
+            border-radius: 16px;
         }
 
         .logo-img.logo-3 {
@@ -342,13 +342,13 @@
             .logo-img.logo-3 {
                 display: block !important;
                 /* 与桌面同样扩大 50%：42px -> 63px */
-                height: 63px;
+                height: auto; max-width: 100%;
             }
             /* 移动端同步缩小 50% 白边：logo 高 42px，
                卡片高 80px -> 61px（上下白边 19px -> 9.5px），左右 18px -> 9px */
             .logo-wrapper {
                 padding: 8px 9px !important;
-                min-height: 76.25px;
+                min-height: 79px;
                 box-sizing: border-box;
             }
 
@@ -474,9 +474,9 @@
 
     <!-- 顶部卡片 logo-wrapper：高度已增加1/5（调整padding和min-height） -->
     <div class="logo-wrapper">
-        <img src="images/logo1.jpg" alt="Voanisa icon" class="logo-img logo-1">
-        <img src="images/logo2.jpg" alt="Voanisa" class="logo-img logo-2">
-        <img src="images/logo3.jpg" alt="Voanisa" class="logo-img logo-3">
+        <img src="images/logo1.png?v=2" alt="Voanisa icon" class="logo-img logo-1">
+        <img src="images/logo2.jpg?v=2" alt="Voanisa" class="logo-img logo-2">
+        <img src="images/logo3.jpg?v=2" alt="Voanisa" class="logo-img logo-3">
     </div>
 
     <p class="tagline" data-lang="en" style="text-align: center;">A local-first music library for macOS</p>

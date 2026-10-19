@@ -50,11 +50,11 @@
 
         /* 相比原来扩大 50%：高度 50px -> 75px（width: auto 保持长宽同比） */
         .logo-img {
-            height: 75px;
+            height: 69px;
             width: auto;
             display: block;
             /* 圆角方形（此前试过胶囊形，现改回） */
-            border-radius: 18px;
+            border-radius: 16px;
         }
 
         .logo-img.logo-3 {
@@ -355,12 +355,13 @@
             .logo-img.logo-3 {
                 display: block !important;
                 /* 与桌面同样扩大 50%：42px -> 63px */
-                height: 63px;
+                height: auto;
+                max-width: 100%;
             }
             /* 移动端与主页一致：logo 高 42px，卡片高 61px -> 上下白边各 9.5px，左右 9px */
             .logo-wrapper {
                 padding: 8px 9px !important;
-                min-height: 76.25px;
+                min-height: 79px;
                 box-sizing: border-box;
             }
 
@@ -565,7 +566,7 @@
                 max-height: none;
                 gap: 12px;
                 padding: 6px 16px;
-                border-radius: 18px;
+                border-radius: 16px;
             }
             .download-card-icon {
                 height: 46px;
@@ -600,16 +601,16 @@
     </div>
 
     <div class="logo-wrapper">
-        <img src="../images/logo1.jpg" alt="Voanisa icon" class="logo-img logo-1">
-        <img src="../images/logo2.jpg" alt="Voanisa" class="logo-img logo-2">
-        <img src="../images/logo3.jpg" alt="Voanisa" class="logo-img logo-3">
+        <img src="../images/logo1.png?v=2" alt="Voanisa icon" class="logo-img logo-1">
+        <img src="../images/logo2.jpg?v=2" alt="Voanisa" class="logo-img logo-2">
+        <img src="../images/logo3.jpg?v=2" alt="Voanisa" class="logo-img logo-3">
     </div>
 
     <h2 class="download-heading" data-lang="en">Download</h2>
     <h2 class="download-heading" data-lang="zh">下载</h2>
 
     <a href="https://github.com/Sha0huaZhang/Voanisa/releases/latest/download/Voanisa-1.0.3.dmg" class="download-card">
-        <img src="../images/logo1.jpg" alt="" class="download-card-icon">
+        <img src="../images/logo1.png?v=2" alt="" class="download-card-icon">
         <span class="download-card-text">
             <span class="download-card-name">Voanisa-1.0.3.dmg</span>
             <span class="download-card-size" data-lang="en">12.16 MB · click to download</span>
