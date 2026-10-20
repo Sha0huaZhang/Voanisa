@@ -62,6 +62,7 @@
 		C8F838C9C340AB437506D06D /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2222A9DDD37C204CD0159F7 /* Playlist.swift */; };
 		C93C3F27C8455138A08BC54C /* VersionCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D1334001C48D8388C163BE /* VersionCheckTests.swift */; };
 		D3374B61054BEC513B41897B /* CoverPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8CC67ECD8EB92952702426 /* CoverPicker.swift */; };
+		D8934912C620DC4049A8EF16 /* EmptyAudioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 881269966A061365238255ED /* EmptyAudioTests.swift */; };
 		DF7166D0D0DD4E7713254DF8 /* LibraryLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A9C72705F2B739CDC513CB /* LibraryLocation.swift */; };
 		E12ABC8F44A5B368DEF42E13 /* RustStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77176AF1BAE01F0C61F10F04 /* RustStoreTests.swift */; };
 		E886B0631CEB759D89108AAB /* SongSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D115335B2AFC30E54AA8072 /* SongSearchTests.swift */; };
@@ -118,6 +119,7 @@
 		7F6CD662F71093EEC878FC10 /* SongReorderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SongReorderTests.swift; sourceTree = "<group>"; };
 		8475B6C244B64B0FAA9C4ECD /* TrackMetadataEditTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackMetadataEditTests.swift; sourceTree = "<group>"; };
 		8776C7F2905E2468123F03B8 /* RustCoverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RustCoverTests.swift; sourceTree = "<group>"; };
+		881269966A061365238255ED /* EmptyAudioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyAudioTests.swift; sourceTree = "<group>"; };
 		8867802AF5F8F4AF6ED77AEB /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		8F1C9EBD04E91C89BC1751CA /* Voanisa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Voanisa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8F36281ED4E39C94A01A547F /* VersionCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionCheck.swift; sourceTree = "<group>"; };
@@ -253,6 +255,7 @@
 				3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */,
 				6A0C2CB7DF57793D5D8449B6 /* AudioContainerTests.swift */,
 				5AAD62D67EE8C5C73F2A709D /* AudioMetadataTests.swift */,
+				881269966A061365238255ED /* EmptyAudioTests.swift */,
 				E1AFD86D1750598A6E1B4870 /* ExtendedFormatTests.swift */,
 				FC88943A2A6285354A683454 /* FixtureTests.swift */,
 				BBFD7F9B49CEDF5D5CAB6466 /* HashParityTests.swift */,
@@ -420,6 +423,7 @@
 				BA223FA89D5660552FB0F3DB /* ArtworkTests.swift in Sources */,
 				27E96F9C5CCAC9549559893B /* AudioContainerTests.swift in Sources */,
 				96B8E02808149239AD202C2E /* AudioMetadataTests.swift in Sources */,
+				D8934912C620DC4049A8EF16 /* EmptyAudioTests.swift in Sources */,
 				31711F51B574A490E0F29AEF /* ExtendedFormatTests.swift in Sources */,
 				449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */,
 				963396C8FFFCF21146BF02DE /* HashParityTests.swift in Sources */,

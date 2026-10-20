@@ -57,6 +57,21 @@ final class StreamingAudioPlayer {
         guard let decoder = RustAudioDecoder(url: url), decoder.info.channels > 0 else {
             return false
         }
+
+        // A 0-byte or truncated file opens happily but never yields a frame, so
+        // the stream would "finish" on the first pump. With repeat-one that
+        // becomes an endless seek/play/finish loop on the main queue. Check for
+        // one real chunk before any audio graph is built.
+        let hasAudio = decoder.read(frames: Int(chunkFrames))?.isEmpty == false
+        guard hasAudio, decoder.seek(to: 0) else {
+            Diagnostics.error(
+                "音频没有可解码的帧：\(url.lastPathComponent)",
+                context: "playback.empty"
+            )
+            decoder.close()
+            return false
+        }
+
         guard let format = AVAudioFormat(
             standardFormatWithSampleRate: decoder.info.sampleRate,
             channels: AVAudioChannelCount(decoder.info.channels)

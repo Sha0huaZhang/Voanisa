@@ -81,6 +81,13 @@ final class PlaybackEngine: ObservableObject {
         if streamer.isPlaying {
             streamer.pause()
             isPlaying = false
+        } else if duration > 0, position >= duration - 0.25 {
+            // The stream ran dry: the decoder sits at the end and would report
+            // "finished" again immediately. Restart the song instead, so the
+            // play button does what it says after a song has ended.
+            seek(to: 0)
+            streamer.play()
+            isPlaying = true
         } else {
             streamer.play()
             isPlaying = true

@@ -13,9 +13,10 @@ enum Diagnostics {
     }()
 
     static var fileURL: URL {
-        let directory = FileManager.default
-            .urls(for: .libraryDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("Logs", isDirectory: true)
+        let base = FileManager.default
+            .urls(for: .libraryDirectory, in: .userDomainMask).first
+            ?? URL(fileURLWithPath: NSHomeDirectory())
+        let directory = base.appendingPathComponent("Logs", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory.appendingPathComponent("Voanisa.log")
     }

@@ -11,7 +11,16 @@ final class LibraryController: ObservableObject {
 
     var onError: ((String) -> Void)?
 
-    private let artworkCache = NSCache<NSString, NSImage>()
+    /// Covers are decoded lazily and cached, but the cache must not grow with the
+    /// library: NSCache only evicts under memory pressure, which on a machine with
+    /// plenty of RAM can leave thousands of images resident. The count and byte
+    /// limits keep it flat while still covering a whole screen of rows.
+    private let artworkCache: NSCache<NSString, NSImage> = {
+        let cache = NSCache<NSString, NSImage>()
+        cache.countLimit = 300
+        cache.totalCostLimit = 96 * 1024 * 1024
+        return cache
+    }()
 
     init() {
         do {
@@ -336,8 +345,17 @@ final class LibraryController: ObservableObject {
         let image = await Task.detached(priority: .utility) {
             Artwork.image(for: coverName)
         }.value
-        artworkCache.setObject(image, forKey: key)
+        artworkCache.setObject(image, forKey: key, cost: Self.artworkCost(of: image))
         return image
+    }
+
+    /// Approximate decoded size in bytes; NSCache needs a cost for
+    /// `totalCostLimit` to mean anything.
+    private static func artworkCost(of image: NSImage) -> Int {
+        let pixels = image.representations.reduce(0) { total, representation in
+            total + representation.pixelsWide * representation.pixelsHigh
+        }
+        return max(pixels, 1) * 4
     }
 }
 
