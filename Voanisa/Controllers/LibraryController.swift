@@ -240,6 +240,16 @@ final class LibraryController: ObservableObject {
         )
     }
 
+    /// Reorders the songs inside a playlist. Only the ids the playlist already
+    /// holds are written back, so a stale drag can never add a song.
+    func reorder(_ newTracks: [Track], in playlistID: UUID) {
+        guard let playlist = playlist(id: playlistID) else { return }
+        let allowed = Set(playlist.trackIDs)
+        let ordered = newTracks.map(\.id).filter(allowed.contains)
+        guard ordered != playlist.trackIDs else { return }
+        setPlaylistTracks(ordered, for: playlistID)
+    }
+
     private func setPlaylistTracks(_ trackIDs: [UUID], for playlistID: UUID) {
         guard let index = playlists.firstIndex(where: { $0.id == playlistID }) else {
             return

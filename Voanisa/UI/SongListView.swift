@@ -195,7 +195,7 @@ struct SongListView: View {
     }
 }
 
-private struct RowFrameKey: PreferenceKey {
+struct RowFrameKey: PreferenceKey {
     static var defaultValue: [UUID: CGRect] = [:]
     static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
         value.merge(nextValue()) { _, new in new }
@@ -277,7 +277,7 @@ final class ListAutoScroller {
 }
 
 /// Reports the `NSScrollView` a SwiftUI view ended up inside.
-private struct ScrollViewFinder: NSViewRepresentable {
+struct ScrollViewFinder: NSViewRepresentable {
     let onResolve: (NSScrollView?) -> Void
 
     func makeNSView(context: Context) -> NSView {
