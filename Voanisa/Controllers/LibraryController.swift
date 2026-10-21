@@ -32,6 +32,30 @@ final class LibraryController: ObservableObject {
         LibraryStore.migrateIfNeeded(tracks)
         playlists = LibraryStore.loadPlaylists()
         LibraryStore.migratePlaylistsIfNeeded(playlists, tracks: tracks)
+        truncateOverlongPlaylistNames()
+    }
+
+    /// Older builds accepted names of any length. A 40 000-character one stalls
+    /// the sidebar layout before the user can rename it, so shorten it here —
+    /// at load time, on the way in — and write the shortened name back.
+    private func truncateOverlongPlaylistNames() {
+        for index in playlists.indices {
+            let stored = playlists[index].name
+            let shortened = LibraryLimits.normalized(stored, limit: LibraryLimits.playlistName)
+            guard !shortened.isEmpty, shortened != stored else { continue }
+
+            do {
+                try RustStore.renamePlaylist(
+                    path: LibraryLocation.databaseURL,
+                    id: playlists[index].id.uuidString,
+                    name: shortened
+                ).get()
+                playlists[index].name = shortened
+                Diagnostics.log("歌单名过长，已缩短（\(stored.count) → \(shortened.count) 个字符）")
+            } catch {
+                reportPlaylistError(error, context: "library.playlist.shorten")
+            }
+        }
     }
 
     var visibleTracks: [Track] {
@@ -172,7 +196,7 @@ final class LibraryController: ObservableObject {
 
     @discardableResult
     func createPlaylist(name: String, trackIDs: [UUID] = []) -> Playlist? {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = LibraryLimits.normalized(name, limit: LibraryLimits.playlistName)
         guard !trimmed.isEmpty else { return nil }
 
         let playlist = Playlist(name: trimmed)
@@ -200,7 +224,7 @@ final class LibraryController: ObservableObject {
     }
 
     func renamePlaylist(_ playlist: Playlist, to name: String) {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = LibraryLimits.normalized(name, limit: LibraryLimits.playlistName)
         guard !trimmed.isEmpty,
               let index = playlists.firstIndex(where: { $0.id == playlist.id }) else {
             return

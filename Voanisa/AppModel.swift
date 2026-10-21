@@ -241,7 +241,7 @@ final class AppModel: ObservableObject {
     /// Renames only the title. The file name and hash never change, so two songs
     /// may share a name; the dialog warns, this does not refuse.
     func rename(_ track: Track, to name: String) {
-        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = LibraryLimits.normalized(name, limit: LibraryLimits.trackTitle)
         guard !trimmed.isEmpty else { return }
 
         var edit = TrackMetadataEdit(track: track)
@@ -254,7 +254,7 @@ final class AppModel: ObservableObject {
 
     /// Same title and artist, ignoring case: what the rename dialog warns about.
     func hasDuplicateTitle(_ title: String, artist: String, excluding id: UUID) -> Bool {
-        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = LibraryLimits.normalized(title, limit: LibraryLimits.trackTitle)
         guard !trimmed.isEmpty else { return false }
 
         return library.tracks.contains { other in

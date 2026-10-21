@@ -133,6 +133,11 @@ struct PlaylistDetailView: View {
         }
         .alert("playlist.rename", isPresented: $isRenaming) {
             TextField("sidebar.playlistName", text: $renameName)
+                .onChange(of: renameName) { _, newValue in
+                    if newValue.count > LibraryLimits.playlistName {
+                        renameName = String(newValue.prefix(LibraryLimits.playlistName))
+                    }
+                }
             Button("common.cancel", role: .cancel) {}
             Button("common.rename") {
                 model.renamePlaylist(playlist, to: renameName)
@@ -148,6 +153,8 @@ struct PlaylistDetailView: View {
                 Text(playlist.name)
                     .font(.title2)
                     .fontWeight(.semibold)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                 Text(
                     String(
                         format: String(localized: "playlist.songCount"),

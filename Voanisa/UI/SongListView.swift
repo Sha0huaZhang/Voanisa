@@ -400,9 +400,13 @@ struct SongRowView: View {
                     .font(.body)
                     .fontWeight(isPlaying ? .bold : .regular)
                     .foregroundColor(isPlaying ? .red : .primary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
                 Text(song.displayArtist)
                     .font(.caption)
                     .foregroundColor(.secondary)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
             }
 
             Spacer()

@@ -24,6 +24,8 @@ struct SidebarView: View {
                 Section("sidebar.playlists") {
                     ForEach(library.playlists) { playlist in
                         Label(playlist.name, systemImage: "music.note.list")
+                            .lineLimit(1)
+                            .truncationMode(.tail)
                             .tag(SidebarItem.playlist(playlist.id))
                             .contextMenu {
                                 Button("sidebar.deletePlaylist.short", role: .destructive) {

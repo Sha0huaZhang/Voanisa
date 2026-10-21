@@ -92,6 +92,11 @@ struct SelectionSheet: View {
                         .foregroundColor(.secondary)
                     TextField(namePlaceholder, text: $name)
                         .textFieldStyle(.roundedBorder)
+                        .onChange(of: name) { _, newValue in
+                            if newValue.count > LibraryLimits.playlistName {
+                                name = String(newValue.prefix(LibraryLimits.playlistName))
+                            }
+                        }
                 }
 
                 if isDuplicate {

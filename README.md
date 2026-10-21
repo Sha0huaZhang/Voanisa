@@ -17,7 +17,7 @@ A local music library for macOS, in the visual spirit of Elysia.
 
 [Click here to Downloads](https://voanisa.macwave.org/Downloads/)
 
-This repository contains **Voanisa 1.0.5**. Every imported audio file
+This repository contains **Voanisa 1.0.6**. Every imported audio file
 becomes one song in a self-contained library. Audio is copied into the library,
 named by the user, given a square cover, and played locally — no Apple Music
 dependency and no files written outside the library.

@@ -59,10 +59,10 @@ struct MetadataEditorSheet: View {
             Divider()
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    field("import.name", text: $edit.title)
-                    field("import.artist", text: $edit.artist)
-                    field("import.album", text: $edit.album)
-                    field("import.albumArtist", text: $edit.albumArtist)
+                    field("import.name", text: $edit.title, limit: LibraryLimits.trackTitle)
+                    field("import.artist", text: $edit.artist, limit: LibraryLimits.trackArtist)
+                    field("import.album", text: $edit.album, limit: LibraryLimits.trackAlbum)
+                    field("import.albumArtist", text: $edit.albumArtist, limit: LibraryLimits.trackArtist)
 
                     HStack(alignment: .top, spacing: 12) {
                         numberField("import.trackNumber", value: $edit.trackNumber)
@@ -177,13 +177,22 @@ struct MetadataEditorSheet: View {
         .padding(16)
     }
 
-    private func field(_ title: LocalizedStringKey, text: Binding<String>) -> some View {
+    private func field(
+        _ title: LocalizedStringKey,
+        text: Binding<String>,
+        limit: Int
+    ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
                 .font(.callout)
                 .foregroundStyle(.secondary)
             TextField(title, text: text)
                 .textFieldStyle(.roundedBorder)
+                .onChange(of: text.wrappedValue) { _, newValue in
+                    if newValue.count > limit {
+                        text.wrappedValue = String(newValue.prefix(limit))
+                    }
+                }
         }
     }
 

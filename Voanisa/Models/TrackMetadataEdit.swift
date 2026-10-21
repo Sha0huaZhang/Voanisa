@@ -25,10 +25,10 @@ struct TrackMetadataEdit: Equatable, Sendable {
 
     func applying(to track: Track) -> Track {
         var updated = track
-        updated.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        updated.artist = artist.trimmingCharacters(in: .whitespacesAndNewlines)
-        updated.album = album.trimmingCharacters(in: .whitespacesAndNewlines)
-        updated.albumArtist = albumArtist.trimmingCharacters(in: .whitespacesAndNewlines)
+        updated.title = LibraryLimits.normalized(title, limit: LibraryLimits.trackTitle)
+        updated.artist = LibraryLimits.normalized(artist, limit: LibraryLimits.trackArtist)
+        updated.album = LibraryLimits.normalized(album, limit: LibraryLimits.trackAlbum)
+        updated.albumArtist = LibraryLimits.normalized(albumArtist, limit: LibraryLimits.trackArtist)
         updated.trackNumber = trackNumber
         updated.discNumber = discNumber
         return updated

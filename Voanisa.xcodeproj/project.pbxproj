@@ -32,6 +32,7 @@
 		4C855FE2A16CC8FA05A33987 /* ImportController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBC642489D09BF2D1EBC578 /* ImportController.swift */; };
 		5B01DE0010E67674FC3B3E8F /* ImportServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */; };
 		62E0B35621FB351435B6FF3E /* SongAdvanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D55E7E82874A4E31108B27C /* SongAdvanceTests.swift */; };
+		653930D96E2E522F40F993BE /* LibraryLimits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 226B68C0D82FF28091B2EDB6 /* LibraryLimits.swift */; };
 		662EFF64F60D522690FF77D7 /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85883D1DD1E9B9FE24B4537 /* SidebarView.swift */; };
 		6987FEE750F3742723441E17 /* SongListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F8E972CC81A146559280E /* SongListView.swift */; };
 		6F5316E468C243BAF4B8DA55 /* SelectionSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01548D92F295956CE7E4B8C1 /* SelectionSheet.swift */; };
@@ -59,6 +60,7 @@
 		BA223FA89D5660552FB0F3DB /* ArtworkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C361EF7E2B425DCB9C8EAE3 /* ArtworkTests.swift */; };
 		BD7ABC152AA49BAB92B68A57 /* TrackMetadataEdit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AB02D996D7332B60F92031 /* TrackMetadataEdit.swift */; };
 		C1ABB29E9011785B79F24690 /* RenameSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = E94949CF997C1AD381F0853B /* RenameSheet.swift */; };
+		C496A6B3E2C72C3F8A2B4CA6 /* LibraryLimitsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28720B99011F82D1FA9AA3A8 /* LibraryLimitsTests.swift */; };
 		C8F838C9C340AB437506D06D /* Playlist.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2222A9DDD37C204CD0159F7 /* Playlist.swift */; };
 		C93C3F27C8455138A08BC54C /* VersionCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17D1334001C48D8388C163BE /* VersionCheckTests.swift */; };
 		D3374B61054BEC513B41897B /* CoverPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C8CC67ECD8EB92952702426 /* CoverPicker.swift */; };
@@ -94,7 +96,9 @@
 		159EDDA2E3E7B55020236095 /* CoverCropSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverCropSheet.swift; sourceTree = "<group>"; };
 		17D1334001C48D8388C163BE /* VersionCheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersionCheckTests.swift; sourceTree = "<group>"; };
 		1A650696675351345DFFE56E /* PlaybackScope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackScope.swift; sourceTree = "<group>"; };
+		226B68C0D82FF28091B2EDB6 /* LibraryLimits.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryLimits.swift; sourceTree = "<group>"; };
 		271D1EE9E781401F1F2E7242 /* VoanisaCore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = VoanisaCore.h; sourceTree = "<group>"; };
+		28720B99011F82D1FA9AA3A8 /* LibraryLimitsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryLimitsTests.swift; sourceTree = "<group>"; };
 		2A7871EC6CFF3A67F93F2230 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3160C72120BAD2942CCCE274 /* StreamingAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamingAudioPlayer.swift; sourceTree = "<group>"; };
 		39A9C72705F2B739CDC513CB /* LibraryLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryLocation.swift; sourceTree = "<group>"; };
@@ -220,6 +224,7 @@
 			isa = PBXGroup;
 			children = (
 				D78A5103C669CC124AA58FD8 /* AppLanguage.swift */,
+				226B68C0D82FF28091B2EDB6 /* LibraryLimits.swift */,
 				1A650696675351345DFFE56E /* PlaybackScope.swift */,
 				C2222A9DDD37C204CD0159F7 /* Playlist.swift */,
 				1084173A90E1515DE94BE17A /* SidebarItem.swift */,
@@ -260,6 +265,7 @@
 				FC88943A2A6285354A683454 /* FixtureTests.swift */,
 				BBFD7F9B49CEDF5D5CAB6466 /* HashParityTests.swift */,
 				00D527254EFD699A0247FCA5 /* ImportServiceTests.swift */,
+				28720B99011F82D1FA9AA3A8 /* LibraryLimitsTests.swift */,
 				59A70B1B29774AFCD9F1B405 /* LibraryStoreTests.swift */,
 				6ACDB237E139509FA45198A1 /* NativeDecodeTests.swift */,
 				65C659FC6C5F49169B95A4AB /* ProbeHardeningTests.swift */,
@@ -428,6 +434,7 @@
 				449FD61E7F2000FD355F9E1E /* FixtureTests.swift in Sources */,
 				963396C8FFFCF21146BF02DE /* HashParityTests.swift in Sources */,
 				5B01DE0010E67674FC3B3E8F /* ImportServiceTests.swift in Sources */,
+				C496A6B3E2C72C3F8A2B4CA6 /* LibraryLimitsTests.swift in Sources */,
 				F9C9F69EC190D4A65F1AB832 /* LibraryStoreTests.swift in Sources */,
 				AD2216D931B95FFA608C67EB /* NativeDecodeTests.swift in Sources */,
 				85E18DD7191EF9064F162D37 /* ProbeHardeningTests.swift in Sources */,
@@ -467,6 +474,7 @@
 				B7DC2FAC653DD038BBAE5EDE /* ImportService.swift in Sources */,
 				9AB7F51575D32E478DA53823 /* ImportSheet.swift in Sources */,
 				B4119FFAF43E184A375FE671 /* LibraryController.swift in Sources */,
+				653930D96E2E522F40F993BE /* LibraryLimits.swift in Sources */,
 				DF7166D0D0DD4E7713254DF8 /* LibraryLocation.swift in Sources */,
 				3E9272BD23A962650666F496 /* LibraryStore.swift in Sources */,
 				26B7EBB50D6BFDBEB704A6B0 /* MediaKeys.swift in Sources */,
@@ -544,7 +552,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/Rust/build",
 				);
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 1.0.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lvoanisa_ffi",
@@ -668,7 +676,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/Rust/build",
 				);
-				MARKETING_VERSION = 1.0.5;
+				MARKETING_VERSION = 1.0.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-lvoanisa_ffi",
