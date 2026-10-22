@@ -189,15 +189,46 @@ struct ContentView: View {
         }
     }
 
-    @ViewBuilder
+    /// Leaves the song list in the hierarchy while another page is shown.
+    ///
+    /// SwiftUI tears a list down as soon as it leaves the switch, and coming back
+    /// rebuilds it at the top. Reading and restoring the offset by hand never held
+    /// up (the probe view gets replaced mid-scroll). Keeping the list alive but
+    /// hidden, with the other page stacked on top, lets the system preserve the
+    /// scroll position exactly.
     private var detail: some View {
+        ZStack {
+            songsPage
+                .opacity(isShowingSongs ? 1 : 0)
+                .allowsHitTesting(isShowingSongs)
+                .accessibilityHidden(!isShowingSongs)
+
+            if !isShowingSongs {
+                otherDetail
+            }
+        }
+    }
+
+    private var isShowingSongs: Bool {
+        switch model.selection ?? .songs {
+        case .songs: return true
+        case .playlist, .about, .settings: return false
+        }
+    }
+
+    private var songsPage: some View {
+        VStack(spacing: 0) {
+            PlayerControlBar(model: model)
+            Divider()
+            SongListView(model: model)
+        }
+    }
+
+    @ViewBuilder
+    private var otherDetail: some View {
         switch model.selection ?? .songs {
         case .songs:
-            VStack(spacing: 0) {
-                PlayerControlBar(model: model)
-                Divider()
-                SongListView(model: model)
-            }
+            EmptyView()
         case .about:
             AboutView()
         case .settings:

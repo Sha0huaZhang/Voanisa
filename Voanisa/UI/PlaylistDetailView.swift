@@ -16,7 +16,7 @@ struct PlaylistDetailView: View {
     @State private var dragGrabOffsetY: CGFloat?
     @State private var dragPointerY: CGFloat?
     @State private var draggedArtwork: NSImage?
-    @State private var rowFrames: [UUID: CGRect] = [:]
+    @State private var rowFrames = RowFrames()
     @State private var scroller = ListAutoScroller()
 
     init(model: AppModel, playlist: Playlist) {
@@ -81,7 +81,7 @@ struct PlaylistDetailView: View {
                                             draggedArtwork = artwork
                                             dragGrabOffsetY = SongReorder.grabOffset(
                                                 pointerStartY: startY,
-                                                rowMinY: rowFrames[track.id]?.minY ?? startY
+                                                rowMinY: rowFrames.values[track.id]?.minY ?? startY
                                             )
                                         }
                                         dragPointerY = pointerY
@@ -109,11 +109,11 @@ struct PlaylistDetailView: View {
                             }
                         }
                         .listStyle(.plain)
-                        .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
+                        .onPreferenceChange(RowFrameKey.self) { rowFrames.values = $0 }
                         .onDeleteCommand { model.deleteSelectedTrack() }
 
                         if let id = draggingID,
-                           let frame = rowFrames[id],
+                           let frame = rowFrames.values[id],
                            let track = tracks.first(where: { $0.id == id }),
                            let pointerY = dragPointerY,
                            let grabOffset = dragGrabOffsetY {
@@ -253,7 +253,7 @@ struct PlaylistDetailView: View {
             draggedArtwork = nil
         }
 
-        guard let frame = rowFrames[track.id] else { return }
+        guard let frame = rowFrames.values[track.id] else { return }
         let slot = targetSlot(for: translation, frame: frame, index: index)
         let reordered = SongReorder.moving(track.id, toSlot: slot, in: tracks)
         guard reordered != tracks else { return }

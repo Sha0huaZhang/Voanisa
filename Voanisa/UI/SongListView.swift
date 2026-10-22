@@ -10,7 +10,9 @@ struct SongListView: View {
     @State private var dragGrabOffsetY: CGFloat?
     @State private var dragPointerY: CGFloat?
     @State private var draggedArtwork: NSImage?
-    @State private var rowFrames: [UUID: CGRect] = [:]
+    /// Reference type on purpose: rows report their frames as they scroll,
+    /// and those updates must not re-render the whole list.
+    @State private var rowFrames = RowFrames()
     /// Drives the automatic scrolling while a row is dragged near an edge.
     @State private var scroller = ListAutoScroller()
 
@@ -72,7 +74,7 @@ struct SongListView: View {
                                         draggedArtwork = artwork
                                         dragGrabOffsetY = SongReorder.grabOffset(
                                             pointerStartY: startY,
-                                            rowMinY: rowFrames[song.id]?.minY ?? startY
+                                            rowMinY: rowFrames.values[song.id]?.minY ?? startY
                                         )
                                     }
                                     dragPointerY = pointerY
@@ -102,11 +104,11 @@ struct SongListView: View {
                         }
                     }
                     .listStyle(.plain)
-                    .onPreferenceChange(RowFrameKey.self) { rowFrames = $0 }
+                    .onPreferenceChange(RowFrameKey.self) { rowFrames.values = $0 }
                     .onDeleteCommand { model.deleteSelectedTrack() }
 
                     if let id = draggingID,
-                       let frame = rowFrames[id],
+                       let frame = rowFrames.values[id],
                        let song = songs.first(where: { $0.id == id }),
                        let pointerY = dragPointerY,
                        let grabOffset = dragGrabOffsetY {
@@ -170,7 +172,7 @@ struct SongListView: View {
             draggedArtwork = nil
         }
 
-        guard let frame = rowFrames[song.id] else { return }
+        guard let frame = rowFrames.values[song.id] else { return }
         let slot = targetSlot(for: translation, frame: frame, index: index)
         let reordered = SongReorder.moving(song.id, toSlot: slot, in: songs)
         guard reordered != songs else { return }
@@ -193,6 +195,13 @@ struct SongListView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(40)
     }
+}
+
+/// Row positions, kept in a reference type on purpose: rows report their frames
+/// continuously while the list scrolls, and storing them in `@State` re-rendered
+/// the whole list on every step.
+final class RowFrames {
+    var values: [UUID: CGRect] = [:]
 }
 
 struct RowFrameKey: PreferenceKey {
