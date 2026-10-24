@@ -2,7 +2,9 @@
 
 Windows 端的原生界面：WinUI 3 + Windows App SDK，配合共享的 Rust 核心。
 
-> **状态：骨架代码，尚未在 Windows 上编译验证过。** 这里是按 WinUI 3 官方结构写的，第一次 `dotnet build` 可能仍有需要微调的地方（例如 Windows App SDK 版本、XAML 命名空间），把报错贴回来即可。
+> **本目录由 Windows 侧协作者负责构建与验证。** 动手前先读 [AGENTS.md](AGENTS.md)：里面写清了环境、契约（曲库路径 / C ABI / JSON 信封 / 一种解码路径）、已知未验证点、验收清单与回传方式。
+>
+> **状态：骨架代码，尚未在 Windows 上编译验证过。** 第一次 `dotnet build` 可能仍有需要微调的地方（例如 Windows App SDK 版本、XAML 资源键），把报错贴回来即可。
 
 ## 结构
 
