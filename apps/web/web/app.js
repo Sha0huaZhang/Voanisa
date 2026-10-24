@@ -142,7 +142,7 @@ window.addEventListener('blur', closeMenu);
 
 playButton.addEventListener('click', async () => {
     const playing = await invoke('toggle_play');
-    playButton.textContent = playing ? '❚❚' : '▶';
+    playButton.classList.toggle('is-playing', playing);
 });
 
 prevButton.addEventListener('click', () => skip(-1));
@@ -185,7 +185,7 @@ document.addEventListener('keydown', async (event) => {
     if (event.code === 'Space') {
         event.preventDefault();
         const playing = await invoke('toggle_play');
-        playButton.textContent = playing ? '❚❚' : '▶';
+        playButton.classList.toggle('is-playing', playing);
     } else if (event.key === 'ArrowRight' && event.altKey) {
         await skip(1);
     } else if (event.key === 'ArrowLeft' && event.altKey) {
@@ -201,7 +201,7 @@ setInterval(async () => {
         return;
     }
 
-    playButton.textContent = state.playing ? '❚❚' : '▶';
+    playButton.classList.toggle('is-playing', state.playing);
     currentDuration = state.duration;
 
     if (!draggingSeek) {

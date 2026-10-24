@@ -50,6 +50,7 @@ struct PlayerControlBar: View {
                 Image(systemName: "backward.fill")
             }
             .buttonStyle(.plain)
+            .keyboardShortcut(.leftArrow, modifiers: .option)
             .help("player.previous")
 
             Button(action: model.togglePlayPause) {
@@ -63,6 +64,7 @@ struct PlayerControlBar: View {
                 Image(systemName: "forward.fill")
             }
             .buttonStyle(.plain)
+            .keyboardShortcut(.rightArrow, modifiers: .option)
             .help("player.next")
 
             Button(action: model.cycleRepeatMode) {

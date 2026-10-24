@@ -236,9 +236,28 @@ body {
     border: 0;
     background: var(--card);
     color: #fff;
-    font-size: 13px;
-    line-height: 1;
     cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+
+.play svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor;
+    display: block;
+}
+
+.play .icon-pause {
+    display: none;
+}
+
+.play.is-playing .icon-play {
+    display: none;
+}
+
+.play.is-playing .icon-pause {
+    display: block;
 }
 
 .play:hover {
@@ -273,10 +292,17 @@ body {
     border-radius: 8px;
     background: transparent;
     color: var(--ink);
-    font-size: 14px;
-    line-height: 1;
     cursor: pointer;
     position: relative;
+    display: grid;
+    place-items: center;
+}
+
+.skip svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+    display: block;
 }
 
 .skip:hover {
