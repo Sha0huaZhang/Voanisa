@@ -12,6 +12,8 @@ struct ContentView: View {
     /// Playlist rows in the sidebar, refreshed by `SidebarView`; used to decide
     /// whether a dragged song was dropped on one of them.
     @State private var playlistFrames: [UUID: CGRect] = [:]
+    /// Playlist row highlighted while a song is dragged over the sidebar.
+    @State private var draggedOverPlaylist: UUID?
 
     init(model: AppModel) {
         self.model = model
@@ -29,7 +31,8 @@ struct ContentView: View {
                 library: model.library,
                 onImport: imports.presentPanel,
                 onRequestDeletePlaylist: { model.requestPlaylistDelete($0) },
-                onPlaylistFrames: { playlistFrames = $0 }
+                onPlaylistFrames: { playlistFrames = $0 },
+                highlightedPlaylist: draggedOverPlaylist
             )
             .navigationSplitViewColumnWidth(min: 170, ideal: 195, max: 240)
         } detail: {
@@ -234,7 +237,8 @@ struct ContentView: View {
             SongListView(
                 model: model,
                 playlistHitTest: playlistHitTest,
-                onDropOnPlaylist: addToPlaylist
+                onDropOnPlaylist: addToPlaylist,
+                onDropTargetChange: { draggedOverPlaylist = $0 }
             )
         }
     }
@@ -263,7 +267,8 @@ struct ContentView: View {
                     model: model,
                     playlist: playlist,
                     playlistHitTest: playlistHitTest,
-                    onDropOnPlaylist: addToPlaylist
+                    onDropOnPlaylist: addToPlaylist,
+                    onDropTargetChange: { draggedOverPlaylist = $0 }
                 )
             } else {
                 Text("playlist.missing")

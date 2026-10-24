@@ -15,6 +15,8 @@ struct SongListView: View {
     @State private var rowFrames = RowFrames()
     /// Drives the automatic scrolling while a row is dragged near an edge.
     @State private var scroller = ListAutoScroller()
+    /// Sidebar playlist currently under the pointer.
+    @State private var dropTargetPlaylist: UUID?
 
     private var songs: [Track] { library.visibleTracks }
     private var isSearching: Bool { SongSearch.isActive(library.searchText) }
@@ -24,15 +26,20 @@ struct SongListView: View {
     var playlistHitTest: (CGPoint) -> UUID? = { _ in nil }
     /// Called when a row is dropped on a playlist row instead of inside the list.
     var onDropOnPlaylist: (Track, UUID) -> Void = { _, _ in }
+    /// Reports which sidebar playlist the pointer is over, so the sidebar can
+    /// highlight it while the row is dragged.
+    var onDropTargetChange: (UUID?) -> Void = { _ in }
 
     init(
         model: AppModel,
         playlistHitTest: @escaping (CGPoint) -> UUID? = { _ in nil },
-        onDropOnPlaylist: @escaping (Track, UUID) -> Void = { _, _ in }
+        onDropOnPlaylist: @escaping (Track, UUID) -> Void = { _, _ in },
+        onDropTargetChange: @escaping (UUID?) -> Void = { _ in }
     ) {
         self.model = model
         self.playlistHitTest = playlistHitTest
         self.onDropOnPlaylist = onDropOnPlaylist
+        self.onDropTargetChange = onDropTargetChange
         _player = ObservedObject(wrappedValue: model.player)
         _library = ObservedObject(wrappedValue: model.library)
     }
@@ -90,9 +97,16 @@ struct SongListView: View {
                                         )
                                     }
                                     dragPointerY = pointer.y
+
+                                    let target = playlistHitTest(pointer)
+                                    if target != dropTargetPlaylist {
+                                        dropTargetPlaylist = target
+                                        onDropTargetChange(target)
+                                    }
+
                                     // Over the sidebar nothing should auto-scroll
                                     // the list the row came from.
-                                    if playlistHitTest(pointer) == nil {
+                                    if target == nil {
                                         scroller.update(
                                             pointerY: pointer.y,
                                             visible: container.frame(in: .global)
@@ -194,6 +208,10 @@ struct SongListView: View {
         dragGrabOffsetY = nil
         dragPointerY = nil
         draggedArtwork = nil
+        if dropTargetPlaylist != nil {
+            dropTargetPlaylist = nil
+            onDropTargetChange(nil)
+        }
     }
 
     private func finishDrag(of song: Track, index: Int, translation: CGFloat) {

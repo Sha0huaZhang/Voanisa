@@ -18,21 +18,25 @@ struct PlaylistDetailView: View {
     @State private var dragPointerY: CGFloat?
     @State private var draggedArtwork: NSImage?
     @State private var rowFrames = RowFrames()
+    @State private var dropTargetPlaylist: UUID?
     @State private var scroller = ListAutoScroller()
 
     var playlistHitTest: (CGPoint) -> UUID? = { _ in nil }
     var onDropOnPlaylist: (Track, UUID) -> Void = { _, _ in }
+    var onDropTargetChange: (UUID?) -> Void = { _ in }
 
     init(
         model: AppModel,
         playlist: Playlist,
         playlistHitTest: @escaping (CGPoint) -> UUID? = { _ in nil },
-        onDropOnPlaylist: @escaping (Track, UUID) -> Void = { _, _ in }
+        onDropOnPlaylist: @escaping (Track, UUID) -> Void = { _, _ in },
+        onDropTargetChange: @escaping (UUID?) -> Void = { _ in }
     ) {
         self.model = model
         self.playlist = playlist
         self.playlistHitTest = playlistHitTest
         self.onDropOnPlaylist = onDropOnPlaylist
+        self.onDropTargetChange = onDropTargetChange
         _library = ObservedObject(wrappedValue: model.library)
         _player = ObservedObject(wrappedValue: model.player)
     }
@@ -96,9 +100,16 @@ struct PlaylistDetailView: View {
                                             )
                                         }
                                         dragPointerY = pointer.y
+
+                                        let target = playlistHitTest(pointer)
+                                        if target != dropTargetPlaylist {
+                                            dropTargetPlaylist = target
+                                            onDropTargetChange(target)
+                                        }
+
                                         // Over the sidebar nothing should auto-scroll
                                         // the list the row came from.
-                                        if playlistHitTest(pointer) == nil {
+                                        if target == nil {
                                             scroller.update(
                                                 pointerY: pointer.y,
                                                 visible: container.frame(in: .global)
@@ -325,6 +336,10 @@ struct PlaylistDetailView: View {
         dragGrabOffsetY = nil
         dragPointerY = nil
         draggedArtwork = nil
+        if dropTargetPlaylist != nil {
+            dropTargetPlaylist = nil
+            onDropTargetChange(nil)
+        }
     }
 
     private func finishDrag(of track: Track, index: Int, translation: CGFloat) {

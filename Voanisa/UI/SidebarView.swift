@@ -9,6 +9,8 @@ struct SidebarView: View {
     /// Where each playlist row sits on screen, so a dragged song can be dropped
     /// on it.
     var onPlaylistFrames: ([UUID: CGRect]) -> Void = { _ in }
+    /// Playlist row to highlight while a song is dragged over it.
+    var highlightedPlaylist: UUID?
 
     @State private var isCreatingPlaylist = false
 
@@ -29,6 +31,15 @@ struct SidebarView: View {
                         Label(playlist.name, systemImage: "music.note.list")
                             .lineLimit(1)
                             .truncationMode(.tail)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(
+                                RoundedRectangle(cornerRadius: 6)
+                                    .fill(
+                                        playlist.id == highlightedPlaylist
+                                            ? Color.accentColor.opacity(0.22)
+                                            : Color.clear
+                                    )
+                            )
                             .tag(SidebarItem.playlist(playlist.id))
                             .background(
                                 GeometryReader { geometry in
