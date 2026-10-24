@@ -1,14 +1,28 @@
 # 交接说明：Windows 协作者
 
-这个目录由 **Windows 侧的协作者** 负责构建与验证。macOS 侧（本仓库的主要开发环境）无法编译 WinUI 3，所以这里的代码是"按官方结构写、待 Windows 上验证"的状态。
+这个目录由 **Windows 协作者** 负责构建与验证。macOS 侧（本仓库的主要开发环境）无法编译 WinUI 3，所以这里的代码是"按官方结构写、待 Windows 上验证"的状态。
 
 请先读完这份文件再动手。
+
+## 两个协作者
+
+| 称呼 | 是谁 | 负责 |
+|---|---|---|
+| **macOS 协作者** | 本仓库主开发者 + macOS 上的 AI 助手 | `Rust/` 核心、`Voanisa/`（SwiftUI）、`apps/web/`、发版与官网 |
+| **Windows 协作者** | Windows 机器上的开发者 + 那边的 DeepSeek | `apps/windows/`（WinUI 3）：构建、修编译错、验证 UI 与播放、补 Windows 集成 |
+
+两边是**平级协作**，不区分"人"和"AI"——统一按协作者沟通。跨机器沟通只有两个渠道：
+
+1. **Git 提交信息**（`main` 分支，及时推送）
+2. **[SYNC.md](SYNC.md)**：往来记录，双方按模板追加条目
+
+契约有变化时，macOS 协作者会在提交信息里带 `[contract]` 前缀，并在 `SYNC.md` 记一条；Windows 协作者每轮验收后也记一条（通过/失败 + 日志摘要）。
 
 ## 你的职责
 
 - 在 **本目录内** 修复编译问题、跑起来、验证 UI 与播放
 - 把发现的问题与修复提交回 `main`（见「回传」）
-- **不要修改** `Rust/voanisa-core`、`Rust/voanisa-ffi`、`Voanisa/`（macOS）、`apps/web/` —— 它们由各自平台维护。若确实需要改核心，先在提交信息里写明理由，并提醒 macOS 侧做回归
+- **不要修改** `Rust/voanisa-core`、`Rust/voanisa-ffi`、`Voanisa/`（macOS）、`apps/web/` —— 它们由各自平台维护。若确实需要改核心，先在 `SYNC.md` 提出来，等 macOS 协作者确认，并在提交信息里写明理由
 
 ## 环境
 
@@ -101,8 +115,8 @@ powershell -ExecutionPolicy Bypass -File build.ps1
 ## 回传
 
 1. 改动提交到 `main`（描述里写清"仅 Windows"）
-2. 附上 `dotnet --info` 与构建日志的关键片段
-3. 若某处为了编译通过做了**功能降级**（例如临时删掉播放），必须在提交信息里明确写出，方便 macOS 侧同步认知
+2. 在 [SYNC.md](SYNC.md) 追加一条记录，附 `dotnet --info` 与构建日志的关键片段
+3. 若某处为了编译通过做了**功能降级**（例如临时删掉播放），必须在提交信息与 SYNC.md 里明确写出，方便 macOS 协作者同步认知
 
 ## 下一步（按优先级）
 
