@@ -504,7 +504,7 @@ struct ImportSheet: View {
                     Text(importButtonTitle)
                         .foregroundColor(canImport ? .blue : .secondary)
                     if showsShortcutHints {
-                        Text(verbatim: "⌘Enter")
+                        Text(verbatim: "⌘Return")
                             .foregroundColor(Color.blue.opacity(canImport ? 0.55 : 0.3))
                     }
                 }

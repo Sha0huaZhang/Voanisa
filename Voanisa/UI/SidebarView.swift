@@ -6,6 +6,9 @@ struct SidebarView: View {
     @ObservedObject var library: LibraryController
     let onImport: () -> Void
     let onRequestDeletePlaylist: (Playlist) -> Void
+    /// Where each playlist row sits on screen, so a dragged song can be dropped
+    /// on it.
+    var onPlaylistFrames: ([UUID: CGRect]) -> Void = { _ in }
 
     @State private var isCreatingPlaylist = false
 
@@ -27,6 +30,14 @@ struct SidebarView: View {
                             .lineLimit(1)
                             .truncationMode(.tail)
                             .tag(SidebarItem.playlist(playlist.id))
+                            .background(
+                                GeometryReader { geometry in
+                                    Color.clear.preference(
+                                        key: PlaylistRowFrameKey.self,
+                                        value: [playlist.id: geometry.frame(in: .global)]
+                                    )
+                                }
+                            )
                             .contextMenu {
                                 Button("sidebar.deletePlaylist.short", role: .destructive) {
                                     onRequestDeletePlaylist(playlist)
@@ -50,6 +61,9 @@ struct SidebarView: View {
                 }
             }
             .listStyle(.sidebar)
+            .onPreferenceChange(PlaylistRowFrameKey.self) { frames in
+                onPlaylistFrames(frames)
+            }
         }
         .sheet(isPresented: $isCreatingPlaylist) {
             SelectionSheet(
@@ -138,5 +152,15 @@ struct SidebarView: View {
         .buttonStyle(.plain)
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
+    }
+}
+
+
+/// Global frames of the playlist rows, used as drop targets while a song is
+/// being dragged.
+struct PlaylistRowFrameKey: PreferenceKey {
+    static var defaultValue: [UUID: CGRect] = [:]
+    static func reduce(value: inout [UUID: CGRect], nextValue: () -> [UUID: CGRect]) {
+        value.merge(nextValue()) { _, new in new }
     }
 }

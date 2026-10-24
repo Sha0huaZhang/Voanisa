@@ -332,6 +332,15 @@ final class AppModel: ObservableObject {
     func applyImport(_ outcome: ImportOutcome) {
         if !outcome.tracks.isEmpty {
             library.append(outcome.tracks)
+
+            // Importing while a playlist is open means "bring these into this
+            // playlist" — otherwise the user has to add them one by one right
+            // after importing.
+            if case .playlist(let id) = activeScope {
+                for track in outcome.tracks {
+                    library.add(track, to: id)
+                }
+            }
         }
 
         // Importing never starts playback: the user picks what to hear.

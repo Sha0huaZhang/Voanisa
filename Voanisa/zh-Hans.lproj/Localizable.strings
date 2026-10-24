@@ -51,6 +51,7 @@
 
 /* 歌单 */
 "playlist.playAll"     = "播放";
+"playlist.addSongs"    = "添加歌曲";
 "playlist.songCount"   = "%d 首";
 "playlist.empty.title" = "这个歌单还是空的";
 "playlist.empty.hint"  = "在歌曲的右键菜单中把它加入这个歌单。";

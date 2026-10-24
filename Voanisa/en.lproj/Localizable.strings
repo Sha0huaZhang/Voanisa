@@ -52,6 +52,7 @@
 
 /* Playlists */
 "playlist.playAll"     = "Play";
+"playlist.addSongs"    = "Add Songs";
 "playlist.songCount"   = "%d songs";
 "playlist.empty.title" = "This playlist is empty";
 "playlist.empty.hint"  = "Use a song's context menu to add it to this playlist.";

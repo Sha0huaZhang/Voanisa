@@ -9,6 +9,7 @@ struct PlaylistDetailView: View {
 
     @State private var isRenaming = false
     @State private var renameName = ""
+    @State private var isPickingSongs = false
 
     // Dragging state, mirroring the song list: the row itself follows the
     // pointer as a floating card, and the list scrolls when it nears an edge.
@@ -19,9 +20,19 @@ struct PlaylistDetailView: View {
     @State private var rowFrames = RowFrames()
     @State private var scroller = ListAutoScroller()
 
-    init(model: AppModel, playlist: Playlist) {
+    var playlistHitTest: (CGPoint) -> UUID? = { _ in nil }
+    var onDropOnPlaylist: (Track, UUID) -> Void = { _, _ in }
+
+    init(
+        model: AppModel,
+        playlist: Playlist,
+        playlistHitTest: @escaping (CGPoint) -> UUID? = { _ in nil },
+        onDropOnPlaylist: @escaping (Track, UUID) -> Void = { _, _ in }
+    ) {
         self.model = model
         self.playlist = playlist
+        self.playlistHitTest = playlistHitTest
+        self.onDropOnPlaylist = onDropOnPlaylist
         _library = ObservedObject(wrappedValue: model.library)
         _player = ObservedObject(wrappedValue: model.player)
     }
@@ -75,27 +86,34 @@ struct PlaylistDetailView: View {
                                     onRemoveFromPlaylist: {
                                         model.remove(track, from: playlist)
                                     },
-                                    onDragChanged: { pointerY, startY, artwork in
+                                    onDragChanged: { pointer, start, artwork in
                                         if draggingID != track.id {
                                             draggingID = track.id
                                             draggedArtwork = artwork
                                             dragGrabOffsetY = SongReorder.grabOffset(
-                                                pointerStartY: startY,
-                                                rowMinY: rowFrames.values[track.id]?.minY ?? startY
+                                                pointerStartY: start.y,
+                                                rowMinY: rowFrames.values[track.id]?.minY ?? start.y
                                             )
                                         }
-                                        dragPointerY = pointerY
+                                        dragPointerY = pointer.y
                                         scroller.update(
-                                            pointerY: pointerY,
+                                            pointerY: pointer.y,
                                             visible: container.frame(in: .global)
                                         )
                                     },
-                                    onDragEnded: { pointerY, startY in
+                                    onDragEnded: { pointer, start in
                                         scroller.stop()
+
+                                        if let playlistID = playlistHitTest(pointer) {
+                                            onDropOnPlaylist(track, playlistID)
+                                            clearDragState()
+                                            return
+                                        }
+
                                         finishDrag(
                                             of: track,
                                             index: index,
-                                            translation: pointerY - startY
+                                            translation: pointer.y - start.y
                                         )
                                     }
                                 )
@@ -143,6 +161,40 @@ struct PlaylistDetailView: View {
                 model.renamePlaylist(playlist, to: renameName)
             }
         }
+        .sheet(isPresented: $isPickingSongs) {
+            addSongsSheet(for: playlist)
+        }
+    }
+
+    /// Picks songs from the library and appends the ones that are not in this
+    /// playlist yet. Songs already here start ticked, so the sheet doubles as a
+    /// "what is in here" view without removing anything.
+    private func addSongsSheet(for playlist: Playlist) -> some View {
+        SelectionSheet(
+            title: "playlist.addSongs",
+            rows: library.tracks.map { track in
+                SelectionRow(
+                    id: track.id,
+                    title: track.title,
+                    subtitle: track.displayArtist,
+                    coverFileName: track.coverFileName,
+                    systemImage: "music.note"
+                )
+            },
+            initialSelection: Set(tracks.map(\.id)),
+            confirmTitle: "playlist.addSongs",
+            countFormat: String(localized: "picker.selectedSongs"),
+            onConfirm: { _, ids in
+                isPickingSongs = false
+                let existing = Set(tracks.map(\.id))
+                for id in ids where !existing.contains(id) {
+                    if let track = library.track(id: id) {
+                        library.add(track, to: playlist.id)
+                    }
+                }
+            },
+            onCancel: { isPickingSongs = false }
+        )
     }
 
     private func header(_ playlist: Playlist) -> some View {
@@ -169,6 +221,25 @@ struct PlaylistDetailView: View {
 
             transportControls
                 .disabled(tracks.isEmpty)
+
+            Button {
+                isPickingSongs = true
+            } label: {
+                HStack(spacing: 6) {
+                    Text("playlist.addSongs")
+                    Text(verbatim: "⇧⌘A")
+                        .foregroundColor(Color.blue.opacity(0.55))
+                }
+                .foregroundColor(.blue)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 3)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color.blue, lineWidth: 1)
+                )
+            }
+            .buttonStyle(.plain)
+            .keyboardShortcut("a", modifiers: [.command, .shift])
 
             Button {
                 model.requestPlaylistDelete(playlist)
@@ -245,13 +316,15 @@ struct PlaylistDetailView: View {
         return SongReorder.slot(forDraggedCentreY: centreY, rowCentres: centres)
     }
 
+    private func clearDragState() {
+        draggingID = nil
+        dragGrabOffsetY = nil
+        dragPointerY = nil
+        draggedArtwork = nil
+    }
+
     private func finishDrag(of track: Track, index: Int, translation: CGFloat) {
-        defer {
-            draggingID = nil
-            dragGrabOffsetY = nil
-            dragPointerY = nil
-            draggedArtwork = nil
-        }
+        defer { clearDragState() }
 
         guard let frame = rowFrames.values[track.id] else { return }
         let slot = targetSlot(for: translation, frame: frame, index: index)

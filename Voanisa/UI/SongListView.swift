@@ -19,8 +19,20 @@ struct SongListView: View {
     private var songs: [Track] { library.visibleTracks }
     private var isSearching: Bool { SongSearch.isActive(library.searchText) }
 
-    init(model: AppModel) {
+    /// Returns the playlist whose sidebar row is under `point`, if any. Supplied
+    /// by `ContentView`, which owns the sidebar row frames.
+    var playlistHitTest: (CGPoint) -> UUID? = { _ in nil }
+    /// Called when a row is dropped on a playlist row instead of inside the list.
+    var onDropOnPlaylist: (Track, UUID) -> Void = { _, _ in }
+
+    init(
+        model: AppModel,
+        playlistHitTest: @escaping (CGPoint) -> UUID? = { _ in nil },
+        onDropOnPlaylist: @escaping (Track, UUID) -> Void = { _, _ in }
+    ) {
         self.model = model
+        self.playlistHitTest = playlistHitTest
+        self.onDropOnPlaylist = onDropOnPlaylist
         _player = ObservedObject(wrappedValue: model.player)
         _library = ObservedObject(wrappedValue: model.library)
     }
@@ -68,27 +80,36 @@ struct SongListView: View {
                                 playlists: library.playlists,
                                 onTogglePlaylist: { model.toggle(song, in: $0) },
                                 onRemoveFromPlaylist: nil,
-                                onDragChanged: { pointerY, startY, artwork in
+                                onDragChanged: { pointer, start, artwork in
                                     if draggingID != song.id {
                                         draggingID = song.id
                                         draggedArtwork = artwork
                                         dragGrabOffsetY = SongReorder.grabOffset(
-                                            pointerStartY: startY,
-                                            rowMinY: rowFrames.values[song.id]?.minY ?? startY
+                                            pointerStartY: start.y,
+                                            rowMinY: rowFrames.values[song.id]?.minY ?? start.y
                                         )
                                     }
-                                    dragPointerY = pointerY
+                                    dragPointerY = pointer.y
                                     scroller.update(
-                                        pointerY: pointerY,
+                                        pointerY: pointer.y,
                                         visible: container.frame(in: .global)
                                     )
                                 },
-                                onDragEnded: { pointerY, startY in
+                                onDragEnded: { pointer, start in
                                     scroller.stop()
+
+                                    // Dropped on a sidebar playlist: add it there
+                                    // instead of reordering the visible list.
+                                    if let playlistID = playlistHitTest(pointer) {
+                                        onDropOnPlaylist(song, playlistID)
+                                        clearDragState()
+                                        return
+                                    }
+
                                     finishDrag(
                                         of: song,
                                         index: index,
-                                        translation: pointerY - startY
+                                        translation: pointer.y - start.y
                                     )
                                 }
                             )
@@ -164,13 +185,15 @@ struct SongListView: View {
         return SongReorder.slot(forDraggedCentreY: centreY, rowCentres: centres)
     }
 
+    private func clearDragState() {
+        draggingID = nil
+        dragGrabOffsetY = nil
+        dragPointerY = nil
+        draggedArtwork = nil
+    }
+
     private func finishDrag(of song: Track, index: Int, translation: CGFloat) {
-        defer {
-            draggingID = nil
-            dragGrabOffsetY = nil
-            dragPointerY = nil
-            draggedArtwork = nil
-        }
+        defer { clearDragState() }
 
         guard let frame = rowFrames.values[song.id] else { return }
         let slot = targetSlot(for: translation, frame: frame, index: index)
@@ -343,16 +366,16 @@ struct SongDragCard: View {
 
 private struct ReorderDragModifier: ViewModifier {
     let enabled: Bool
-    let onChanged: (CGFloat, CGFloat) -> Void
-    let onEnded: (CGFloat, CGFloat) -> Void
+    let onChanged: (CGPoint, CGPoint) -> Void
+    let onEnded: (CGPoint, CGPoint) -> Void
 
     @ViewBuilder
     func body(content: Content) -> some View {
         if enabled {
             content.simultaneousGesture(
                 DragGesture(minimumDistance: 4, coordinateSpace: .global)
-                    .onChanged { onChanged($0.location.y, $0.startLocation.y) }
-                    .onEnded { onEnded($0.location.y, $0.startLocation.y) }
+                    .onChanged { onChanged($0.location, $0.startLocation) }
+                    .onEnded { onEnded($0.location, $0.startLocation) }
             )
         } else {
             content
@@ -375,8 +398,8 @@ struct SongRowView: View {
     let playlists: [Playlist]
     let onTogglePlaylist: (Playlist) -> Void
     let onRemoveFromPlaylist: (() -> Void)?
-    let onDragChanged: (CGFloat, CGFloat, NSImage?) -> Void
-    let onDragEnded: (CGFloat, CGFloat) -> Void
+    let onDragChanged: (CGPoint, CGPoint, NSImage?) -> Void
+    let onDragEnded: (CGPoint, CGPoint) -> Void
 
     @State private var isHovering = false
     @State private var artworkImage: NSImage?

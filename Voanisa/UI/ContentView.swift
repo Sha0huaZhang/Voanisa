@@ -9,6 +9,9 @@ struct ContentView: View {
     /// Filled by the song picker, transferred once the sheet has dismissed so
     /// the two presentations do not collide in a single update.
     @State private var pendingSongDeleteIDs: [UUID] = []
+    /// Playlist rows in the sidebar, refreshed by `SidebarView`; used to decide
+    /// whether a dragged song was dropped on one of them.
+    @State private var playlistFrames: [UUID: CGRect] = [:]
 
     init(model: AppModel) {
         self.model = model
@@ -25,7 +28,8 @@ struct ContentView: View {
                 ),
                 library: model.library,
                 onImport: imports.presentPanel,
-                onRequestDeletePlaylist: { model.requestPlaylistDelete($0) }
+                onRequestDeletePlaylist: { model.requestPlaylistDelete($0) },
+                onPlaylistFrames: { playlistFrames = $0 }
             )
             .navigationSplitViewColumnWidth(min: 170, ideal: 195, max: 240)
         } detail: {
@@ -204,6 +208,13 @@ struct ContentView: View {
                 .accessibilityHidden(!isShowingSongs)
 
             if !isShowingSongs {
+                // The song list has to stay alive for its scroll position, but it
+                // is backed by an NSScrollView, and AppKit views keep taking mouse
+                // events at opacity 0 — clicks on empty space in the page above
+                // reached through and selected a row that was not on screen.
+                EventBarrier()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
                 otherDetail
             }
         }
@@ -220,8 +231,21 @@ struct ContentView: View {
         VStack(spacing: 0) {
             PlayerControlBar(model: model)
             Divider()
-            SongListView(model: model)
+            SongListView(
+                model: model,
+                playlistHitTest: playlistHitTest,
+                onDropOnPlaylist: addToPlaylist
+            )
         }
+    }
+
+    /// Which playlist row is under `point`, if the pointer is over the sidebar.
+    private func playlistHitTest(_ point: CGPoint) -> UUID? {
+        playlistFrames.first { $0.value.contains(point) }?.key
+    }
+
+    private func addToPlaylist(_ track: Track, _ playlistID: UUID) {
+        model.library.add(track, to: playlistID)
     }
 
     @ViewBuilder
@@ -235,7 +259,12 @@ struct ContentView: View {
             SettingsView(library: model.library)
         case .playlist(let id):
             if let playlist = model.library.playlist(id: id) {
-                PlaylistDetailView(model: model, playlist: playlist)
+                PlaylistDetailView(
+                    model: model,
+                    playlist: playlist,
+                    playlistHitTest: playlistHitTest,
+                    onDropOnPlaylist: addToPlaylist
+                )
             } else {
                 Text("playlist.missing")
                     .foregroundStyle(.secondary)
@@ -316,5 +345,36 @@ struct ContentView: View {
             imports.importURLs(urls)
         }
         return true
+    }
+}
+
+/// Swallows mouse events for a page that is kept alive but not visible.
+///
+/// SwiftUI's `allowsHitTesting(false)` does not reach AppKit views inside the
+/// subtree: the song list's `NSScrollView` keeps handling clicks and selecting
+/// rows at `opacity 0`, so clicking empty space on the playlist page used to
+/// "reach through" and select whatever row sat under the pointer. This barrier
+/// sits between the hidden page and the visible one and stops those events.
+private struct EventBarrier: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView {
+        BarrierView()
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {}
+
+    private final class BarrierView: NSView {
+        override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+        override func hitTest(_ point: NSPoint) -> NSView? {
+            let local = superview.map { convert(point, from: $0) } ?? point
+            return bounds.contains(local) ? self : nil
+        }
+
+        override func mouseDown(with event: NSEvent) {}
+        override func mouseUp(with event: NSEvent) {}
+        override func rightMouseDown(with event: NSEvent) {}
+        override func rightMouseUp(with event: NSEvent) {}
+        override func otherMouseDown(with event: NSEvent) {}
+        override func scrollWheel(with event: NSEvent) {}
     }
 }
