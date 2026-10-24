@@ -74,6 +74,14 @@ impl Engine {
         self.playing = playing;
     }
 
+    pub fn set_volume(&mut self, value: f64) {
+        self.volume = (value as f32).clamp(0.0, 1.0);
+    }
+
+    pub fn volume(&self) -> f64 {
+        self.volume as f64
+    }
+
     pub fn is_playing(&self) -> bool {
         self.playing
     }

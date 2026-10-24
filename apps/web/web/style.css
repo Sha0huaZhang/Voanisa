@@ -191,7 +191,7 @@ body {
     grid-column: 1 / -1;
     grid-row: 2;
     display: grid;
-    grid-template-columns: 200px 60px 1fr;
+    grid-template-columns: 180px auto 1fr 150px;
     align-items: center;
     gap: 16px;
     padding: 0 20px;
@@ -224,7 +224,9 @@ body {
 
 .transport {
     display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 4px;
 }
 
 .play {
@@ -260,4 +262,89 @@ body {
 #seek-bar {
     flex: 1;
     accent-color: var(--card);
+}
+
+/* ---------- 上一首 / 下一首 / 循环 ---------- */
+
+.skip {
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    position: relative;
+}
+
+.skip:hover {
+    background: rgba(8, 58, 74, 0.08);
+}
+
+.skip.is-on {
+    color: var(--card);
+}
+
+.skip.is-one::after {
+    content: "1";
+    position: absolute;
+    top: 1px;
+    right: 3px;
+    font-size: 9px;
+    font-weight: 700;
+}
+
+/* ---------- 音量 ---------- */
+
+.volume {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-self: end;
+}
+
+.vol-icon {
+    font-size: 12px;
+    opacity: 0.75;
+}
+
+#volume-bar {
+    width: 96px;
+    accent-color: var(--card);
+}
+
+/* ---------- 右键菜单 ---------- */
+
+.context-menu {
+    position: fixed;
+    min-width: 176px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border: 1px solid rgba(8, 58, 74, 0.14);
+    border-radius: 8px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+    z-index: 20;
+}
+
+.context-menu[hidden] {
+    display: none;
+}
+
+.context-menu button {
+    border: 0;
+    background: transparent;
+    text-align: left;
+    font: inherit;
+    color: var(--ink);
+    padding: 6px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.context-menu button:hover {
+    background: rgba(8, 58, 74, 0.08);
 }

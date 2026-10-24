@@ -32,16 +32,32 @@
                 <span class="np-title" id="np-title">未在播放</span>
                 <span class="np-artist" id="np-artist"></span>
             </div>
+
             <div class="transport">
-                <button class="play" id="play-button" title="播放 / 暂停">▶</button>
+                <button class="skip" id="prev-button" title="上一首">⏮</button>
+                <button class="play" id="play-button" title="播放 / 暂停（空格）">▶</button>
+                <button class="skip" id="next-button" title="下一首">⏭</button>
+                <button class="skip" id="repeat-button" title="循环">🔁</button>
             </div>
+
             <div class="progress">
                 <span class="time" id="position">0:00</span>
                 <input type="range" id="seek-bar" min="0" max="1000" value="0">
                 <span class="time" id="duration">0:00</span>
             </div>
+
+            <div class="volume">
+                <span class="vol-icon">🔈</span>
+                <input type="range" id="volume-bar" min="0" max="100" value="80">
+            </div>
         </footer>
     </div>
+
+    <div class="context-menu" id="context-menu" hidden>
+        <button data-action="play">播放</button>
+        <button data-action="reveal">在 Finder 中显示</button>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
