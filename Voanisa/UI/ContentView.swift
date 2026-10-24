@@ -14,6 +14,9 @@ struct ContentView: View {
     @State private var playlistFrames: [UUID: CGRect] = [:]
     /// Playlist row highlighted while a song is dragged over the sidebar.
     @State private var draggedOverPlaylist: UUID?
+    @State private var didLogEmptyPlaylistFrames = false
+    /// The floating row drawn above every column while a song is dragged.
+    @State private var dragPreview: SongDragPreview?
 
     init(model: AppModel) {
         self.model = model
@@ -40,6 +43,7 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(minWidth: 860, minHeight: 620)
+        .overlay(alignment: .topLeading) { dragPreviewOverlay }
         .overlay(alignment: .topTrailing) { preparingOverlay }
         .overlay { dropOverlay }
         .sheet(isPresented: Binding(
@@ -238,17 +242,62 @@ struct ContentView: View {
                 model: model,
                 playlistHitTest: playlistHitTest,
                 onDropOnPlaylist: addToPlaylist,
-                onDropTargetChange: { draggedOverPlaylist = $0 }
+                onDropTargetChange: { draggedOverPlaylist = $0 },
+                onDragPreview: { dragPreview = $0 }
             )
+        }
+    }
+
+    /// Draws the dragged row above the whole window, so it can leave the list
+    /// and shrink while hovering the sidebar.
+    @ViewBuilder
+    private var dragPreviewOverlay: some View {
+        if let preview = dragPreview,
+           let track = model.library.track(id: preview.songID) {
+            GeometryReader { proxy in
+                let root = proxy.frame(in: .global)
+                let overPlaylist = playlistHitTest(preview.pointer) != nil
+
+                SongDragCard(song: track, artwork: preview.artwork)
+                    .frame(width: 300, height: 48, alignment: .leading)
+                    .scaleEffect(overPlaylist ? 0.62 : 1)
+                    .opacity(overPlaylist ? 0.85 : 1)
+                    .position(
+                        x: preview.pointer.x - root.minX,
+                        y: preview.pointer.y - root.minY
+                    )
+                    .animation(.easeOut(duration: 0.12), value: overPlaylist)
+            }
+            .allowsHitTesting(false)
         }
     }
 
     /// Which playlist row is under `point`, if the pointer is over the sidebar.
     private func playlistHitTest(_ point: CGPoint) -> UUID? {
-        playlistFrames.first { $0.value.contains(point) }?.key
+        if playlistFrames.isEmpty, !didLogEmptyPlaylistFrames {
+            didLogEmptyPlaylistFrames = true
+            Diagnostics.log("拖动诊断：侧栏歌单 frame 为空，命中测试无从谈起")
+        }
+
+        // A row's reported frame is the label's tight box, so the gaps between
+        // rows and the row padding fall outside every frame. Inside the sidebar
+        // column, fall back to the vertically nearest row.
+        if let exact = playlistFrames.first(where: { $0.value.contains(point) }) {
+            return exact.key
+        }
+        guard let sidebarRight = playlistFrames.values.map(\.maxX).max(),
+              point.x <= sidebarRight + 28 else {
+            return nil
+        }
+        let nearest = playlistFrames.min { left, right in
+            abs(left.value.midY - point.y) < abs(right.value.midY - point.y)
+        }
+        guard let nearest, abs(nearest.value.midY - point.y) <= 24 else { return nil }
+        return nearest.key
     }
 
     private func addToPlaylist(_ track: Track, _ playlistID: UUID) {
+        Diagnostics.log("拖动加入歌单：《\(track.title)》→ \(playlistID)")
         model.library.add(track, to: playlistID)
     }
 
@@ -268,7 +317,8 @@ struct ContentView: View {
                     playlist: playlist,
                     playlistHitTest: playlistHitTest,
                     onDropOnPlaylist: addToPlaylist,
-                    onDropTargetChange: { draggedOverPlaylist = $0 }
+                    onDropTargetChange: { draggedOverPlaylist = $0 },
+                    onDragPreview: { dragPreview = $0 }
                 )
             } else {
                 Text("playlist.missing")

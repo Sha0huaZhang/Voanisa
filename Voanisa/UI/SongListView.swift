@@ -29,17 +29,22 @@ struct SongListView: View {
     /// Reports which sidebar playlist the pointer is over, so the sidebar can
     /// highlight it while the row is dragged.
     var onDropTargetChange: (UUID?) -> Void = { _ in }
+    /// Reports the floating drag preview so the window can draw it above every
+    /// column instead of clipping it to the list.
+    var onDragPreview: (SongDragPreview?) -> Void = { _ in }
 
     init(
         model: AppModel,
         playlistHitTest: @escaping (CGPoint) -> UUID? = { _ in nil },
         onDropOnPlaylist: @escaping (Track, UUID) -> Void = { _, _ in },
-        onDropTargetChange: @escaping (UUID?) -> Void = { _ in }
+        onDropTargetChange: @escaping (UUID?) -> Void = { _ in },
+        onDragPreview: @escaping (SongDragPreview?) -> Void = { _ in }
     ) {
         self.model = model
         self.playlistHitTest = playlistHitTest
         self.onDropOnPlaylist = onDropOnPlaylist
         self.onDropTargetChange = onDropTargetChange
+        self.onDragPreview = onDragPreview
         _player = ObservedObject(wrappedValue: model.player)
         _library = ObservedObject(wrappedValue: model.library)
     }
@@ -97,11 +102,19 @@ struct SongListView: View {
                                         )
                                     }
                                     dragPointerY = pointer.y
+                                    onDragPreview(
+                                        SongDragPreview(
+                                            songID: song.id,
+                                            artwork: artwork,
+                                            pointer: pointer
+                                        )
+                                    )
 
                                     let target = playlistHitTest(pointer)
                                     if target != dropTargetPlaylist {
                                         dropTargetPlaylist = target
                                         onDropTargetChange(target)
+                                        Diagnostics.log("拖动：命中歌单 \(String(describing: target)) 指针 \(pointer)")
                                     }
 
                                     // Over the sidebar nothing should auto-scroll
@@ -208,6 +221,7 @@ struct SongListView: View {
         dragGrabOffsetY = nil
         dragPointerY = nil
         draggedArtwork = nil
+        onDragPreview(nil)
         if dropTargetPlaylist != nil {
             dropTargetPlaylist = nil
             onDropTargetChange(nil)
@@ -475,7 +489,7 @@ struct SongRowView: View {
                 .contentShape(Rectangle())
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 8)
         .contentShape(Rectangle())
         .background(
             GeometryReader { geo in
@@ -571,4 +585,13 @@ enum SongReorder {
     static func dragCardTop(pointerY: CGFloat, grabOffsetY: CGFloat, containerMinY: CGFloat) -> CGFloat {
         pointerY - grabOffsetY - containerMinY
     }
+}
+
+
+/// What the floating row looks like while it is being dragged. Drawn by
+/// `ContentView` so it can travel over the sidebar too.
+struct SongDragPreview {
+    let songID: UUID
+    let artwork: NSImage?
+    let pointer: CGPoint
 }

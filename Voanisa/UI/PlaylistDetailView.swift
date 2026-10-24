@@ -24,19 +24,22 @@ struct PlaylistDetailView: View {
     var playlistHitTest: (CGPoint) -> UUID? = { _ in nil }
     var onDropOnPlaylist: (Track, UUID) -> Void = { _, _ in }
     var onDropTargetChange: (UUID?) -> Void = { _ in }
+    var onDragPreview: (SongDragPreview?) -> Void = { _ in }
 
     init(
         model: AppModel,
         playlist: Playlist,
         playlistHitTest: @escaping (CGPoint) -> UUID? = { _ in nil },
         onDropOnPlaylist: @escaping (Track, UUID) -> Void = { _, _ in },
-        onDropTargetChange: @escaping (UUID?) -> Void = { _ in }
+        onDropTargetChange: @escaping (UUID?) -> Void = { _ in },
+        onDragPreview: @escaping (SongDragPreview?) -> Void = { _ in }
     ) {
         self.model = model
         self.playlist = playlist
         self.playlistHitTest = playlistHitTest
         self.onDropOnPlaylist = onDropOnPlaylist
         self.onDropTargetChange = onDropTargetChange
+        self.onDragPreview = onDragPreview
         _library = ObservedObject(wrappedValue: model.library)
         _player = ObservedObject(wrappedValue: model.player)
     }
@@ -100,11 +103,19 @@ struct PlaylistDetailView: View {
                                             )
                                         }
                                         dragPointerY = pointer.y
+                                        onDragPreview(
+                                            SongDragPreview(
+                                                songID: track.id,
+                                                artwork: artwork,
+                                                pointer: pointer
+                                            )
+                                        )
 
                                         let target = playlistHitTest(pointer)
                                         if target != dropTargetPlaylist {
                                             dropTargetPlaylist = target
                                             onDropTargetChange(target)
+                                            Diagnostics.log("拖动：命中歌单 \(String(describing: target)) 指针 \(pointer)")
                                         }
 
                                         // Over the sidebar nothing should auto-scroll
@@ -144,21 +155,6 @@ struct PlaylistDetailView: View {
                         .listStyle(.plain)
                         .onPreferenceChange(RowFrameKey.self) { rowFrames.values = $0 }
                         .onDeleteCommand { model.deleteSelectedTrack() }
-
-                        if let id = draggingID,
-                           let frame = rowFrames.values[id],
-                           let track = tracks.first(where: { $0.id == id }),
-                           let pointerY = dragPointerY,
-                           let grabOffset = dragGrabOffsetY {
-                            SongDragCard(song: track, artwork: draggedArtwork)
-                                .frame(width: frame.width, height: frame.height)
-                                .offset(y: SongReorder.dragCardTop(
-                                    pointerY: pointerY,
-                                    grabOffsetY: grabOffset,
-                                    containerMinY: container.frame(in: .global).minY
-                                ))
-                                .allowsHitTesting(false)
-                        }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -336,6 +332,7 @@ struct PlaylistDetailView: View {
         dragGrabOffsetY = nil
         dragPointerY = nil
         draggedArtwork = nil
+        onDragPreview(nil)
         if dropTargetPlaylist != nil {
             dropTargetPlaylist = nil
             onDropTargetChange(nil)
