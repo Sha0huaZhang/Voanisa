@@ -93,3 +93,7 @@ __pycache__/
 # Tauri build outputs
 apps/web/src-tauri/target/
 apps/web/src-tauri/gen/schemas/
+
+# .NET / WinUI build outputs
+apps/windows/bin/
+apps/windows/obj/

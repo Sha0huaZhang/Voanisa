@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Voanisa.Windows.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:core="using:Voanisa.Windows.Core"
+    mc:Ignorable="d"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <NavigationView
+            x:Name="Nav"
+            PaneDisplayMode="Left"
+            OpenPaneLength="200"
+            IsSettingsVisible="False"
+            IsBackButtonVisible="Collapsed">
+
+            <NavigationView.MenuItems>
+                <NavigationViewItem Content="歌曲" Tag="songs" IsSelected="True">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="MusicInfo" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <Grid Padding="24,16,24,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Bottom">
+                    <TextBlock Text="歌曲" FontSize="24" FontWeight="SemiBold" />
+                    <TextBlock
+                        x:Name="CountText"
+                        FontSize="12"
+                        VerticalAlignment="Bottom"
+                        Margin="0,0,0,4"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+                <ListView
+                    x:Name="TrackList"
+                    Grid.Row="1"
+                    Margin="0,12,0,0"
+                    SelectionMode="Single"
+                    IsItemClickEnabled="True"
+                    ItemClick="TrackList_ItemClick">
+                    <ListView.ItemTemplate>
+                        <DataTemplate x:DataType="core:Track">
+                            <Grid Padding="8,6" ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Border
+                                    Width="40"
+                                    Height="40"
+                                    CornerRadius="6"
+                                    Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                                    <Image Source="{x:Bind Cover}" Stretch="UniformToFill" />
+                                </Border>
+
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock
+                                        Text="{x:Bind Title}"
+                                        MaxLines="1"
+                                        TextTrimming="CharacterEllipsis" />
+                                    <TextBlock
+                                        Text="{x:Bind Artist}"
+                                        FontSize="12"
+                                        MaxLines="1"
+                                        TextTrimming="CharacterEllipsis"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                </StackPanel>
+
+                                <TextBlock
+                                    Grid.Column="2"
+                                    Text="{x:Bind DurationText}"
+                                    FontSize="12"
+                                    VerticalAlignment="Center"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </NavigationView>
+
+        <Border
+            Grid.Row="1"
+            Padding="16,10"
+            BorderThickness="0,1,0,0"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            Background="{ThemeResource LayerFillColorDefaultBrush}">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="190" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock
+                        x:Name="NowTitle"
+                        Text="未在播放"
+                        FontSize="13"
+                        FontWeight="SemiBold"
+                        MaxLines="1"
+                        TextTrimming="CharacterEllipsis" />
+                    <TextBlock
+                        x:Name="NowArtist"
+                        FontSize="11"
+                        MaxLines="1"
+                        TextTrimming="CharacterEllipsis"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Spacing="6"
+                    VerticalAlignment="Center">
+                    <Button
+                        x:Name="PrevButton"
+                        Click="Prev_Click"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTipService.ToolTip="上一首 (Alt+←)">
+                        <FontIcon FontSize="14" Glyph="&#xE892;" />
+                    </Button>
+                    <Button
+                        x:Name="PlayButton"
+                        Click="Play_Click"
+                        Style="{StaticResource AccentButtonStyle}"
+                        ToolTipService.ToolTip="播放 / 暂停 (空格)">
+                        <FontIcon FontSize="14" Glyph="&#xE768;" />
+                    </Button>
+                    <Button
+                        x:Name="NextButton"
+                        Click="Next_Click"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        ToolTipService.ToolTip="下一首 (Alt+→)">
+                        <FontIcon FontSize="14" Glyph="&#xE893;" />
+                    </Button>
+                </StackPanel>
+
+                <Grid Grid.Column="2" ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock
+                        x:Name="PositionText"
+                        Text="0:00"
+                        FontSize="11"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+
+                    <Slider
+                        x:Name="PositionSlider"
+                        Grid.Column="1"
+                        Minimum="0"
+                        Maximum="1"
+                        StepFrequency="0.1"
+                        ValueChanged="PositionSlider_ValueChanged" />
+
+                    <TextBlock
+                        x:Name="DurationText"
+                        Grid.Column="2"
+                        Text="0:00"
+                        FontSize="11"
+                        VerticalAlignment="Center"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
