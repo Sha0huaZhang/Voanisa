@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voanisa</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <div class="brand">
+                <img src="icon.png" alt="" class="brand-icon">
+                <span class="brand-name">Voanisa</span>
+            </div>
+            <nav class="nav">
+                <button class="nav-item is-active" data-view="songs">歌曲</button>
+            </nav>
+        </aside>
+
+        <main class="content">
+            <header class="list-header">
+                <h1>歌曲</h1>
+                <span class="count" id="track-count"></span>
+            </header>
+            <ul class="track-list" id="track-list"></ul>
+            <p class="empty" id="empty-state" hidden>曲库里还没有歌曲。</p>
+        </main>
+
+        <footer class="player">
+            <div class="now-playing">
+                <span class="np-title" id="np-title">未在播放</span>
+                <span class="np-artist" id="np-artist"></span>
+            </div>
+            <div class="transport">
+                <button class="play" id="play-button" title="播放 / 暂停">▶</button>
+            </div>
+            <div class="progress">
+                <span class="time" id="position">0:00</span>
+                <input type="range" id="seek-bar" min="0" max="1000" value="0">
+                <span class="time" id="duration">0:00</span>
+            </div>
+        </footer>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

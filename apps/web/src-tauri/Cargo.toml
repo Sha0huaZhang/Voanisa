@@ -1,0 +1,20 @@
+[package]
+name = "voanisa-web"
+version = "1.0.7"
+edition = "2021"
+description = "Voanisa as a web app: Tauri shell over the shared Rust core"
+license = "MIT"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+voanisa-core = { path = "../../../Rust/voanisa-core" }
+cpal = "0.15"
+dirs = "5"
+
+[features]
+default = []

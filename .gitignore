@@ -89,3 +89,7 @@ __pycache__/
 *.xlsx
 *.doc
 *.docx
+
+# Tauri build outputs
+apps/web/src-tauri/target/
+apps/web/src-tauri/gen/schemas/
