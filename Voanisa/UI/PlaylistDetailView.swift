@@ -96,10 +96,14 @@ struct PlaylistDetailView: View {
                                             )
                                         }
                                         dragPointerY = pointer.y
-                                        scroller.update(
-                                            pointerY: pointer.y,
-                                            visible: container.frame(in: .global)
-                                        )
+                                        // Over the sidebar nothing should auto-scroll
+                                        // the list the row came from.
+                                        if playlistHitTest(pointer) == nil {
+                                            scroller.update(
+                                                pointerY: pointer.y,
+                                                visible: container.frame(in: .global)
+                                            )
+                                        }
                                     },
                                     onDragEnded: { pointer, start in
                                         scroller.stop()
