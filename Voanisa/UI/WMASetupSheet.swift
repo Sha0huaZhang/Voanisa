@@ -14,6 +14,8 @@ struct WMASetupSheet: View {
     @State private var customPath = ""
     @State private var source: URL?
     @State private var message: String?
+    /// An ffmpeg of unknown origin, offered by hand when the chosen tool has none.
+    @State private var suggested: URL?
     @State private var copiedCommand: String?
 
     private enum Step: Equatable {
@@ -152,6 +154,19 @@ struct WMASetupSheet: View {
                     .foregroundStyle(.red)
                     .fixedSize(horizontal: false, vertical: true)
             }
+
+            if let suggested {
+                // Never pick a different binary on the user's behalf: show what
+                // was found and let them say yes.
+                Button(
+                    String(
+                        format: String(localized: "wma.setup.useFound"),
+                        DisplayPath.abbreviated(suggested)
+                    )
+                ) {
+                    chooseFoundBinary(suggested)
+                }
+            }
         }
     }
 
@@ -166,7 +181,7 @@ struct WMASetupSheet: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 16) {
-                Text(verbatim: FFmpegLocation.libraryDirectory.path)
+                Text(verbatim: DisplayPath.abbreviated(FFmpegLocation.libraryDirectory))
                     .font(.system(.callout, design: .monospaced))
                     .textSelection(.enabled)
                     .lineLimit(2)
@@ -208,7 +223,7 @@ struct WMASetupSheet: View {
 
             if let source {
                 LabeledContent("wma.setup.confirm.source") {
-                    Text(verbatim: source.path)
+                    Text(verbatim: DisplayPath.abbreviated(source))
                         .font(.system(.callout, design: .monospaced))
                         .textSelection(.enabled)
                         .lineLimit(2)
@@ -217,7 +232,7 @@ struct WMASetupSheet: View {
             }
 
             LabeledContent("wma.setup.confirm.destination") {
-                Text(verbatim: FFmpegLocation.copyURL.path)
+                Text(verbatim: DisplayPath.abbreviated(FFmpegLocation.copyURL))
                     .font(.system(.callout, design: .monospaced))
                     .textSelection(.enabled)
                     .lineLimit(2)
@@ -252,7 +267,7 @@ struct WMASetupSheet: View {
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(verbatim: "\(FFmpegLocation.copyURL.path)")
+            Text(verbatim: DisplayPath.abbreviated(FFmpegLocation.copyURL))
                 .font(.system(.callout, design: .monospaced))
                 .textSelection(.enabled)
                 .lineLimit(2)
@@ -426,8 +441,11 @@ struct WMASetupSheet: View {
                 message = installed
                     ? String(localized: "wma.setup.notFound")
                     : String(localized: "wma.setup.notInstalledYet")
+                // Resolution failed, so anything found here came from another tool.
+                suggested = FFmpegLocation.findAnywhere()
                 return
             }
+            suggested = nil
             source = found
             step = .confirm
 
@@ -458,9 +476,23 @@ struct WMASetupSheet: View {
         }
     }
 
+    private func chooseFoundBinary(_ url: URL) {
+        choice = .other
+        customPath = url.path
+        source = url
+        message = nil
+        suggested = nil
+        Diagnostics.log("WMA 支持：采用找到的 ffmpeg \(url.path)")
+        step = .confirm
+    }
+
     private func copyIntoVoanisa() {
         guard let source else {
             message = String(localized: "wma.setup.notFound")
+            return
+        }
+        guard FFmpeg.runs(source) else {
+            message = String(localized: "wma.error.willNotRun")
             return
         }
         do {

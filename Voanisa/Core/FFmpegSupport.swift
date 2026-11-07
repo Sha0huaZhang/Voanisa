@@ -221,8 +221,8 @@ enum FFmpegLocation {
 
     static var isInstalled: Bool { binary != nil }
 
-    /// Finds the ffmpeg a tool installed. Falls back to a PATH scan, because
-    /// tools are free to move their own prefix.
+    /// Finds the ffmpeg a tool installed, and only that tool's: silently
+    /// substituting another binary would make the wizard's question pointless.
     static func resolve(_ tool: FFmpegTool) -> URL? {
         if tool == .macWave {
             for base in MacWaveConfiguration.baseDirectories() {
@@ -232,11 +232,19 @@ enum FFmpegLocation {
             }
             return nil
         }
-        for path in tool.searchPaths where MacWaveConfiguration.isExecutable(path) {
+        return firstExecutable(in: tool.searchPaths)
+    }
+
+    static func firstExecutable(in paths: [URL]) -> URL? {
+        for path in paths where MacWaveConfiguration.isExecutable(path) {
             return path.resolvingSymlinksInPath()
         }
-        return scanPath()
+        return nil
     }
+
+    /// Any ffmpeg on this Mac, offered only so the user can accept it by hand
+    /// when the tool they picked has none.
+    static func findAnywhere() -> URL? { scanPath() }
 
     /// Accepts a path the user typed or picked.
     static func resolve(path: String) -> URL? {
@@ -324,6 +332,27 @@ enum FFmpegSetupError: LocalizedError, Equatable {
         case .runFailed(let message):
             return message
         }
+    }
+}
+
+/// Paths as the wizard shows them.
+///
+/// The home directory becomes `~`, which keeps long MacWave and Application
+/// Support paths readable in a 560 pt sheet.
+enum DisplayPath {
+    static func abbreviated(
+        _ url: URL,
+        home: URL = FileManager.default.homeDirectoryForCurrentUser
+    ) -> String {
+        let path = url.standardizedFileURL.path
+        let homePath = home.standardizedFileURL.path
+
+        if path == homePath { return "~" }
+        guard path.hasPrefix(homePath) else { return path }
+
+        let rest = path.dropFirst(homePath.count)
+        guard rest.hasPrefix("/") else { return path }
+        return "~" + rest
     }
 }
 

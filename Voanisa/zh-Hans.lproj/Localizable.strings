@@ -241,6 +241,8 @@
 "wma.setup.installedNext"   = "下一步";
 "wma.setup.notFound"        = "按这个选择没有找到 ffmpeg。请先安装、换一个工具，或者手动填写路径。";
 "wma.setup.notInstalledYet" = "还没有找到 ffmpeg。请在终端执行上面的命令，然后再次点击“下一步”。";
+"wma.setup.useFound"         = "改用 %@";
+"wma.error.willNotRun"       = "这个 ffmpeg 无法运行，Voanisa 用不了它。";
 "wma.setup.license"         = "ffmpeg 遵循它自己的许可协议（在终端运行“ffmpeg -L”可以看到你这份构建使用的协议）。这份副本只存在于你的电脑上，只由 Voanisa 调用，不会被再次分发。";
 "wma.tool.selfBuiltUSRLocal" = "自行编译并放在 /usr/local";
 "wma.tool.selfBuiltLocal"    = "自行编译并放在 ~/.local";

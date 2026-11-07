@@ -213,6 +213,73 @@ final class FFmpegSupportTests: XCTestCase {
         XCTAssertNil(MacWaveConfiguration.binary(inBaseDirectory: base))
     }
 
+    func testFirstExecutableSkipsMissingAndNonExecutableEntries() throws {
+        let missing = root.appendingPathComponent("missing/ffmpeg")
+        let plain = root.appendingPathComponent("plain/ffmpeg")
+        let executable = root.appendingPathComponent("bin/ffmpeg")
+        try write("just text", to: plain)
+        try writeExecutable(to: executable)
+
+        XCTAssertEqual(
+            FFmpegLocation.firstExecutable(in: [missing, plain, executable])?
+                .standardizedFileURL,
+            executable.standardizedFileURL
+        )
+        XCTAssertNil(FFmpegLocation.firstExecutable(in: [missing, plain]))
+    }
+
+    func testResolveDoesNotFallBackToThePath() throws {
+        guard !FileManager.default.isExecutableFile(atPath: "/opt/local/bin/ffmpeg") else {
+            throw XCTSkip("MacPorts is installed on this machine")
+        }
+        let bin = root.appendingPathComponent("fake-path", isDirectory: true)
+        try writeExecutable(to: bin.appendingPathComponent("ffmpeg"))
+        let originalPath = ProcessInfo.processInfo.environment["PATH"] ?? ""
+        setenv("PATH", bin.path, 1)
+        defer { setenv("PATH", originalPath, 1) }
+
+        // The binary on PATH belongs to some other tool, so choosing MacPorts
+        // must report "not found" rather than quietly using it.
+        XCTAssertNil(FFmpegLocation.resolve(.macPorts))
+        XCTAssertNotNil(FFmpegLocation.findAnywhere())
+    }
+
+    // MARK: - Display paths
+
+    func testDisplayPathReplacesTheHomeDirectoryWithATilde() {
+        let home = URL(fileURLWithPath: "/Users/voanisa")
+
+        XCTAssertEqual(
+            DisplayPath.abbreviated(
+                URL(fileURLWithPath: "/Users/voanisa/.local/macwave/bin/ffmpeg@9.0.2/ffmpeg"),
+                home: home
+            ),
+            "~/.local/macwave/bin/ffmpeg@9.0.2/ffmpeg"
+        )
+        XCTAssertEqual(
+            DisplayPath.abbreviated(
+                URL(fileURLWithPath: "/Users/voanisa/Library/Application Support/Voanisa/lib/ffmpeg"),
+                home: home
+            ),
+            "~/Library/Application Support/Voanisa/lib/ffmpeg"
+        )
+        XCTAssertEqual(DisplayPath.abbreviated(home, home: home), "~")
+    }
+
+    func testDisplayPathLeavesOtherPathsAlone() {
+        let home = URL(fileURLWithPath: "/Users/voanisa")
+
+        // `/Users/voanisa2` only shares the prefix, so it must stay absolute.
+        XCTAssertEqual(
+            DisplayPath.abbreviated(URL(fileURLWithPath: "/Users/voanisa2/ffmpeg"), home: home),
+            "/Users/voanisa2/ffmpeg"
+        )
+        XCTAssertEqual(
+            DisplayPath.abbreviated(URL(fileURLWithPath: "/opt/homebrew/bin/ffmpeg"), home: home),
+            "/opt/homebrew/bin/ffmpeg"
+        )
+    }
+
     // MARK: - Copying
 
     func testInstallCopiesAnExecutableIntoPlace() throws {

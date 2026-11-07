@@ -242,6 +242,8 @@
 "wma.setup.installedNext"   = "Next";
 "wma.setup.notFound"        = "No ffmpeg was found for that choice. Install it first, choose another tool, or enter the path by hand.";
 "wma.setup.notInstalledYet" = "ffmpeg is not installed yet. Run the command above in Terminal, then click “Next” again.";
+"wma.setup.useFound"         = "Use %@ instead";
+"wma.error.willNotRun"       = "This ffmpeg cannot be started, so Voanisa cannot use it.";
 "wma.setup.license"         = "ffmpeg stays under its own license (run “ffmpeg -L” to see which one your build uses). This copy lives only on your Mac, is used only by Voanisa, and is never redistributed.";
 "wma.tool.selfBuiltUSRLocal" = "Compiled it myself and installed it in /usr/local";
 "wma.tool.selfBuiltLocal"    = "Compiled it myself and installed it in ~/.local";
