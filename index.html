@@ -525,12 +525,12 @@
 
     <div class="version-block" style="color: var(--ink); font-size: 0.95rem; margin-top: -10px; margin-bottom: 30px;">
         <div data-lang="en">
-            <span class="v-line">Latest Version : 1.0.7</span>
-            <span class="v-line">Released on 2026-10-24</span>
+            <span class="v-line">Latest Version : 1.1</span>
+            <span class="v-line">Released on 2026-11-07</span>
         </div>
         <div data-lang="zh">
-            <span class="v-line">最新版本：1.0.7</span>
-            <span class="v-line">发布于 2026-10-24</span>
+            <span class="v-line">最新版本：1.1</span>
+            <span class="v-line">发布于 2026-11-07</span>
         </div>
     </div>
 
@@ -597,12 +597,12 @@
         <div class="install-row">
         <div class="install-text">
         <ol style="font-size: 1.1rem; line-height: 1.8; padding-left: 1.2em;" data-lang="en">
-            <li>Download <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">Voanisa-1.0.7.dmg</code> from the <a href="Downloads/" style="color: var(--ink);"><strong>Download Page</strong>(Click to open)</a> or the <a href="https://github.com/Sha0huaZhang/Voanisa/releases" style="color: var(--ink);">releases page</a>.</li>
+            <li>Download <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">Voanisa-1.1.dmg</code> from the <a href="Downloads/" style="color: var(--ink);"><strong>Download Page</strong>(Click to open)</a> or the <a href="https://github.com/Sha0huaZhang/Voanisa/releases" style="color: var(--ink);">releases page</a>.</li>
             <li>Open the DMG and drag <strong>Voanisa</strong> onto the <strong>Applications</strong> shortcut.</li>
             <li>Launch Voanisa and press <strong>Import Audio</strong> (⌘O) to add your first files.</li>
         </ol>
         <ol style="font-size: 1.1rem; line-height: 1.8; padding-left: 1.2em;" data-lang="zh">
-            <li>从<a href="Downloads/" style="color: var(--ink);"><strong>下载页面</strong>（点击跳转）</a>或 <a href="https://github.com/Sha0huaZhang/Voanisa/releases" style="color: var(--ink);">Releases 页面</a>下载 <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">Voanisa-1.0.7.dmg</code>。</li>
+            <li>从<a href="Downloads/" style="color: var(--ink);"><strong>下载页面</strong>（点击跳转）</a>或 <a href="https://github.com/Sha0huaZhang/Voanisa/releases" style="color: var(--ink);">Releases 页面</a>下载 <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">Voanisa-1.1.dmg</code>。</li>
             <li>打开 DMG，把 <strong>Voanisa</strong> 拖到 <strong>Applications</strong> 快捷方式上。</li>
             <li>启动 Voanisa，点「导入音频」（⌘O）添加第一批文件。</li>
         </ol>
@@ -663,15 +663,22 @@
         <p style="font-size: 1.1rem; line-height: 1.6; " data-lang="en">Audio files on disk. Voanisa keeps its library in <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">~/Music/Voanisa</code> and needs no Apple Music library.</p>
         <p style="font-size: 1.1rem; line-height: 1.6; " data-lang="zh">本地磁盘上的音频文件。Voanisa 把曲库放在 <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">~/Music/Voanisa</code>，不需要 Apple Music 资料库。</p>
         <p style="font-size: 1.1rem; line-height: 1.6; " data-lang="en">
-            WMA is not supported: macOS cannot decode it and the portable core has no
-            ASF demuxer, so those files are marked unsupported when importing. Convert
-            them to FLAC or MP3 first; <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">Scripts/convert-wma.sh</code>
-            converts a whole folder in one go.
+            <strong>WMA</strong> is supported through your own ffmpeg. macOS cannot decode WMA and the
+            core has no ASF demuxer, so on first launch Voanisa asks which tool installed your ffmpeg
+            (Homebrew, MacPorts, Fink, Finx, Nix or MacWave, a self-built prefix, or a path you type),
+            shows the install command when there is none yet, and copies the binary to
+            <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">~/Library/Application Support/Voanisa/lib/ffmpeg</code>.
+            Importing a WMA file then converts it to FLAC once, so it plays and edits like everything else.
+            Voanisa never ships, bundles or downloads ffmpeg, and you can remove the copy in
+            <strong>Settings → WMA</strong> at any time. Without it, WMA stays unsupported.
         </p>
         <p style="font-size: 1.1rem; line-height: 1.6; " data-lang="zh">
-            WMA 暂不支持：macOS 无法解码，核心也没有 ASF 解析器，导入时会被标为不受支持。请先转成 FLAC 或 MP3——仓库里的
-            <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">Scripts/convert-wma.sh</code>
-            可以一次转完整个文件夹。
+            <strong>WMA</strong> 通过你自己的 ffmpeg 支持。macOS 无法解码 WMA，核心也没有 ASF 解析器，所以首次启动时
+            Voanisa 会询问你的 ffmpeg 是用哪个工具装的（Homebrew、MacPorts、Fink、Finx、Nix、MacWave、
+            自行编译的路径，或手动输入的路径）；还没装的话会给出安装命令，然后把可执行文件复制到
+            <code style="background-color: var(--ink); color: #ffffff; padding: 2px 6px; border-radius: 4px;">~/Library/Application Support/Voanisa/lib/ffmpeg</code>。
+            之后导入 WMA 会先转成 FLAC，播放和编辑歌曲信息都与其它格式一致。Voanisa 不会打包、附带或下载
+            ffmpeg，随时可以在<strong>设置 → WMA</strong> 里删除这份副本；没有副本时 WMA 仍不受支持。
         </p>
 
         <h2 style="font-size: 1.8rem; border-bottom: 2px solid var(--rule); padding-bottom: 10px; margin-top: 40px;" data-lang="en">Build From Source</h2>
