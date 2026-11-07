@@ -7,9 +7,9 @@ final class AppModel: ObservableObject {
 
     @Published var errorMessage: String?
     @Published var isShowingError = false
-    /// Shown once per version: WMA cannot be decoded, and users find that out by
-    /// importing a folder full of it and seeing every row rejected.
-    @Published var isShowingWMANotice = false
+    /// Shown once per version: WMA needs a local ffmpeg copy, and users find
+    /// that out by importing a folder full of it and seeing every row rejected.
+    @Published var isShowingWMASetup = false
 
     @Published var deleteTargets: [Track] = []
     @Published var metadataTarget: Track?
@@ -51,20 +51,22 @@ final class AppModel: ObservableObject {
         )
 
         runDebugImportIfRequested()
-        presentWMANoticeIfNeeded()
+        presentWMASetupIfNeeded()
     }
 
-    /// WMA is out of scope: macOS cannot decode it and the portable core has no
-    /// ASF demuxer. Say so once per version — first install and every update —
-    /// instead of letting an entire album arrive as “unsupported”.
-    private func presentWMANoticeIfNeeded() {
-        let key = "wmaNotice.version"
-        let seen = UserDefaults.standard.string(forKey: key)
-        guard seen != AppVersion.current else { return }
+    /// WMA is only decodable through a local ffmpeg copy, because neither macOS
+    /// nor the portable core has an ASF decoder. Ask once per version — first
+    /// install and every update — instead of letting an entire album arrive as
+    /// “unsupported”.
+    private func presentWMASetupIfNeeded() {
+        guard !FFmpegLocation.isInstalled else { return }
+
+        let key = "wmaSetup.version"
+        guard UserDefaults.standard.string(forKey: key) != AppVersion.current else { return }
 
         UserDefaults.standard.set(AppVersion.current, forKey: key)
-        isShowingWMANotice = true
-        Diagnostics.log("提示 WMA 不受支持（版本 \(AppVersion.current)）")
+        isShowingWMASetup = true
+        Diagnostics.log("提示 WMA 支持需要 ffmpeg（版本 \(AppVersion.current)）")
     }
 
     /// `open -a Voanisa --args --import-test <path>` opens the import sheet for

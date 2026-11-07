@@ -8,6 +8,8 @@ struct SettingsView: View {
     @State private var isConfirmingRestart = false
     @State private var isCheckingVersion = false
     @State private var versionOutcome: VersionCheck.Outcome?
+    @State private var isShowingWMASetup = false
+    @State private var ffmpegInstalled = FFmpegLocation.isInstalled
 
     var body: some View {
         Form {
@@ -46,6 +48,43 @@ struct SettingsView: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            Section("settings.wma") {
+                Label {
+                    Text(
+                        ffmpegInstalled
+                            ? LocalizedStringKey("settings.wma.enabled")
+                            : LocalizedStringKey("settings.wma.disabled")
+                    )
+                } icon: {
+                    Image(systemName: ffmpegInstalled ? "checkmark.circle.fill" : "circle.dashed")
+                }
+                .font(.callout)
+
+                Text("settings.wma.hint")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 8) {
+                    Button("settings.wma.setup") {
+                        isShowingWMASetup = true
+                    }
+
+                    if ffmpegInstalled {
+                        Button("settings.wma.remove", role: .destructive) {
+                            FFmpegLocation.removeCopy()
+                            Diagnostics.log("WMA 支持：已删除 ffmpeg 副本")
+                            ffmpegInstalled = FFmpegLocation.isInstalled
+                        }
+                    }
+                }
+
+                Text("settings.wma.license")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
             Section("settings.version") {
                 LabeledContent("settings.version.current") {
                     Text(AppVersion.current)
@@ -70,6 +109,11 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
+        .sheet(isPresented: $isShowingWMASetup, onDismiss: {
+            ffmpegInstalled = FFmpegLocation.isInstalled
+        }) {
+            WMASetupSheet { isShowingWMASetup = false }
+        }
         .alert("settings.language.restart.title", isPresented: $isConfirmingRestart) {
             Button("common.later", role: .cancel) {}
             Button("common.restart", action: relaunch)

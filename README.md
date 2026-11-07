@@ -17,7 +17,7 @@ A local music library for macOS, in the visual spirit of Elysia.
 
 [Click here to Downloads](https://voanisa.macwave.org/Downloads/)
 
-This repository contains **Voanisa 1.0.7**. Every imported audio file
+This repository contains **Voanisa 1.1**. Every imported audio file
 becomes one song in a self-contained library. Audio is copied into the library,
 named by the user, given a square cover, and played locally — no Apple Music
 dependency and no files written outside the library.
@@ -61,8 +61,8 @@ GitHub's language bar so it reflects the two languages the project is written in
 MP3, AAC/ADTS, M4A, ALAC, FLAC, WAV, AIFF, CAF.
 
 These are decoded in-process by the Rust core and played through
-`AVAudioEngine`. No external decoder binary, codec pack or ffmpeg installation
-is involved, and nothing has to be installed next to the app.
+`AVAudioEngine`. No external decoder binary or codec pack is involved, and
+nothing has to be installed next to the app.
 
 - Ogg Vorbis — Symphonia
 - Ogg Opus — `opus-pure` (Ogg encapsulation, pre-skip and end-trim)
@@ -74,9 +74,22 @@ is involved, and nothing has to be installed next to the app.
 
 MP4/MOV files are imported as audio-only M4A; the video track is discarded.
 
-WMA, DSD (DSF/DFF) and Matroska/WebM are detected by signature but not decoded
-yet. WMA cannot be decoded on macOS at all, so convert those files to FLAC or
-MP3 first — `Scripts/convert-wma.sh` converts a whole folder with ffmpeg.
+WMA is supported only through an optional, user-supplied ffmpeg. macOS cannot
+decode WMA at all and the portable core has no ASF demuxer, so on first launch
+Voanisa asks where your ffmpeg came from and copies that binary into
+`~/Library/Application Support/Voanisa/lib/ffmpeg`. Importing a WMA file then
+converts it to FLAC once; playback and metadata editing use the core like any
+other song. The same question is available later under Settings → WMA, and the
+copy can be deleted there.
+
+Nothing is downloaded by Voanisa and nothing is bundled with it: the copy is
+made on your own Mac from a binary you installed yourself, and Voanisa calls it
+only to convert WMA. ffmpeg keeps its own license (`ffmpeg -L` shows which one
+your build uses); because no copy is ever redistributed, no GPL source offer is
+involved. Without the copy WMA stays unsupported, and
+`Scripts/convert-wma.sh` still converts a whole folder from a terminal.
+
+DSD (DSF/DFF) and Matroska/WebM are detected by signature but not decoded yet.
 
 ## Library
 
@@ -164,8 +177,8 @@ swift Scripts/make-rounded-icon.swift ~/Downloads/artwork.heic \
 2. Playlists; album browsing is parked for now and may return later.
 3. Optional Apple Music integration: merge the Music library into Voanisa,
    with explicit import/remove actions.
-4. WMA and DSD stay unsupported until a pure-Rust decoder fits; Voanisa
-   deliberately does not ship or bundle ffmpeg.
+4. WMA works through a user-supplied ffmpeg copy; DSD waits for a pure-Rust
+   decoder. Voanisa deliberately never ships, bundles or downloads ffmpeg.
 
 ## Rust core (in progress)
 

@@ -102,7 +102,11 @@ final class ExtendedFormatTests: XCTestCase {
     }
 
     func testUnsupportedContainerStaysUnplayable() async {
-        // WMA is recognised by its signature but has no pure-Rust decoder.
+        // WMA is recognised by its signature but has no pure-Rust decoder, so
+        // without the optional ffmpeg copy the probe has to refuse it.
+        setenv(FFmpegLocation.environmentKey, "/nonexistent/ffmpeg", 1)
+        defer { unsetenv(FFmpegLocation.environmentKey) }
+
         let result = await AudioProbe.probe(url: fixture("tone.wma"))
 
         XCTAssertEqual(result.container, .wma)

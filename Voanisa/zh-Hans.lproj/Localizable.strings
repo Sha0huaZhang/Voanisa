@@ -77,9 +77,6 @@
 "import.coverForAll"   = "统一设置封面…";
 "import.cover.hint"    = "把图片拖到封面上即可使用。";
 
-/* WMA 提示 */
-"wma.notice.title"   = "Voanisa 暂不支持 WMA";
-"wma.notice.message" = "WMA（Windows Media Audio）是微软的私有格式，macOS 与 Voanisa 的核心都无法直接解码，导入时这些文件会被标为不受支持。请先转成 FLAC 或 MP3 再导入——仓库里的 Scripts/convert-wma.sh 可以用 ffmpeg 一次转完整个文件夹。";
 "import.confirm"       = "导入";
 "import.importing"     = "正在导入…";
 "import.skipDuplicates" = "跳过重复文件";
@@ -205,3 +202,61 @@
 
 /* 曲目 */
 "track.unknownArtist" = "未知歌手";
+
+/* WMA 支持（可选的 ffmpeg 副本） */
+"wma.setup.title"      = "WMA 支持";
+"wma.setup.subtitle"   = "WMA 需要 ffmpeg。Voanisa 不会随包附带，也不会替你下载——它只把你电脑上已有的 ffmpeg 复制到自己的文件夹里，仅用来解码 WMA。";
+"wma.setup.intro"      = "macOS 本身无法解码 WMA。如果希望 Voanisa 能播放和导入 WMA，需要本机有一份 ffmpeg。你的文件不会离开这台电脑。";
+"wma.setup.question"   = "你是否已安装 ffmpeg？";
+"wma.setup.answer.yes" = "已安装";
+"wma.setup.answer.no"  = "未安装，帮我安装";
+"wma.setup.whichInstalled"  = "你使用下列哪个工具安装了 ffmpeg？";
+"wma.setup.whichToInstall"  = "你的电脑存在下列哪个工具，并希望用它们安装 ffmpeg？";
+"wma.setup.other"           = "其他，请输入路径";
+"wma.setup.other.prompt"    = "ffmpeg 可执行文件的路径";
+"wma.setup.other.placeholder" = "/path/to/ffmpeg";
+"wma.setup.other.choose"    = "选择…";
+"wma.setup.command.intro"   = "请在终端输入以下命令：";
+"wma.setup.command.copy"    = "复制";
+"wma.setup.command.copied"  = "已复制";
+"wma.setup.command.after"   = "安装完成后，点击“下一步”。";
+"wma.setup.prebuilt.choice" = "直接下载预编译包并放在 Voanisa 的文件夹里";
+"wma.setup.prebuilt.title"  = "自行下载 ffmpeg";
+"wma.setup.prebuilt.intro"  = "从下面的页面下载一个 macOS 版本，解压后把 ffmpeg 可执行文件放进这个文件夹：";
+"wma.setup.prebuilt.steps"  = "Voanisa 不会替你下载任何东西，文件由你放入。放好之后点击“下一步”。";
+"wma.setup.prebuilt.missing" = "Voanisa 的文件夹里还没有 ffmpeg。";
+"wma.setup.prebuilt.blocked" = "macOS 还不允许运行这份 ffmpeg。请在 Finder 里右键打开一次，或清除隔离属性后重试。";
+"wma.setup.reveal"          = "在 Finder 中显示";
+"wma.setup.openDownload"    = "打开下载页面";
+"wma.setup.confirm.title"      = "要把 ffmpeg 复制到 Voanisa 吗？";
+"wma.setup.confirm.source"     = "找到的 ffmpeg";
+"wma.setup.confirm.destination" = "将复制到";
+"wma.setup.confirm.replace"    = "WMA 支持已经开启，这次复制会替换现有的副本。";
+"wma.setup.copyAction"      = "复制到 Voanisa";
+"wma.setup.done.title"      = "现在可以播放 WMA 了";
+"wma.setup.done.message"    = "导入 WMA 时会先转成 FLAC，之后的播放和编辑歌曲信息都由核心处理，和其他歌曲完全一样。你也可以随时在设置里删除这份副本。";
+"wma.setup.later"           = "暂不设置";
+"wma.setup.back"            = "上一步";
+"wma.setup.next"            = "下一步";
+"wma.setup.installedNext"   = "下一步";
+"wma.setup.notFound"        = "按这个选择没有找到 ffmpeg。请先安装、换一个工具，或者手动填写路径。";
+"wma.setup.notInstalledYet" = "还没有找到 ffmpeg。请在终端执行上面的命令，然后再次点击“下一步”。";
+"wma.setup.license"         = "ffmpeg 遵循它自己的许可协议（在终端运行“ffmpeg -L”可以看到你这份构建使用的协议）。这份副本只存在于你的电脑上，只由 Voanisa 调用，不会被再次分发。";
+"wma.tool.selfBuiltUSRLocal" = "自行编译并放在 /usr/local";
+"wma.tool.selfBuiltLocal"    = "自行编译并放在 ~/.local";
+"wma.error.notExecutable"   = "这个文件不是可执行的 ffmpeg。";
+"wma.error.alreadyInPlace"  = "这就是 Voanisa 正在使用的那份副本。";
+"wma.error.noSource"        = "Voanisa 里还没有安装 ffmpeg。";
+"wma.error.transcode"       = "无法用 ffmpeg 转换 %@。";
+"wma.error.transcodeGeneric" = "ffmpeg 无法转换这个文件。";
+"format.wmaTranscoded"      = "FLAC · 由 WMA 转码";
+
+/* 设置 — WMA */
+"settings.wma"         = "WMA";
+"settings.wma.enabled" = "WMA 支持已开启";
+"settings.wma.disabled" = "WMA 支持未开启";
+"settings.wma.hint"    = "WMA 由本机的一份 ffmpeg 副本解码。每次更新后 Voanisa 会询问一次，也可以在这里重新设置。";
+"settings.wma.setup"   = "设置 WMA 支持…";
+"settings.wma.remove"  = "删除 ffmpeg 副本";
+"settings.wma.license" = "ffmpeg 不属于 Voanisa，也不会随 Voanisa 分发。这份副本只是你电脑上的一个文件，由 Voanisa 调用它来转换 WMA。";
+

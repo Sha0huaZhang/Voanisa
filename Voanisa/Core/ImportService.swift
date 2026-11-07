@@ -206,6 +206,17 @@ enum ImportService {
             embedded.merge(fallback)
         }
 
+        // WMA is read by ffmpeg, not by the portable core, so its metadata block
+        // is the second chance there.
+        if embedded.isEmpty, probe.requiresTranscode, let media = FFmpeg.inspect(url) {
+            embedded.title = media.tags["title"]
+            embedded.artist = media.tags["artist"]
+            embedded.album = media.tags["album"]
+            embedded.albumArtist = media.tags["album_artist"]
+            embedded.trackNumber = media.tags["track"].flatMap(number(from:))
+            embedded.discNumber = media.tags["disc"].flatMap(number(from:))
+        }
+
         // Artwork lives in the container's own metadata block; the core writes
         // the picture to a temporary file so the import path stays JSON-only.
         if embedded.artwork == nil {
@@ -316,10 +327,26 @@ enum ImportService {
                 let needsExtraction = candidate.probe.hasVideo
                     || candidate.probe.container == .mp4
                     || candidate.probe.container == .mov
+                // WMA has no decoder in the core and none in macOS; the optional
+                // ffmpeg copy converts it to FLAC as it enters the library, so
+                // playback and metadata edits never touch a WMA file again.
+                let needsTranscode = candidate.probe.requiresTranscode
 
                 let stagedURL: URL
                 let fileExtension: String
-                if needsExtraction {
+                if needsTranscode {
+                    let destination = stagingURL
+                        .appendingPathComponent("\(id.uuidString).flac")
+                    if FileManager.default.fileExists(atPath: destination.path) {
+                        try FileManager.default.removeItem(at: destination)
+                    }
+                    try FFmpeg.transcodeToFLAC(
+                        source: candidate.sourceURL,
+                        destination: destination
+                    )
+                    stagedURL = destination
+                    fileExtension = "flac"
+                } else if needsExtraction {
                     stagedURL = try await extractAudio(
                         from: candidate.sourceURL,
                         stagingURL: stagingURL
@@ -365,7 +392,15 @@ enum ImportService {
                     }
                 }
 
-                let storedFormat = needsExtraction ? "M4A · AAC" : candidate.probe.formatDescription
+                let storedFormat: String
+                if needsTranscode {
+                    // The library copy is FLAC, so say so rather than showing WMA.
+                    storedFormat = String(localized: "format.wmaTranscoded")
+                } else if needsExtraction {
+                    storedFormat = "M4A · AAC"
+                } else {
+                    storedFormat = candidate.probe.formatDescription
+                }
                 let track = Track(
                     id: id,
                     title: title,
@@ -435,6 +470,11 @@ enum ImportService {
 
         guard RustCore.writeArtwork(url: url, to: temporary) else { return nil }
         return try? Data(contentsOf: temporary)
+    }
+
+    /// Parses `3` and `3/12` from a metadata value.
+    private static func number(from value: String) -> Int? {
+        Int(value.split(separator: "/").first?.trimmingCharacters(in: .whitespaces) ?? "")
     }
 
     private static func preferredExtension(for candidate: ImportCandidate) -> String {

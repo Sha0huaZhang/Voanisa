@@ -15,15 +15,16 @@ Small files used by the Swift and Rust tests.
   The audio is `sine_16s_c2000.ape` from the `ape-decoder` test corpus (MIT or
   Apache-2.0); `tagged.ape` is that file with an APEv2 tag appended for the tag
   reader tests.
-- `audio/tone.wma` — WMA, used to prove unsupported containers are still
-  detected and refused.
+- `audio/tone.wma` — WMA, used to prove that the container is detected, that it
+  is refused without an ffmpeg copy, and that importing converts it to FLAC
+  when one is installed.
 - `images/cover-a.png`, `images/cover-b.png` — 256×256 placeholder covers.
 - `images/missing-cover.png` is intentionally absent; tests use it to verify
   that missing artwork falls back to the default gray note cover.
 
 The compressed fixtures were produced once with a locally installed ffmpeg and
-checked in. ffmpeg is only a fixture generator: the app and its Rust core never
-link to or invoke it.
+checked in. ffmpeg is only a fixture generator and, for WMA, an optional
+external tool: the app and its Rust core never link to it.
 
 The tests resolve this directory from `#filePath`, so the files do not need to
 be copied into the test bundle.

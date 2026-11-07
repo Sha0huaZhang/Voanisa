@@ -67,6 +67,9 @@ struct AudioProbeResult: Sendable {
     var channelCount: Int
     var isSupported: Bool
     var failureReason: String?
+    /// WMA is only decodable through the optional ffmpeg copy, so importing
+    /// converts it to FLAC first.
+    var requiresTranscode: Bool = false
 
     var formatDescription: String {
         var parts: [String] = [container.displayName]
@@ -165,7 +168,37 @@ enum AudioProbe {
                     failureReason: nil
                 )
             }
-        case .mkv, .webm, .wma, .dsf, .dff:
+        case .wma:
+            // macOS cannot decode WMA at all. When the user has installed the
+            // optional ffmpeg copy, ffmpeg reads the header and import converts
+            // the file to FLAC.
+            if let media = FFmpeg.inspect(url) {
+                return AudioProbeResult(
+                    container: headerContainer,
+                    codec: media.codec,
+                    duration: media.duration,
+                    hasVideo: false,
+                    sampleRate: media.sampleRate,
+                    channelCount: media.channelCount,
+                    isSupported: true,
+                    failureReason: nil,
+                    requiresTranscode: true
+                )
+            }
+            return AudioProbeResult(
+                container: headerContainer,
+                codec: rust?.codec,
+                duration: 0,
+                hasVideo: false,
+                sampleRate: 0,
+                channelCount: 0,
+                isSupported: false,
+                failureReason: String(
+                    format: String(localized: "probe.unsupported"),
+                    headerContainer.displayName
+                )
+            )
+        case .mkv, .webm, .dsf, .dff:
             // Recognised by signature but not decoded yet.
             return AudioProbeResult(
                 container: headerContainer,

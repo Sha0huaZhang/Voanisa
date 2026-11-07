@@ -78,9 +78,6 @@
 "import.coverForAll"   = "Use One Cover for All…";
 "import.cover.hint"    = "Drag an image onto the cover to use it.";
 
-/* WMA notice */
-"wma.notice.title"   = "WMA is not supported";
-"wma.notice.message" = "WMA (Windows Media Audio) is a proprietary Microsoft format, and neither macOS nor Voanisa's portable core can decode it — those files are marked unsupported when you import them. Convert them to FLAC or MP3 first; Scripts/convert-wma.sh in the repository converts a whole folder in one go with ffmpeg.";
 "import.confirm"       = "Import";
 "import.importing"     = "Importing…";
 "import.skipDuplicates" = "Skip duplicate files";
@@ -206,3 +203,61 @@
 
 /* Track */
 "track.unknownArtist" = "Unknown Artist";
+
+/* WMA support (optional ffmpeg copy) */
+"wma.setup.title"      = "WMA support";
+"wma.setup.subtitle"   = "WMA needs ffmpeg. Voanisa never ships or downloads it — it copies the ffmpeg you already have on this Mac into its own folder and uses it only to decode WMA.";
+"wma.setup.intro"      = "macOS cannot decode WMA at all. If you want Voanisa to play and import WMA files, it needs a local copy of ffmpeg. Your files never leave this Mac.";
+"wma.setup.question"   = "Do you already have ffmpeg installed?";
+"wma.setup.answer.yes" = "Yes, it is installed";
+"wma.setup.answer.no"  = "No, install it for me";
+"wma.setup.whichInstalled"  = "Which tool did you use to install ffmpeg?";
+"wma.setup.whichToInstall"  = "Which tool is on this Mac, and should install ffmpeg?";
+"wma.setup.other"           = "Other — enter the path";
+"wma.setup.other.prompt"    = "Path to the ffmpeg binary";
+"wma.setup.other.placeholder" = "/path/to/ffmpeg";
+"wma.setup.other.choose"    = "Choose…";
+"wma.setup.command.intro"   = "Type this in Terminal:";
+"wma.setup.command.copy"    = "Copy";
+"wma.setup.command.copied"  = "Copied";
+"wma.setup.command.after"   = "When the installation has finished, click “Next”.";
+"wma.setup.prebuilt.choice" = "Download a prebuilt package and put it in Voanisa's folder";
+"wma.setup.prebuilt.title"  = "Download ffmpeg yourself";
+"wma.setup.prebuilt.intro"  = "Download a macOS build from the page below, unpack it, and put the ffmpeg binary into this folder:";
+"wma.setup.prebuilt.steps"  = "Voanisa does not download anything for you; the binary is placed by you. When it is in place, click “Next”.";
+"wma.setup.prebuilt.missing" = "No ffmpeg was found in the Voanisa folder yet.";
+"wma.setup.prebuilt.blocked" = "macOS will not run this ffmpeg yet. Open it once from Finder (right-click → Open), or clear the quarantine flag, then try again.";
+"wma.setup.reveal"          = "Show Folder";
+"wma.setup.openDownload"    = "Open Download Page";
+"wma.setup.confirm.title"      = "Copy ffmpeg into Voanisa?";
+"wma.setup.confirm.source"     = "Found";
+"wma.setup.confirm.destination" = "Voanisa will copy it to";
+"wma.setup.confirm.replace"    = "WMA support is already enabled; this copy replaces the current one.";
+"wma.setup.copyAction"      = "Copy into Voanisa";
+"wma.setup.done.title"      = "WMA is now supported";
+"wma.setup.done.message"    = "WMA files are converted to FLAC when you import them, so playback and metadata editing use the portable core like every other song. You can delete the copy at any time in Settings.";
+"wma.setup.later"           = "Not Now";
+"wma.setup.back"            = "Back";
+"wma.setup.next"            = "Next";
+"wma.setup.installedNext"   = "Next";
+"wma.setup.notFound"        = "No ffmpeg was found for that choice. Install it first, choose another tool, or enter the path by hand.";
+"wma.setup.notInstalledYet" = "ffmpeg is not installed yet. Run the command above in Terminal, then click “Next” again.";
+"wma.setup.license"         = "ffmpeg stays under its own license (run “ffmpeg -L” to see which one your build uses). This copy lives only on your Mac, is used only by Voanisa, and is never redistributed.";
+"wma.tool.selfBuiltUSRLocal" = "Compiled it myself and installed it in /usr/local";
+"wma.tool.selfBuiltLocal"    = "Compiled it myself and installed it in ~/.local";
+"wma.error.notExecutable"   = "That file is not an executable ffmpeg.";
+"wma.error.alreadyInPlace"  = "That is already the copy Voanisa uses.";
+"wma.error.noSource"        = "ffmpeg is not installed in Voanisa yet.";
+"wma.error.transcode"       = "Could not convert %@ with ffmpeg.";
+"wma.error.transcodeGeneric" = "ffmpeg could not convert this file.";
+"format.wmaTranscoded"      = "FLAC · converted from WMA";
+
+/* Settings — WMA */
+"settings.wma"         = "WMA";
+"settings.wma.enabled" = "WMA support is on";
+"settings.wma.disabled" = "WMA support is off";
+"settings.wma.hint"    = "WMA is decoded by a local copy of ffmpeg. Voanisa asks once after an update; you can also set it up again here.";
+"settings.wma.setup"   = "Set Up WMA Support…";
+"settings.wma.remove"  = "Remove ffmpeg Copy";
+"settings.wma.license" = "ffmpeg is not part of Voanisa and is never distributed with it. The copy is a file on your Mac that Voanisa runs to convert WMA.";
+

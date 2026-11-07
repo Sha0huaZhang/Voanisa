@@ -17,7 +17,7 @@
 
 [点击前往下载页面](https://voanisa.macwave.org/Downloads/)
 
-本仓库包含 **Voanisa 1.0.7**。每个导入的音频文件都会成为曲库中的一首歌曲。
+本仓库包含 **Voanisa 1.1**。每个导入的音频文件都会成为曲库中的一首歌曲。
 音频会被复制进自包含的曲库，由用户命名、配上正方形封面，并在本机播放——
 不依赖 Apple Music，也不会在曲库之外写入任何文件。
 
@@ -52,7 +52,7 @@
 MP3、AAC/ADTS、M4A、ALAC、FLAC、WAV、AIFF、CAF。
 
 以下格式由 Rust 核心在进程内解码，再交给 `AVAudioEngine` 播放。不依赖任何外部
-解码器程序、编解码包或 ffmpeg 安装。
+解码器程序或编解码包，也不需要在本机另外安装什么。
 
 - Ogg Vorbis —— Symphonia
 - Ogg Opus —— `opus-pure`（Ogg 封装、pre-skip 与 end-trim 修正）
@@ -63,9 +63,18 @@ MP3、AAC/ADTS、M4A、ALAC、FLAC、WAV、AIFF、CAF。
 
 MP4/MOV 会作为纯音频 M4A 导入，视频轨道会被丢弃。
 
-WMA、DSD（DSF/DFF）、Matroska/WebM 可以被文件头识别，但暂不支持解码。WMA 在
-macOS 上完全无法解码，请先转成 FLAC 或 MP3 —— 仓库里的 `Scripts/convert-wma.sh`
-可以用 ffmpeg 一次转完整个文件夹。
+WMA 只有在使用你自己安装的 ffmpeg 时才支持。macOS 上完全无法解码 WMA，Rust 核心
+也没有 ASF 解复用器，所以首次启动时 Voanisa 会询问你的 ffmpeg 是用什么装的，并把
+那个可执行文件复制到 `~/Library/Application Support/Voanisa/lib/ffmpeg`。之后导入
+WMA 会先转成 FLAC，播放和编辑歌曲信息都和别的歌一样由核心处理。这个询问也可以在
+“设置 → WMA”里再次打开，副本同样在那里删除。
+
+Voanisa 自己不下载、也不打包 ffmpeg：副本是在你自己的电脑上、用你自己安装的程序
+复制出来的，只用来转换 WMA。ffmpeg 仍遵循它自己的许可协议（`ffmpeg -L` 可以看到
+你这份构建用的是哪一个）；因为不存在再分发，也就不涉及 GPL 的源码提供义务。没有
+这份副本时 WMA 依然不受支持，`Scripts/convert-wma.sh` 也仍然可以在终端里批量转换。
+
+DSD（DSF/DFF）与 Matroska/WebM 可以被文件头识别，但暂不支持解码。
 
 ## 曲库
 
@@ -143,8 +152,8 @@ python3 Scripts/generate-appicon.py images/Voanisa-icon-1024.png
 2. 歌单与专辑。
 3. 可选的 Apple Music 集成：把 Music 资料库合并进 Voanisa，并提供显式的
    导入/移除操作。
-4. WMA 与 DSD 在出现合适的纯 Rust 解码器之前保持不支持；Voanisa 不会打包
-   或调用 ffmpeg。
+4. WMA 通过用户自己提供的 ffmpeg 副本支持；DSD 等待合适的纯 Rust 解码器。
+   Voanisa 不会打包、附带或下载 ffmpeg。
 
 ## Rust 核心（进行中）
 

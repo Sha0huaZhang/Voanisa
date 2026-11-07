@@ -98,10 +98,8 @@ struct ContentView: View {
         } message: {
             Text(model.errorMessage ?? "")
         }
-        .alert("wma.notice.title", isPresented: $model.isShowingWMANotice) {
-            Button("common.gotIt") {}
-        } message: {
-            Text("wma.notice.message")
+        .sheet(isPresented: $model.isShowingWMASetup) {
+            WMASetupSheet { model.isShowingWMASetup = false }
         }
         .confirmationDialog(
             "common.remove.confirm.title",
